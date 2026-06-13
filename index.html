@@ -2,640 +2,347 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Photobooth Profesional</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Martive.id | Open Project & Collaboration</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #f1f5f9; 
-            overscroll-behavior: none;
+        :root {
+            --dark-bg: #030305; /* Super Deep Space */
+            --space-accent: #0A0A12;
+            --neon-cyan: #00F0FF; /* Pop Cyber Cyan */
+            --neon-magenta: #FF0055; /* Pop Art Magenta */
+            --neon-purple: #8A2BE2;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-blur: blur(12px);
         }
         
-        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
         
-        /* Animasi Transisi Halus */
-        #canvasWrapper { transition: aspect-ratio 0.4s ease-in-out; }
-        .modal-backdrop { backdrop-filter: blur(8px); }
+        body {
+            font-family: 'Google Sans', 'Product Sans', 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-main);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Space & Pop Halftone Background */
+        .space-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: -2;
+            background-color: var(--dark-bg);
+            /* Halftone dot pattern overlay for pop-culture feel */
+            background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            background: transparent url('https://www.transparenttextures.com/patterns/stardust.png') repeat top center;
+            animation: moveStars 120s linear infinite;
+            opacity: 0.6;
+        }
+        
+        .glow-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.4;
+            animation: pulse 8s alternate infinite;
+        }
+        .orb-cyan { background: var(--neon-cyan); width: 40vw; height: 40vw; top: -10%; left: -10%; }
+        .orb-magenta { background: var(--neon-magenta); width: 30vw; height: 30vw; bottom: 10%; right: -5%; animation-delay: 2s; }
+
+        @keyframes moveStars {
+            from { background-position: 0 0; }
+            to { background-position: -10000px 5000px; }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.3; }
+            100% { transform: scale(1.1); opacity: 0.5; }
+        }
+
+        /* Typography */
+        h1, h2, h3 { 
+            font-weight: 900;
+            line-height: 1.1;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+        }
+        
+        .text-outline {
+            color: transparent;
+            -webkit-text-stroke: 2px var(--text-main);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Navigation */
+        nav {
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0; 
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(3,3,5,0.9) 0%, rgba(3,3,5,0) 100%);
+        }
+        
+        .logo { 
+            font-size: 1.5rem; 
+            font-weight: 900; 
+            letter-spacing: 2px; 
+            color: var(--text-main);
+        }
+        .logo span { color: var(--neon-magenta); }
+
+        /* Buttons (Pop Culture Offset Shadow Style) */
+        .btn-pop {
+            display: inline-block;
+            padding: 16px 36px;
+            font-size: 0.9rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-decoration: none;
+            color: var(--dark-bg);
+            background-color: var(--neon-cyan);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 0; /* Sharp corners */
+            box-shadow: 6px 6px 0px var(--neon-magenta);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .btn-pop:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 4px 4px 0px var(--neon-magenta);
+        }
+        
+        .btn-pop:active {
+            transform: translate(6px, 6px);
+            box-shadow: 0px 0px 0px var(--neon-magenta);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 120px 5% 60px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .hero-badge {
+            background: rgba(255, 0, 85, 0.1);
+            border: 1px solid var(--neon-magenta);
+            color: var(--neon-magenta);
+            padding: 8px 16px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+            border-radius: 50px;
+            display: inline-block;
+        }
+
+        .hero h1 { 
+            font-size: clamp(3rem, 8vw, 7rem); 
+            margin-bottom: 20px;
+            word-wrap: break-word;
+        }
+        
+        .hero p { 
+            font-size: clamp(1rem, 2vw, 1.2rem); 
+            max-width: 600px; 
+            margin: 0 auto 50px; 
+            color: var(--text-muted); 
+            font-weight: 400;
+        }
+
+        /* Marquee Pop Culture Element */
+        .marquee-container {
+            width: 100%;
+            background: var(--neon-magenta);
+            color: var(--dark-bg);
+            padding: 15px 0;
+            overflow: hidden;
+            position: relative;
+            transform: rotate(-2deg) scale(1.05); /* Slightly tilted */
+            border-top: 2px solid var(--text-main);
+            border-bottom: 2px solid var(--text-main);
+            z-index: 20;
+            box-shadow: 0 10px 30px rgba(255, 0, 85, 0.3);
+        }
+
+        .marquee-content {
+            display: flex;
+            white-space: nowrap;
+            animation: scroll 20s linear infinite;
+            font-weight: 900;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .marquee-content span {
+            padding: 0 30px;
+        }
+
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* Collab Details Section */
+        .collab-content {
+            padding: 100px 5%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .pop-card {
+            background: rgba(10, 10, 18, 0.6);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 2px solid var(--neon-cyan);
+            max-width: 800px;
+            width: 100%;
+            padding: 60px 40px;
+            text-align: center;
+            position: relative;
+            box-shadow: 15px 15px 0px rgba(0, 240, 255, 0.1);
+        }
+        
+        .pop-card::before {
+            content: '✦';
+            position: absolute;
+            top: 20px; left: 20px;
+            font-size: 2rem;
+            color: var(--neon-magenta);
+        }
+        
+        .pop-card::after {
+            content: '✦';
+            position: absolute;
+            bottom: 20px; right: 20px;
+            font-size: 2rem;
+            color: var(--neon-cyan);
+        }
+
+        .pop-card h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .pop-card p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 60px 5% 40px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        footer span { color: var(--neon-cyan); }
+
+        @media (max-width: 768px) {
+            nav { padding: 20px; justify-content: center; }
+            .hero { padding-top: 150px; }
+            .hero h1 { line-height: 1; }
+            .pop-card { padding: 50px 20px; box-shadow: 8px 8px 0px rgba(0, 240, 255, 0.1); }
+            .pop-card h2 { font-size: 2rem; }
+            .marquee-container { transform: rotate(-3deg) scale(1.05); }
+        }
     </style>
 </head>
-<body class="text-slate-800 antialiased h-screen flex flex-col overflow-hidden selection:bg-blue-200">
+<body>
 
-    <!-- Header / Navbar -->
-    <header class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center z-20 shrink-0 shadow-sm">
-        <div class="flex items-center gap-3">
-            <div class="bg-indigo-600 text-white p-2.5 rounded-xl shadow-md shadow-indigo-200">
-                <i data-lucide="camera" class="w-6 h-6"></i>
-            </div>
-            <div>
-                <h1 id="appHeaderTitle" class="text-xl font-extrabold tracking-tight text-slate-900 uppercase">STUDIO MINIMALIS</h1>
-                <p class="text-xs font-medium text-slate-500">Sistem Photobooth Interaktif</p>
-            </div>
-        </div>
-        <div class="flex items-center gap-3">
-            <button id="fullscreenBtn" class="p-3 text-slate-500 hover:bg-slate-100 hover:text-indigo-600 rounded-xl transition-all shadow-sm border border-transparent hover:border-slate-200">
-                <i data-lucide="maximize" class="w-5 h-5"></i>
-            </button>
-            <button onclick="openModal('settingsModal')" class="p-3 text-slate-500 hover:bg-slate-100 hover:text-indigo-600 rounded-xl transition-all shadow-sm border border-transparent hover:border-slate-200">
-                <i data-lucide="settings" class="w-5 h-5"></i>
-            </button>
-        </div>
-    </header>
+    <!-- Backgrounds -->
+    <div class="space-bg"></div>
+    <div class="stars"></div>
+    <div class="glow-orb orb-cyan"></div>
+    <div class="glow-orb orb-magenta"></div>
 
-    <!-- Main Layout -->
-    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
-        
-        <!-- Kiri: Area Kamera & Kontrol -->
-        <section class="flex-1 p-4 md:p-8 flex flex-col items-center justify-center overflow-y-auto relative z-10 bg-slate-50/50">
-            
-            <!-- Pembungkus Kamera Utama -->
-            <div class="w-full max-w-4xl flex flex-col items-center gap-6">
-                
-                <!-- Layar Kamera -->
-                <div class="relative w-full flex justify-center group">
-                    <div id="canvasWrapper" class="relative bg-white shadow-2xl rounded-3xl border border-slate-200 overflow-hidden aspect-[3/4] w-full max-h-[65vh] lg:max-h-[70vh] flex justify-center items-center">
-                        
-                        <!-- Video Source (Hidden) -->
-                        <video id="videoElement" class="hidden" autoplay playsinline></video>
-                        
-                        <!-- Canvas yang dilihat pengguna -->
-                        <canvas id="displayCanvas" class="h-full object-contain pointer-events-none"></canvas>
-                        
-                        <!-- Flash & Overlay Hitung Mundur -->
-                        <div id="flashEffect" class="absolute inset-0 bg-white opacity-0 transition-opacity duration-150 z-20 pointer-events-none"></div>
-                        <div id="countdownOverlay" class="absolute inset-0 bg-black/60 hidden flex-col items-center justify-center z-30 pointer-events-none">
-                            <span id="countdownNumber" class="text-white text-[150px] font-black drop-shadow-2xl tabular-nums">3</span>
-                            <span class="text-white text-xl font-medium tracking-widest uppercase animate-pulse">Bersiap...</span>
-                        </div>
+    <!-- Navigation -->
+    <nav>
+        <div class="logo">MARTIVE<span>.ID</span></div>
+    </nav>
 
-                    </div>
-                </div>
+    <!-- Main Hero / Landing -->
+    <section class="hero">
+        <div class="hero-badge">Calling All Creators</div>
+        <h1>
+            <span class="text-outline">OPEN</span> <br>
+            <span class="text-gradient">PROJECT</span>
+        </h1>
+        <p>Kami mencari *brand*, desainer, kreator, dan entitas bisnis yang siap mendobrak batas kewajaran. Mari padukan estetika pop culture dan teknologi spasial di ekosistem kami.</p>
+        <a href="mailto:hello@martive.id" class="btn-pop">Mulai Kolaborasi</a>
+    </section>
 
-                <!-- Panel Kontrol -->
-                <div class="w-full max-w-3xl grid grid-cols-2 md:grid-cols-5 gap-3 bg-white p-3 md:p-4 rounded-3xl shadow-lg border border-slate-200">
-                    
-                    <div class="col-span-1">
-                        <select id="timerSelect" class="w-full h-full min-h-[56px] bg-slate-50 border border-slate-200 rounded-2xl px-4 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer transition-all hover:bg-slate-100">
-                            <option value="0">⚡ Instan</option>
-                            <option value="3" selected>⏱️ 3 Detik</option>
-                            <option value="5">⏱️ 5 Detik</option>
-                        </select>
-                    </div>
-
-                    <div class="col-span-2 md:col-span-3">
-                        <button id="captureBtn" class="w-full h-full min-h-[56px] bg-slate-900 hover:bg-indigo-600 text-white font-black text-lg rounded-2xl transition-all flex items-center justify-center gap-3 transform active:scale-[0.98] shadow-md hover:shadow-xl">
-                            <i data-lucide="aperture" class="w-6 h-6"></i> AMBIL FOTO
-                        </button>
-                    </div>
-
-                    <div class="col-span-1 flex gap-2">
-                        <button id="switchCameraBtn" class="flex-1 h-full min-h-[56px] bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-2xl flex items-center justify-center transition-all shadow-sm" title="Putar Kamera">
-                            <i data-lucide="switch-camera" class="w-5 h-5"></i>
-                        </button>
-                        <label class="flex-1 h-full min-h-[56px] bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 rounded-2xl flex items-center justify-center transition-all shadow-sm cursor-pointer" title="Unggah Bingkai Kustom PNG">
-                            <i data-lucide="image-plus" class="w-5 h-5"></i>
-                            <input type="file" id="customFrameUpload" class="hidden" accept="image/png">
-                        </label>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Kanan: Area Galeri -->
-        <section class="w-full lg:w-[420px] bg-white border-l border-slate-200 flex flex-col shadow-2xl z-20 shrink-0">
-            <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-white">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="images" class="w-5 h-5 text-indigo-500"></i>
-                    <h3 class="font-bold text-slate-800 tracking-wide">GALERI FOTO</h3>
-                </div>
-                <span id="photoCount" class="text-xs font-bold bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full shadow-inner">0 Foto</span>
-            </div>
-            
-            <div id="galleryContainer" class="flex-1 p-6 overflow-y-auto custom-scrollbar grid grid-cols-2 gap-4 content-start bg-slate-50/50">
-                <!-- State Kosong -->
-                <div id="emptyState" class="col-span-2 flex flex-col items-center justify-center py-20 text-slate-400 opacity-70">
-                    <i data-lucide="camera-off" class="w-16 h-16 mb-4"></i>
-                    <p class="font-medium text-sm">Belum ada foto yang diambil.</p>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Modal Pengaturan -->
-    <div id="settingsModal" class="fixed inset-0 bg-slate-900/40 modal-backdrop hidden items-center justify-center z-50 p-4 transition-opacity">
-        <div class="bg-white rounded-[2rem] w-full max-w-md p-6 md:p-8 shadow-2xl transform transition-transform scale-95 border border-slate-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
-            <div class="flex justify-between items-center mb-6">
-                <div class="flex items-center gap-3">
-                    <div class="bg-slate-100 p-2 rounded-full text-slate-600"><i data-lucide="settings-2" class="w-5 h-5"></i></div>
-                    <h2 class="text-xl font-bold text-slate-800">Pengaturan</h2>
-                </div>
-                <button onclick="closeModal('settingsModal')" class="text-slate-400 hover:text-red-500 bg-slate-50 p-2 rounded-full transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            
-            <div class="space-y-6">
-                <!-- Judul -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Judul Acara / Frame</label>
-                    <input type="text" id="settingTitle" class="w-full p-3.5 bg-slate-50 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-medium text-slate-700">
-                </div>
-                
-                <!-- Orientasi -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider">Orientasi Photobooth</label>
-                    <div class="grid grid-cols-3 gap-3">
-                        <label class="cursor-pointer group">
-                            <input type="radio" name="orient" value="portrait" checked class="hidden peer">
-                            <div class="text-center py-3 rounded-xl border-2 border-slate-200 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:text-indigo-700 text-slate-500 font-bold text-sm transition-all group-hover:bg-slate-50">
-                                Portrait<br><span class="text-[10px] font-normal">(3:4)</span>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer group">
-                            <input type="radio" name="orient" value="landscape" class="hidden peer">
-                            <div class="text-center py-3 rounded-xl border-2 border-slate-200 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:text-indigo-700 text-slate-500 font-bold text-sm transition-all group-hover:bg-slate-50">
-                                Landscape<br><span class="text-[10px] font-normal">(4:3)</span>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer group">
-                            <input type="radio" name="orient" value="square" class="hidden peer">
-                            <div class="text-center py-3 rounded-xl border-2 border-slate-200 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:text-indigo-700 text-slate-500 font-bold text-sm transition-all group-hover:bg-slate-50">
-                                Square<br><span class="text-[10px] font-normal">(1:1)</span>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Format Foto -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Format Ekspor Foto</label>
-                    <div class="grid grid-cols-2 gap-3">
-                        <label class="cursor-pointer group">
-                            <input type="radio" name="format" value="png" checked class="hidden peer">
-                            <div class="text-center py-3 rounded-xl border-2 border-slate-200 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:text-indigo-700 text-slate-500 font-bold text-sm transition-all group-hover:bg-slate-50">
-                                PNG (High Quality)
-                            </div>
-                        </label>
-                        <label class="cursor-pointer group">
-                            <input type="radio" name="format" value="jpeg" class="hidden peer">
-                            <div class="text-center py-3 rounded-xl border-2 border-slate-200 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:text-indigo-700 text-slate-500 font-bold text-sm transition-all group-hover:bg-slate-50">
-                                JPEG (Lebih Ringan)
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Toggle Settings (Mirror, Sound, Download) -->
-                <div class="space-y-3">
-                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
-                        <div>
-                            <p class="font-bold text-sm text-slate-700">Cermin Kamera Depan</p>
-                            <p class="text-xs text-slate-500">Matikan jika frame ada teks</p>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="settingMirror" class="sr-only peer" checked>
-                            <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                        </label>
-                    </div>
-
-                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
-                        <div>
-                            <p class="font-bold text-sm text-slate-700">Suara Sistem</p>
-                            <p class="text-xs text-slate-500">Bunyi hitung mundur & jepretan</p>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="settingSound" class="sr-only peer" checked>
-                            <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                        </label>
-                    </div>
-
-                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
-                        <div>
-                            <p class="font-bold text-sm text-slate-700">Unduh Otomatis</p>
-                            <p class="text-xs text-slate-500">Langsung simpan setelah foto</p>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="settingAutoDownload" class="sr-only peer">
-                            <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Google Drive Config -->
-                <div class="pt-4 border-t border-slate-100">
-                    <label class="block text-xs font-bold text-slate-500 mb-3 flex items-center gap-2 uppercase tracking-wider">
-                        <i data-lucide="cloud" class="w-4 h-4 text-blue-500"></i> Integrasi Google Drive
-                    </label>
-                    <div class="space-y-3">
-                        <input type="text" id="settingDriveId" placeholder="Masukkan Client ID" class="w-full p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all">
-                        <input type="password" id="settingDriveKey" placeholder="Masukkan API Key" class="w-full p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all">
-                    </div>
-                </div>
-            </div>
-            
-            <button onclick="saveSettings()" class="mt-8 w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
-                <i data-lucide="check-circle" class="w-5 h-5"></i> Simpan Pengaturan
-            </button>
+    <!-- Pop Culture Marquee Divider -->
+    <div class="marquee-container">
+        <div class="marquee-content">
+            <!-- Repeated content for smooth infinite scrolling -->
+            <span>✦ ART</span><span>✦ TECH</span><span>✦ POP CULTURE</span><span>✦ SPACE</span><span>✦ COLLABORATION</span>
+            <span>✦ ART</span><span>✦ TECH</span><span>✦ POP CULTURE</span><span>✦ SPACE</span><span>✦ COLLABORATION</span>
+            <span>✦ ART</span><span>✦ TECH</span><span>✦ POP CULTURE</span><span>✦ SPACE</span><span>✦ COLLABORATION</span>
         </div>
     </div>
 
-    <!-- Modal Preview Foto -->
-    <div id="previewModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center z-[60] p-4 md:p-8">
-        <button onclick="closeModal('previewModal')" class="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-3 rounded-full transition-all backdrop-blur-sm z-10">
-            <i data-lucide="x" class="w-6 h-6"></i>
-        </button>
-        
-        <div class="max-w-5xl w-full h-full flex flex-col md:flex-row items-center justify-center gap-8">
-            <!-- Gambar Preview -->
-            <div class="relative w-full max-w-[400px] md:max-w-full md:flex-1 h-[60vh] md:h-[80vh] flex justify-center items-center">
-                <img id="previewImage" src="" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl ring-1 ring-white/20">
-            </div>
+    <!-- Collaboration Details Box -->
+    <section class="collab-content">
+        <div class="pop-card">
+            <h2>The Creative <span class="text-gradient">Space</span></h2>
+            <p>Berhenti menjadi biasa. Martive.id membuka ruang tak terbatas bagi Anda yang ingin menciptakan *visual branding*, *web experience*, dan karya digital dengan energi yang *bold*, futuristik, dan eksentrik.</p>
             
-            <!-- Aksi Preview -->
-            <div class="flex md:flex-col gap-4 w-full md:w-64 shrink-0">
-                <button onclick="actionDownload()" class="flex-1 md:flex-none flex items-center justify-center gap-3 bg-white hover:bg-slate-100 text-slate-900 font-bold py-4 px-6 rounded-2xl transition-all shadow-xl">
-                    <i data-lucide="download" class="w-5 h-5"></i> Unduh
-                </button>
-                <button onclick="actionPrint()" class="flex-1 md:flex-none flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-xl">
-                    <i data-lucide="printer" class="w-5 h-5"></i> Cetak
-                </button>
-                <button onclick="actionDrive()" class="flex-1 md:flex-none flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-xl">
-                    <i data-lucide="cloud-upload" class="w-5 h-5"></i> Simpan Drive
-                </button>
-                <button onclick="actionDelete()" class="w-full mt-0 md:mt-auto flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white font-bold py-4 px-6 rounded-2xl transition-all border border-red-500/30 hover:border-red-500">
-                    <i data-lucide="trash-2" class="w-5 h-5"></i> Hapus
-                </button>
-            </div>
+            <a href="mailto:hello@martive.id?subject=Martive%20Open%20Project%20Collab" class="btn-pop" style="background: transparent; color: var(--text-main); border-color: var(--neon-magenta); box-shadow: 6px 6px 0px var(--neon-cyan);">
+                Kirimkan Ide Anda
+            </a>
         </div>
-    </div>
+    </section>
 
-    <script>
-        lucide.createIcons();
-        
-        // Konfigurasi State dengan tambahan fitur sebelumnya
-        let settings = { 
-            title: 'STUDIO MINIMALIS', 
-            orientation: 'portrait',
-            format: 'png',        // Pengaturan Export
-            sound: true,          // Pengaturan Suara
-            autoDownload: false,  // Pengaturan Unduh Otomatis
-            mirror: true,
-            driveId: '', 
-            driveKey: '' 
-        };
-        let photos = [];
-        let stream = null;
-        let currentFacingMode = 'user';
-        let userCustomFrame = null;
-        let activePhotoId = null; // Untuk preview modal
-        let isCapturing = false;
+    <!-- Footer -->
+    <footer>
+        <p>MARTIVE.ID &copy; 2026</p>
+        <p style="margin-top: 5px; font-size: 0.8rem; font-weight: 400;">TRANSMITTING FROM BALI, ID — TO THE UNIVERSE</p>
+    </footer>
 
-        // Elemen DOM
-        const video = document.getElementById('videoElement');
-        const canvas = document.getElementById('displayCanvas');
-        const ctx = canvas.getContext('2d');
-        const wrapper = document.getElementById('canvasWrapper');
-        const frameUpload = document.getElementById('customFrameUpload');
-
-        // Ukuran Kanvas Target berdasar orientasi (Kualitas Cetak HD)
-        const RESOLUTIONS = {
-            portrait: { w: 1200, h: 1600, aspect: '3/4' },
-            landscape: { w: 1600, h: 1200, aspect: '4/3' },
-            square: { w: 1200, h: 1200, aspect: '1/1' }
-        };
-
-        // Audio Generator
-        function playSound(type) {
-            if (!settings.sound) return; // Keluar jika suara dimatikan
-            
-            try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                
-                if (type === 'beep') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-                } else if (type === 'shutter') {
-                    osc.type = 'square';
-                    osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.1);
-                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.15);
-                }
-            } catch(e) { console.log("Audio API Error", e); }
-        }
-
-        // Inisialisasi Kamera
-        async function initCamera(facingMode = 'user') {
-            if (stream) stream.getTracks().forEach(t => t.stop());
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
-                    audio: false
-                });
-                video.srcObject = stream;
-                video.onloadedmetadata = () => {
-                    video.play();
-                    updateCanvasResolution();
-                    if (!window.renderLoopStarted) {
-                        render();
-                        window.renderLoopStarted = true;
-                    }
-                };
-            } catch(e) { 
-                alert("Gagal mengakses kamera. Pastikan izin diberikan.");
-                console.error(e); 
-            }
-        }
-
-        function updateCanvasResolution() {
-            const res = RESOLUTIONS[settings.orientation];
-            canvas.width = res.w;
-            canvas.height = res.h;
-            wrapper.style.aspectRatio = res.aspect;
-            
-            // Set UI inputs agar sinkron dengan state
-            document.getElementById('settingTitle').value = settings.title;
-            document.querySelector(`input[name="orient"][value="${settings.orientation}"]`).checked = true;
-            document.querySelector(`input[name="format"][value="${settings.format}"]`).checked = true;
-            document.getElementById('settingMirror').checked = settings.mirror;
-            document.getElementById('settingSound').checked = settings.sound;
-            document.getElementById('settingAutoDownload').checked = settings.autoDownload;
-        }
-
-        // Loop Render
-        function render() {
-            if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                const vRatio = video.videoWidth / video.videoHeight;
-                const cRatio = canvas.width / canvas.height;
-                let sx, sy, sWidth, sHeight;
-
-                if (vRatio > cRatio) {
-                    sHeight = video.videoHeight;
-                    sWidth = sHeight * cRatio;
-                    sx = (video.videoWidth - sWidth) / 2;
-                    sy = 0;
-                } else {
-                    sWidth = video.videoWidth;
-                    sHeight = sWidth / cRatio;
-                    sx = 0;
-                    sy = (video.videoHeight - sHeight) / 2;
-                }
-
-                ctx.save();
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                if (currentFacingMode === 'user' && settings.mirror) {
-                    ctx.translate(canvas.width, 0);
-                    ctx.scale(-1, 1);
-                }
-
-                ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
-                ctx.restore();
-
-                drawOverlayFrame();
-            }
-            requestAnimationFrame(render);
-        }
-
-        function drawOverlayFrame() {
-            if (userCustomFrame && userCustomFrame.complete) {
-                ctx.drawImage(userCustomFrame, 0, 0, canvas.width, canvas.height);
-            } else {
-                const isLandscape = settings.orientation === 'landscape';
-                const padding = 50;
-                const bottomPadding = isLandscape ? 120 : 200;
-
-                ctx.fillStyle = 'white';
-                ctx.fillRect(0, 0, canvas.width, padding); 
-                ctx.fillRect(0, 0, padding, canvas.height); 
-                ctx.fillRect(canvas.width - padding, 0, padding, canvas.height); 
-                ctx.fillRect(0, canvas.height - bottomPadding, canvas.width, bottomPadding);
-
-                ctx.fillStyle = '#0f172a';
-                ctx.font = `800 ${isLandscape ? '40px' : '50px'} Inter, sans-serif`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(settings.title, canvas.width / 2, canvas.height - (bottomPadding / 2));
-            }
-        }
-
-        // --- MANAJEMEN PENGATURAN & AKSI ---
-
-        function saveSettings() {
-            settings.title = document.getElementById('settingTitle').value.toUpperCase();
-            settings.orientation = document.querySelector('input[name="orient"]:checked').value;
-            settings.format = document.querySelector('input[name="format"]:checked').value;
-            settings.mirror = document.getElementById('settingMirror').checked;
-            settings.sound = document.getElementById('settingSound').checked;
-            settings.autoDownload = document.getElementById('settingAutoDownload').checked;
-            settings.driveId = document.getElementById('settingDriveId').value;
-            settings.driveKey = document.getElementById('settingDriveKey').value;
-            
-            document.getElementById('appHeaderTitle').textContent = settings.title;
-            updateCanvasResolution();
-            closeModal('settingsModal');
-        }
-
-        frameUpload.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.onload = () => { userCustomFrame = img; };
-                    img.src = event.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        document.getElementById('switchCameraBtn').onclick = () => {
-            currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
-            initCamera(currentFacingMode);
-        };
-
-        document.getElementById('captureBtn').onclick = () => {
-            if (isCapturing) return;
-            const timer = parseInt(document.getElementById('timerSelect').value);
-            
-            if (timer > 0) {
-                startCountdown(timer);
-            } else {
-                executeCapture();
-            }
-        };
-
-        function startCountdown(seconds) {
-            isCapturing = true;
-            const overlay = document.getElementById('countdownOverlay');
-            const numEl = document.getElementById('countdownNumber');
-            overlay.classList.remove('hidden');
-            overlay.classList.add('flex');
-            
-            let counter = seconds;
-            numEl.textContent = counter;
-            playSound('beep');
-
-            const interval = setInterval(() => {
-                counter--;
-                if (counter > 0) {
-                    numEl.textContent = counter;
-                    playSound('beep');
-                } else {
-                    clearInterval(interval);
-                    overlay.classList.add('hidden');
-                    overlay.classList.remove('flex');
-                    executeCapture();
-                }
-            }, 1000);
-        }
-
-        function executeCapture() {
-            playSound('shutter');
-            
-            const flash = document.getElementById('flashEffect');
-            flash.classList.remove('opacity-0');
-            flash.classList.add('opacity-100');
-            
-            setTimeout(() => {
-                flash.classList.remove('opacity-100');
-                flash.classList.add('opacity-0');
-                
-                // Simpan Foto dengan Format Pilihan
-                const mimeType = settings.format === 'jpeg' ? 'image/jpeg' : 'image/png';
-                const fileExt = settings.format === 'jpeg' ? 'jpg' : 'png';
-                const dataUrl = canvas.toDataURL(mimeType, 1.0);
-                const photoId = Date.now();
-                
-                photos.unshift({ id: photoId, data: dataUrl, date: new Date().toLocaleString(), ext: fileExt });
-                updateGallery();
-                isCapturing = false;
-
-                // Logika Unduh Otomatis
-                if (settings.autoDownload) {
-                    actionDownload(photoId);
-                }
-            }, 100);
-        }
-
-        // --- GALERI & MODAL PREVIEW ---
-        function updateGallery() {
-            const container = document.getElementById('galleryContainer');
-            const emptyState = document.getElementById('emptyState');
-            document.getElementById('photoCount').textContent = `${photos.length} Foto`;
-            
-            if (photos.length > 0) {
-                emptyState.style.display = 'none';
-            } else {
-                emptyState.style.display = 'flex';
-            }
-
-            container.querySelectorAll('.photo-card').forEach(e => e.remove());
-
-            photos.forEach(p => {
-                const div = document.createElement('div');
-                div.className = 'photo-card relative group rounded-2xl overflow-hidden bg-slate-100 cursor-pointer shadow-sm hover:shadow-md transition-all border border-slate-200 aspect-[3/4] flex items-center justify-center';
-                div.innerHTML = `
-                    <img src="${p.data}" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-indigo-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
-                        <span class="bg-white text-indigo-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1"><i data-lucide="zoom-in" class="w-3 h-3"></i> Lihat</span>
-                    </div>
-                `;
-                div.onclick = () => openPreview(p.id);
-                container.appendChild(div);
-            });
-            lucide.createIcons();
-        }
-
-        function openPreview(id) {
-            const photo = photos.find(p => p.id === id);
-            if (!photo) return;
-            activePhotoId = id;
-            document.getElementById('previewImage').src = photo.data;
-            openModal('previewModal');
-        }
-
-        function actionDownload(targetId = null) {
-            const idToDownload = typeof targetId === 'number' ? targetId : activePhotoId;
-            const photo = photos.find(p => p.id === idToDownload);
-            if (photo) {
-                const a = document.createElement('a');
-                a.href = photo.data;
-                const ext = photo.ext || 'png';
-                a.download = `Photobooth-${photo.id}.${ext}`;
-                a.click();
-            }
-        }
-
-        function actionPrint() {
-            const photo = photos.find(p => p.id === activePhotoId);
-            if (photo) {
-                const win = window.open('', '_blank');
-                win.document.write(`<html><body style="margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;"><img src="${photo.data}" style="max-width:100%;max-height:100vh;object-fit:contain;" onload="window.print();window.close();"></body></html>`);
-                win.document.close();
-            }
-        }
-
-        function actionDelete() {
-            if (confirm('Yakin ingin menghapus foto ini?')) {
-                photos = photos.filter(p => p.id !== activePhotoId);
-                updateGallery();
-                closeModal('previewModal');
-            }
-        }
-
-        function actionDrive() {
-            if(!settings.driveId) {
-                alert("Silahkan atur Client ID & API Key Google Drive di menu Pengaturan terlebih dahulu.");
-                openModal('settingsModal');
-            } else {
-                alert("Kredensial ditemukan! (Sistem siap untuk diintegrasikan dengan Google API SDK).");
-            }
-        }
-
-        // Utility Modal & Fullscreen
-        function openModal(id) {
-            const el = document.getElementById(id);
-            el.classList.remove('hidden');
-            el.classList.add('flex');
-            setTimeout(() => el.firstElementChild.classList.remove('scale-95'), 10);
-        }
-        
-        function closeModal(id) {
-            const el = document.getElementById(id);
-            el.firstElementChild.classList.add('scale-95');
-            setTimeout(() => {
-                el.classList.add('hidden');
-                el.classList.remove('flex');
-            }, 150);
-        }
-
-        document.getElementById('fullscreenBtn').onclick = () => {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    alert(`Gagal Fullscreen: ${err.message}`);
-                });
-            } else {
-                document.exitFullscreen();
-            }
-        };
-
-        // Init App
-        window.onload = () => {
-            updateCanvasResolution();
-            initCamera();
-        };
-    </script>
 </body>
 </html>
