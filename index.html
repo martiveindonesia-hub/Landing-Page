@@ -147,45 +147,138 @@
             box-shadow: 0px 0px 0px var(--neon-magenta);
         }
 
-        /* Hero Section */
-        .hero {
+        /* Login Layout */
+        .login-container {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            text-align: center;
-            padding: 120px 5% 60px;
+            padding: 120px 5% 40px;
             position: relative;
             z-index: 10;
         }
-        
-        .hero-badge {
-            background: rgba(255, 0, 85, 0.1);
-            border: 1px solid var(--neon-magenta);
+
+        .login-card {
+            background: rgba(10, 10, 18, 0.65);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 2px solid var(--neon-cyan);
+            max-width: 420px;
+            width: 100%;
+            padding: 50px 40px;
+            position: relative;
+            box-shadow: 12px 12px 0px rgba(255, 0, 85, 0.3); /* Offset Pop-Art Shadow */
+            animation: cardEntrance 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+            margin-bottom: 60px;
+        }
+
+        @keyframes cardEntrance {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-card::before {
+            content: '✦';
+            position: absolute;
+            top: 15px; left: 15px;
+            font-size: 1.5rem;
             color: var(--neon-magenta);
-            padding: 8px 16px;
-            font-size: 0.8rem;
+        }
+        
+        .login-card::after {
+            content: '✦';
+            position: absolute;
+            bottom: 15px; right: 15px;
+            font-size: 1.5rem;
+            color: var(--neon-cyan);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .login-badge {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 6px 14px;
+            font-size: 0.75rem;
             font-weight: 800;
             letter-spacing: 2px;
             text-transform: uppercase;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             border-radius: 50px;
             display: inline-block;
         }
 
-        .hero h1 { 
-            font-size: clamp(3rem, 8vw, 7rem); 
-            margin-bottom: 20px;
-            word-wrap: break-word;
+        .login-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+            line-height: 1.2;
         }
-        
-        .hero p { 
-            font-size: clamp(1rem, 2vw, 1.2rem); 
-            max-width: 600px; 
-            margin: 0 auto 50px; 
-            color: var(--text-muted); 
-            font-weight: 400;
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid rgba(148, 163, 184, 0.3);
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            border-radius: 0;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--neon-cyan);
+            box-shadow: 6px 6px 0px rgba(0, 240, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-control::placeholder {
+            color: rgba(148, 163, 184, 0.3);
+        }
+
+        .login-card .btn-pop {
+            width: 100%;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .login-footer {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .login-footer a {
+            color: var(--neon-magenta);
+            text-decoration: none;
+            font-weight: 800;
+            transition: all 0.2s;
+        }
+
+        .login-footer a:hover {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
         }
 
         /* Marquee Pop Culture Element */
@@ -196,7 +289,7 @@
             padding: 15px 0;
             overflow: hidden;
             position: relative;
-            transform: rotate(-2deg) scale(1.05); /* Slightly tilted */
+            transform: rotate(-2deg) scale(1.05);
             border-top: 2px solid var(--text-main);
             border-bottom: 2px solid var(--text-main);
             z-index: 20;
@@ -222,56 +315,6 @@
             100% { transform: translateX(-50%); }
         }
 
-        /* Collab Details Section */
-        .collab-content {
-            padding: 100px 5%;
-            display: flex;
-            justify-content: center;
-        }
-
-        .pop-card {
-            background: rgba(10, 10, 18, 0.6);
-            backdrop-filter: var(--glass-blur);
-            -webkit-backdrop-filter: var(--glass-blur);
-            border: 2px solid var(--neon-cyan);
-            max-width: 800px;
-            width: 100%;
-            padding: 60px 40px;
-            text-align: center;
-            position: relative;
-            box-shadow: 15px 15px 0px rgba(0, 240, 255, 0.1);
-        }
-        
-        .pop-card::before {
-            content: '✦';
-            position: absolute;
-            top: 20px; left: 20px;
-            font-size: 2rem;
-            color: var(--neon-magenta);
-        }
-        
-        .pop-card::after {
-            content: '✦';
-            position: absolute;
-            bottom: 20px; right: 20px;
-            font-size: 2rem;
-            color: var(--neon-cyan);
-        }
-
-        .pop-card h2 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-        }
-
-        .pop-card p {
-            font-size: 1.1rem;
-            color: var(--text-muted);
-            margin-bottom: 40px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
         /* Footer */
         footer {
             text-align: center;
@@ -284,10 +327,9 @@
 
         @media (max-width: 768px) {
             nav { padding: 20px; justify-content: center; }
-            .hero { padding-top: 150px; }
-            .hero h1 { line-height: 1; }
-            .pop-card { padding: 50px 20px; box-shadow: 8px 8px 0px rgba(0, 240, 255, 0.1); }
-            .pop-card h2 { font-size: 2rem; }
+            .login-container { padding-top: 120px; }
+            .login-card { padding: 40px 25px; box-shadow: 8px 8px 0px rgba(255, 0, 85, 0.3); }
+            .login-header h1 { font-size: 2rem; }
             .marquee-container { transform: rotate(-3deg) scale(1.05); }
         }
     </style>
@@ -305,38 +347,46 @@
         <div class="logo">MARTIVE<span>.ID</span></div>
     </nav>
 
-    <!-- Main Hero / Landing -->
-    <section class="hero">
-        <div class="hero-badge">Calling All Creators</div>
-        <h1>
-            <span class="text-outline">OPEN</span> <br>
-            <span class="text-gradient">PROJECT</span>
-        </h1>
-        <p>Kami mencari *brand*, desainer, kreator, dan entitas bisnis yang siap mendobrak batas kewajaran. Mari padukan estetika pop culture dan teknologi spasial di ekosistem kami.</p>
-        <a href="mailto:hello@martive.id" class="btn-pop">Mulai Kolaborasi</a>
+    <!-- Login Dashboard -->
+    <section class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-badge">System Access</div>
+                <h1>
+                    <span class="text-outline">LOGIN</span><br>
+                    <span class="text-gradient">PORTAL</span>
+                </h1>
+            </div>
+            
+            <form action="#" method="POST">
+                <div class="form-group">
+                    <label for="username">Creator ID / Email</label>
+                    <input type="text" id="username" class="form-control" placeholder="Enter your coordinate..." required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Passcode</label>
+                    <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+                </div>
+                
+                <button type="submit" class="btn-pop">Initialize Link</button>
+            </form>
+            
+            <div class="login-footer">
+                <p>Lost in space? <a href="#">Recover Passcode</a></p>
+            </div>
+        </div>
     </section>
 
     <!-- Pop Culture Marquee Divider -->
     <div class="marquee-container">
         <div class="marquee-content">
             <!-- Repeated content for smooth infinite scrolling -->
-            <span>✦ ART</span><span>✦ TECH</span><span>✦ POP CULTURE</span><span>✦ SPACE</span><span>✦ COLLABORATION</span>
-            <span>✦ ART</span><span>✦ TECH</span><span>✦ POP CULTURE</span><span>✦ SPACE</span><span>✦ COLLABORATION</span>
-            <span>✦ ART</span><span>✦ TECH</span><span>✦ POP CULTURE</span><span>✦ SPACE</span><span>✦ COLLABORATION</span>
+            <span>✦ SECURE CONNECTION</span><span>✦ ENCRYPTED DATA</span><span>✦ MARTIVE NETWORK</span><span>✦ CREATOR SPACE</span>
+            <span>✦ SECURE CONNECTION</span><span>✦ ENCRYPTED DATA</span><span>✦ MARTIVE NETWORK</span><span>✦ CREATOR SPACE</span>
+            <span>✦ SECURE CONNECTION</span><span>✦ ENCRYPTED DATA</span><span>✦ MARTIVE NETWORK</span><span>✦ CREATOR SPACE</span>
         </div>
     </div>
-
-    <!-- Collaboration Details Box -->
-    <section class="collab-content">
-        <div class="pop-card">
-            <h2>The Creative <span class="text-gradient">Space</span></h2>
-            <p>Berhenti menjadi biasa. Martive.id membuka ruang tak terbatas bagi Anda yang ingin menciptakan *visual branding*, *web experience*, dan karya digital dengan energi yang *bold*, futuristik, dan eksentrik.</p>
-            
-            <a href="mailto:hello@martive.id?subject=Martive%20Open%20Project%20Collab" class="btn-pop" style="background: transparent; color: var(--text-main); border-color: var(--neon-magenta); box-shadow: 6px 6px 0px var(--neon-cyan);">
-                Kirimkan Ide Anda
-            </a>
-        </div>
-    </section>
 
     <!-- Footer -->
     <footer>
