@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Perencanaan Pernikahan Gen Z</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .tier-wajib { @apply bg-red-100 text-red-800 border-red-200; }
+        .tier-rasional { @apply bg-orange-100 text-orange-800 border-orange-200; }
+        .tier-opsional { @apply bg-slate-100 text-slate-800 border-slate-200; }
+        
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; }
+            .glass-card { box-shadow: none; border: 1px solid #e2e8f0; }
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased pb-20">
+
+    <header class="bg-gradient-to-r from-teal-900 to-emerald-800 text-white py-12 px-6 lg:px-8 shadow-lg relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
+        <div class="max-w-7xl mx-auto relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold mb-2 tracking-tight">Sistem Perencanaan Pernikahan Gen Z</h1>
+                    <p class="text-teal-100 text-lg max-w-2xl">Pendekatan rasional, aman, dan bermakna. Hindari <i>wedding anxiety</i> dengan menghitung kapasitas finansial riil Anda dan pasangan.</p>
+                </div>
+                <div class="flex flex-col gap-3 min-w-[250px]" id="action-buttons">
+                    <a href="Master_Blueprint_Budgeting_Pernikahan_GenZ.pdf" download class="bg-white/10 hover:bg-white/20 border border-white/30 transition-colors duration-200 text-white py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 font-medium backdrop-blur-sm">
+                        <i class="fa-solid fa-file-pdf text-red-400"></i> Unduh Blueprint PDF
+                    </a>
+                    <button id="btn-download" onclick="downloadPDF()" class="bg-teal-500 hover:bg-teal-400 transition-colors duration-200 text-white py-2.5 px-5 rounded-lg flex items-center justify-center gap-2 font-medium shadow-md">
+                        <i class="fa-solid fa-download"></i> Download Simulasi (PDF)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
+        
+        <!-- Global Inputs -->
+        <section class="glass-card rounded-2xl p-6 md:p-8 mb-8 no-print">
+            <h2 class="text-xl font-bold text-slate-800 mb-6 border-l-4 border-teal-500 pl-3">Langkah 1: Masukkan Profil Finansial Utama</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Input Tabungan -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-sm font-semibold text-slate-600">Total Tabungan Pasangan (Rp)</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-medium">Rp</span>
+                        <input type="number" id="input-tabungan" class="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all font-semibold text-lg text-slate-800" value="100000000" min="0" step="1000000">
+                    </div>
+                    <p class="text-xs text-slate-500"><i class="fa-solid fa-circle-info mr-1"></i>Gabungan uang dingin yang siap digunakan.</p>
+                </div>
+                
+                <!-- Input Biaya Hidup -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-sm font-semibold text-slate-600">Estimasi Biaya Hidup Pasca-Nikah / Bulan</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-medium">Rp</span>
+                        <input type="number" id="input-biaya-hidup" class="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all font-semibold text-lg text-slate-800" value="7000000" min="0" step="500000">
+                    </div>
+                    <p class="text-xs text-slate-500"><i class="fa-solid fa-house-chimney mr-1"></i>Termasuk sewa/cicilan rumah, makan, utilitas.</p>
+                </div>
+
+                <!-- Input Undangan -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-sm font-semibold text-slate-600">Jumlah Tamu Undangan (Pax)</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-medium"><i class="fa-solid fa-users"></i></span>
+                        <input type="number" id="input-undangan" class="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all font-semibold text-lg text-slate-800" value="300" min="10">
+                    </div>
+                    <p class="text-xs text-slate-500"><i class="fa-solid fa-calculator mr-1"></i>Mempengaruhi kalkulasi catering otomatis.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- KPI Dashboard -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Limit Budget -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-scale-balanced text-2xl text-blue-200"></i>
+                </div>
+                <h3 class="text-sm font-semibold text-slate-500 mb-1">Limit Budget Aman (50%)</h3>
+                <p class="text-2xl font-bold text-blue-700" id="kpi-limit-budget">Rp 0</p>
+                <p class="text-xs text-slate-400 mt-2">Maksimal 50% dari total tabungan</p>
+            </div>
+
+            <!-- Estimasi Pengeluaran -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-receipt text-2xl text-teal-200"></i>
+                </div>
+                <h3 class="text-sm font-semibold text-slate-500 mb-1">Total Estimasi Simulasi</h3>
+                <p class="text-2xl font-bold text-teal-700" id="kpi-estimasi-total">Rp 0</p>
+                <p class="text-xs text-slate-400 mt-2">Termasuk dana darurat 15%</p>
+            </div>
+
+            <!-- Cost per Guest -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-user-tag text-2xl text-amber-200"></i>
+                </div>
+                <h3 class="text-sm font-semibold text-slate-500 mb-1">Cost-per-Guest</h3>
+                <p class="text-2xl font-bold text-amber-600" id="kpi-cost-per-guest">Rp 0</p>
+                <p class="text-xs text-slate-400 mt-2">Beban riil per 1 tamu hadir</p>
+            </div>
+
+            <!-- Sisa Tabungan Pasca Nikah -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 relative overflow-hidden" id="card-sisa-tabungan">
+                <div class="absolute -right-4 -top-4 w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-piggy-bank text-2xl text-slate-200"></i>
+                </div>
+                <h3 class="text-sm font-semibold text-slate-500 mb-1">Sisa Dana Pasca-Nikah</h3>
+                <p class="text-2xl font-bold text-slate-800" id="kpi-sisa-tabungan">Rp 0</p>
+                <p class="text-xs font-medium mt-2" id="kpi-sisa-status">Menghitung status...</p>
+            </div>
+        </section>
+
+        <!-- Golden Rules Validation -->
+        <section class="glass-card rounded-2xl p-6 mb-8">
+            <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-shield-halved text-teal-600"></i> The Golden Rules Validation
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div id="rule-1" class="flex items-start gap-4 p-4 rounded-xl border transition-colors">
+                    <div class="mt-1" id="icon-rule-1"><i class="fa-solid fa-circle-check text-xl text-slate-300"></i></div>
+                    <div>
+                        <h4 class="font-bold text-slate-800">Aturan 50% Tabungan</h4>
+                        <p class="text-sm text-slate-600">Biaya pernikahan idealnya tidak memakan lebih dari separuh tabungan bersama Anda.</p>
+                    </div>
+                </div>
+                <div id="rule-2" class="flex items-start gap-4 p-4 rounded-xl border transition-colors">
+                    <div class="mt-1" id="icon-rule-2"><i class="fa-solid fa-circle-check text-xl text-slate-300"></i></div>
+                    <div>
+                        <h4 class="font-bold text-slate-800">Jaring Pengaman 3 Bulan</h4>
+                        <p class="text-sm text-slate-600">Sisa dana setelah menikah HARUS minimal 3x lipat dari biaya hidup bulanan rumah tangga baru.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left Column: Itemised Budget Planner -->
+            <div class="lg:col-span-2 space-y-6">
+                <div class="glass-card rounded-2xl p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-slate-800 border-l-4 border-teal-500 pl-3">Langkah 2: Susun Anggaran Detail</h2>
+                        <button id="btn-reset" onclick="resetToDefault()" class="text-sm text-teal-600 hover:text-teal-800 font-medium no-print">
+                            <i class="fa-solid fa-rotate-left mr-1"></i> Reset ke Standar
+                        </button>
+                    </div>
+                    
+                    <div class="mb-4 bg-slate-50 p-4 rounded-lg border border-slate-200 text-sm">
+                        <p class="font-semibold mb-2">Panduan Prioritas Tier:</p>
+                        <div class="flex flex-wrap gap-4">
+                            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-red-400"></span> <b>Wajib:</b> Hukum & esensial.</span>
+                            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-orange-400"></span> <b>Rasional:</b> Logis untuk kenyamanan.</span>
+                            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-slate-400"></span> <b>Opsional:</b> Gengsi, bisa dieliminasi.</span>
+                        </div>
+                    </div>
+
+                    <div id="budget-container" class="space-y-8">
+                        <!-- Dynamic content will be rendered here by JS -->
+                    </div>
+                    
+                    <!-- Emergency Fund Display in Table -->
+                    <div class="mt-6 pt-6 border-t border-slate-200">
+                        <div class="flex justify-between items-center bg-teal-50 p-4 rounded-xl border border-teal-100">
+                            <div>
+                                <h4 class="font-bold text-teal-900 flex items-center gap-2">
+                                    <i class="fa-solid fa-life-ring text-teal-600"></i> Dana Darurat Otomatis (15%)
+                                </h4>
+                                <p class="text-xs text-teal-700 mt-1">Dihitung otomatis dari total pengeluaran vendor di atas untuk *hidden fees*.</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold text-lg text-teal-800" id="emergency-fund-display">Rp 0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Visualization & Summary -->
+            <div class="space-y-6">
+                <!-- Chart -->
+                <div class="glass-card rounded-2xl p-6 sticky top-6">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4">Distribusi Anggaran</h2>
+                    <div class="relative w-full aspect-square mb-6">
+                        <canvas id="budgetChart"></canvas>
+                    </div>
+                    
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                        <h3 class="font-bold text-sm text-slate-800 mb-3">Ringkasan per Fase</h3>
+                        <div class="space-y-2 text-sm" id="summary-phases">
+                            <!-- Populated by JS -->
+                        </div>
+                        <div class="border-t border-slate-200 my-3 pt-3">
+                            <div class="flex justify-between items-center font-bold text-slate-800">
+                                <span>Total Grand Akhir</span>
+                                <span id="summary-grand-total">Rp 0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-20 py-8 text-center text-slate-500 text-sm border-t border-slate-200">
+        <p>Dirancang khusus untuk meredam <i>Wedding Anxiety</i> Gen Z. Berdasarkan Dokumen Master Blueprint.</p>
+        <p class="mt-2">Silakan diskusikan hasil kalkulasi ini bersama pasangan dan keluarga dengan kepala dingin.</p>
+    </footer>
+
+    <script>
+        // Data Structure Based on Blueprint
+        const defaultItems = [
+            // Fase Pra-Nikah
+            { id: "kua", name: "Biaya KUA / Catatan Sipil", phase: "A. Pra-Nikah & Administrasi", tier: "wajib", cost: 600000, active: true, desc: "Gratis jika di KUA jam kerja." },
+            { id: "medcheck", name: "Premarital Medical Checkup", phase: "A. Pra-Nikah & Administrasi", tier: "rasional", cost: 2500000, active: true, desc: "Krusial untuk deteksi dini genetika." },
+            { id: "cincin", name: "Cincin Pernikahan", phase: "A. Pra-Nikah & Administrasi", tier: "wajib", cost: 6000000, active: true, desc: "Logam mulia bernilai investasi (Emas/Palladium)." },
+            { id: "mahar", name: "Mahar & Seserahan", phase: "A. Pra-Nikah & Administrasi", tier: "wajib", cost: 5000000, active: true, desc: "Fokus barang fungsional, batasi 5 kotak." },
+            
+            // Fase Hari-H
+            { id: "adat", name: "Prosesi Adat & Keagamaan Tambahan", phase: "B. Hari-H (Core Event)", tier: "opsional", cost: 10000000, active: true, desc: "Siraman, midodareni, mappacci, dll. Rawan bengkak, negosiasikan penyederhanaan dengan keluarga." },
+            { id: "venue", name: "Sewa Venue / Tempat", phase: "B. Hari-H (Core Event)", tier: "rasional", cost: 15000000, active: true, desc: "Cari tempat dg pencahayaan alami/intimate outdoor." },
+            { id: "catering", name: "Catering (Konsumsi)", phase: "B. Hari-H (Core Event)", tier: "wajib", cost: 0, active: true, desc: "Otomatis dihitung: (Undangan x 2 + 10%) x Rp100rb.", autoCalculate: true, perPax: 100000 },
+            { id: "dekorasi", name: "Dekorasi & Ambiance", phase: "B. Hari-H (Core Event)", tier: "rasional", cost: 12000000, active: true, desc: "Konsep minimalis, hindari bunga impor potong." },
+            { id: "mua", name: "MUA & Busana", phase: "B. Hari-H (Core Event)", tier: "rasional", cost: 8000000, active: true, desc: "Sewa busana, pilih MUA sesuai karakter wajah." },
+            { id: "dokumentasi", name: "Dokumentasi (Foto/Video)", phase: "B. Hari-H (Core Event)", tier: "rasional", cost: 7000000, active: true, desc: "Aset abadi, jangan pelit untuk fotografer pro." },
+            { id: "undangan_souvenir", name: "Undangan & Souvenir", phase: "B. Hari-H (Core Event)", tier: "opsional", cost: 3000000, active: true, desc: "Gunakan undangan digital. Souvenir yg fungsional." },
+            { id: "wo", name: "Wedding Organizer (WO)", phase: "B. Hari-H (Core Event)", tier: "rasional", cost: 6000000, active: true, desc: "Agar keluarga tidak stres di hari H." },
+            
+            // Fase Operasional
+            { id: "perizinan", name: "Perizinan & Keamanan", phase: "C. Operasional & Logistik", tier: "wajib", cost: 1500000, active: true, desc: "Parkir, satgas, koordinasi lingkungan." },
+            { id: "logistik", name: "Akomodasi Keluarga Inti", phase: "C. Operasional & Logistik", tier: "rasional", cost: 3000000, active: true, desc: "Transport/hotel jika venue jauh." }
+        ];
+
+        let state = {
+            tabungan: 100000000,
+            biayaHidup: 7000000,
+            undangan: 300,
+            items: JSON.parse(JSON.stringify(defaultItems)) // Deep copy
+        };
+
+        let myChart = null;
+
+        // Utilities
+        const formatRp = (num) => {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(num);
+        };
+
+        const getTierLabel = (tier) => {
+            if(tier === 'wajib') return '<span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded tier-wajib">Wajib</span>';
+            if(tier === 'rasional') return '<span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded tier-rasional">Rasional</span>';
+            return '<span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded tier-opsional">Opsional</span>';
+        };
+
+        // Render Functions
+        function renderItems() {
+            const container = document.getElementById('budget-container');
+            container.innerHTML = '';
+
+            const phases = [...new Set(state.items.map(item => item.phase))];
+
+            phases.forEach(phase => {
+                const phaseItems = state.items.filter(item => item.phase === phase);
+                
+                let html = `
+                    <div class="mb-8">
+                        <h3 class="text-lg font-bold text-slate-700 border-b border-slate-200 pb-2 mb-4">${phase}</h3>
+                        <div class="space-y-3">
+                `;
+
+                phaseItems.forEach(item => {
+                    const isAuto = item.autoCalculate;
+                    const val = isAuto ? calculateCatering() : item.cost;
+                    
+                    html += `
+                        <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center p-4 rounded-xl border ${item.active ? 'border-slate-200 bg-white shadow-sm' : 'border-slate-100 bg-slate-50 opacity-60'} transition-all duration-200">
+                            
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" id="check-${item.id}" class="w-5 h-5 text-teal-600 rounded focus:ring-teal-500 cursor-pointer" ${item.active ? 'checked' : ''} onchange="toggleItem('${item.id}', this.checked)">
+                            </div>
+                            
+                            <div class="flex-1 w-full">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <label for="check-${item.id}" class="font-semibold text-slate-800 cursor-pointer ${item.active ? '' : 'line-through text-slate-400'}">${item.name}</label>
+                                    ${getTierLabel(item.tier)}
+                                </div>
+                                <p class="text-xs text-slate-500">${item.desc}</p>
+                            </div>
+                            
+                            <div class="w-full sm:w-48 relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">Rp</span>
+                                <input type="number" id="input-${item.id}" 
+                                    class="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-300 text-right font-medium text-slate-700 focus:ring-2 focus:ring-teal-500 outline-none ${!item.active ? 'bg-slate-100' : ''}" 
+                                    value="${val}" 
+                                    min="0" step="50000"
+                                    ${isAuto ? 'readonly title="Dihitung otomatis berdasarkan jumlah undangan"' : ''}
+                                    ${!item.active ? 'disabled' : ''}
+                                    onchange="updateItemCost('${item.id}', this.value)">
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `</div></div>`;
+                container.innerHTML += html;
+            });
+        }
+
+        // Calculations
+        function calculateCatering() {
+            // Rumus: (Jumlah Undangan x 2 porsi) + 10% buffer
+            const porsi = (state.undangan * 2) * 1.10;
+            return Math.round(porsi * 100000); // Asumsi Rp100.000 per porsi standar
+        }
+
+        function calculateAll() {
+            // Update catering data internally
+            const cateringItem = state.items.find(i => i.id === 'catering');
+            if(cateringItem) cateringItem.cost = calculateCatering();
+
+            let totalVendor = 0;
+            const phaseTotals = {};
+
+            state.items.forEach(item => {
+                if (item.active) {
+                    totalVendor += item.cost;
+                    if(!phaseTotals[item.phase]) phaseTotals[item.phase] = 0;
+                    phaseTotals[item.phase] += item.cost;
+                }
+            });
+
+            const emergencyFund = totalVendor * 0.15;
+            const grandTotal = totalVendor + emergencyFund;
+            
+            const limitBudget = state.tabungan * 0.5;
+            const sisaTabungan = state.tabungan - grandTotal;
+            const targetJaringPengaman = state.biayaHidup * 3;
+
+            // Update DOM Elements
+            document.getElementById('emergency-fund-display').innerText = formatRp(emergencyFund);
+            document.getElementById('kpi-limit-budget').innerText = formatRp(limitBudget);
+            document.getElementById('kpi-estimasi-total').innerText = formatRp(grandTotal);
+            
+            // Cost per guest
+            const costPerGuest = state.undangan > 0 ? (grandTotal / state.undangan) : 0;
+            document.getElementById('kpi-cost-per-guest').innerText = formatRp(costPerGuest);
+
+            // Sisa Tabungan KPI
+            const sisaTabunganEl = document.getElementById('kpi-sisa-tabungan');
+            const cardSisaEl = document.getElementById('card-sisa-tabungan');
+            const sisaStatusEl = document.getElementById('kpi-sisa-status');
+            
+            sisaTabunganEl.innerText = formatRp(sisaTabungan);
+            
+            if (sisaTabungan < 0) {
+                sisaTabunganEl.className = "text-2xl font-bold text-red-600";
+                cardSisaEl.className = "bg-red-50 rounded-2xl p-6 shadow-sm border border-red-200 relative overflow-hidden";
+                sisaStatusEl.innerText = "⚠️ BAHAYA: Terancam Utang!";
+                sisaStatusEl.className = "text-xs font-bold mt-2 text-red-600";
+            } else {
+                sisaTabunganEl.className = "text-2xl font-bold text-slate-800";
+                cardSisaEl.className = "bg-white rounded-2xl p-6 shadow-sm border border-slate-200 relative overflow-hidden";
+                sisaStatusEl.innerText = "Aman setelah acara.";
+                sisaStatusEl.className = "text-xs font-medium mt-2 text-slate-500";
+            }
+
+            // Rule 1: Limit 50% Tabungan
+            const rule1Box = document.getElementById('rule-1');
+            const rule1Icon = document.getElementById('icon-rule-1');
+            if (grandTotal <= limitBudget) {
+                rule1Box.className = "flex items-start gap-4 p-4 rounded-xl border border-green-200 bg-green-50 transition-colors";
+                rule1Icon.innerHTML = '<i class="fa-solid fa-circle-check text-xl text-green-600"></i>';
+            } else {
+                rule1Box.className = "flex items-start gap-4 p-4 rounded-xl border border-red-200 bg-red-50 transition-colors";
+                rule1Icon.innerHTML = '<i class="fa-solid fa-circle-xmark text-xl text-red-600"></i>';
+            }
+
+            // Rule 2: Jaring Pengaman 3 Bulan
+            const rule2Box = document.getElementById('rule-2');
+            const rule2Icon = document.getElementById('icon-rule-2');
+            if (sisaTabungan >= targetJaringPengaman) {
+                rule2Box.className = "flex items-start gap-4 p-4 rounded-xl border border-green-200 bg-green-50 transition-colors";
+                rule2Icon.innerHTML = '<i class="fa-solid fa-circle-check text-xl text-green-600"></i>';
+            } else {
+                rule2Box.className = "flex items-start gap-4 p-4 rounded-xl border border-red-200 bg-red-50 transition-colors";
+                rule2Icon.innerHTML = '<i class="fa-solid fa-circle-xmark text-xl text-red-600"></i>';
+            }
+
+            updateSummaryAndChart(phaseTotals, emergencyFund, grandTotal);
+        }
+
+        function updateSummaryAndChart(phaseTotals, emergencyFund, grandTotal) {
+            // Update Summary List
+            const summaryDiv = document.getElementById('summary-phases');
+            summaryDiv.innerHTML = '';
+            
+            let labels = [];
+            let dataPoints = [];
+            let colors = ['#0f766e', '#14b8a6', '#5eead4', '#f87171']; // Teal shades + red for emergency
+            let cIdx = 0;
+
+            for (const [phase, cost] of Object.entries(phaseTotals)) {
+                labels.push(phase.substring(3)); // remove "A. "
+                dataPoints.push(cost);
+                summaryDiv.innerHTML += `
+                    <div class="flex justify-between items-center text-slate-600">
+                        <span class="truncate pr-2"><span class="w-2 h-2 inline-block rounded-full mr-2" style="background-color: ${colors[cIdx]}"></span>${phase.substring(3)}</span>
+                        <span class="font-medium">${formatRp(cost)}</span>
+                    </div>
+                `;
+                cIdx++;
+            }
+            
+            // Add Emergency Fund to chart and summary
+            labels.push('Dana Darurat');
+            dataPoints.push(emergencyFund);
+            summaryDiv.innerHTML += `
+                    <div class="flex justify-between items-center text-red-600 mt-2 pt-2 border-t border-slate-200">
+                        <span class="truncate pr-2"><span class="w-2 h-2 inline-block rounded-full mr-2 bg-red-400"></span>Dana Darurat (15%)</span>
+                        <span class="font-medium">${formatRp(emergencyFund)}</span>
+                    </div>
+                `;
+
+            document.getElementById('summary-grand-total').innerText = formatRp(grandTotal);
+
+            // Render Chart.js
+            const ctx = document.getElementById('budgetChart').getContext('2d');
+            
+            if (myChart) {
+                myChart.data.labels = labels;
+                myChart.data.datasets[0].data = dataPoints;
+                myChart.update();
+            } else {
+                myChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: dataPoints,
+                            backgroundColor: colors,
+                            borderWidth: 0,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 20,
+                                    font: { family: "'Plus Jakarta Sans', sans-serif" }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.label || '';
+                                        if (label) { label += ': '; }
+                                        if (context.parsed !== null) {
+                                            label += formatRp(context.parsed);
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        cutout: '70%'
+                    }
+                });
+            }
+        }
+
+        // Global Event Listeners
+        document.getElementById('input-tabungan').addEventListener('input', (e) => {
+            state.tabungan = parseInt(e.target.value) || 0;
+            calculateAll();
+        });
+
+        document.getElementById('input-biaya-hidup').addEventListener('input', (e) => {
+            state.biayaHidup = parseInt(e.target.value) || 0;
+            calculateAll();
+        });
+
+        document.getElementById('input-undangan').addEventListener('input', (e) => {
+            state.undangan = parseInt(e.target.value) || 0;
+            // Need to re-render to update the disabled catering input field visually
+            renderItems(); 
+            calculateAll();
+        });
+
+        // Dynamic Event Listeners
+        window.toggleItem = function(id, isActive) {
+            const item = state.items.find(i => i.id === id);
+            if(item) {
+                item.active = isActive;
+                renderItems(); // Re-render to toggle disable states visually
+                calculateAll();
+            }
+        };
+
+        window.updateItemCost = function(id, value) {
+            const item = state.items.find(i => i.id === id);
+            if(item) {
+                item.cost = parseInt(value) || 0;
+                calculateAll();
+            }
+        };
+
+        window.resetToDefault = function() {
+            state.items = JSON.parse(JSON.stringify(defaultItems));
+            document.getElementById('input-tabungan').value = 100000000;
+            document.getElementById('input-biaya-hidup').value = 7000000;
+            document.getElementById('input-undangan').value = 300;
+            state.tabungan = 100000000;
+            state.biayaHidup = 7000000;
+            state.undangan = 300;
+            
+            renderItems();
+            calculateAll();
+        };
+
+        window.downloadPDF = function() {
+            const btn = document.getElementById('btn-download');
+            const actionButtons = document.getElementById('action-buttons');
+            const resetBtn = document.getElementById('btn-reset');
+            
+            // Simpan state original
+            const originalBtnHtml = btn.innerHTML;
+            
+            // Ubah state menjadi loading
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses PDF...';
+            btn.disabled = true;
+            
+            // Sembunyikan elemen yang tidak perlu di PDF dengan 'visibility' agar layout tidak rusak/bergeser
+            actionButtons.style.visibility = 'hidden';
+            if(resetBtn) resetBtn.style.visibility = 'hidden';
+
+            // Sedikit delay agar UI browser sempat melakukan render loading dan menyembunyikan tombol
+            setTimeout(() => {
+                const element = document.body;
+                
+                // Ambil ukuran real dari halaman saat ini
+                const elementHeight = element.scrollHeight; 
+                // Lebar desktop standar dalam mm (~1366px -> ~361mm pada 96 DPI)
+                // Kita gunakan konstanta agar PDF berbentuk memanjang tanpa terpotong
+                const pdfWidth = 360; 
+                // Hitung proporsi tinggi dalam satuan mm
+                const pdfHeight = (elementHeight * pdfWidth) / element.scrollWidth; 
+
+                const opt = {
+                    margin:       [10, 10, 10, 10], // Margin atas, kiri, bawah, kanan (mm)
+                    filename:     'Simulasi_Budget_Pernikahan_GenZ.pdf',
+                    image:        { type: 'jpeg', quality: 1 },
+                    html2canvas:  { 
+                        scale: 2, 
+                        useCORS: true, 
+                        windowWidth: 1366, // Mengunci lebar seperti tampilan PC
+                        scrollY: 0
+                    },
+                    // KUNCI UTAMA: Kita berikan dimensi custom array [width, height] mengikuti panjang dokumen!
+                    jsPDF:        { 
+                        unit: 'mm', 
+                        format: [pdfWidth, pdfHeight + 20], // +20mm buffer bawah agar aman
+                        orientation: 'portrait' 
+                    } 
+                };
+
+                html2pdf().set(opt).from(element).save().then(() => {
+                    // Kembalikan UI ke semula setelah PDF berhasil diunduh
+                    btn.innerHTML = originalBtnHtml;
+                    btn.disabled = false;
+                    actionButtons.style.visibility = 'visible';
+                    if(resetBtn) resetBtn.style.visibility = 'visible';
+                });
+            }, 300);
+        };
+
+        // Initialize App
+        window.onload = () => {
+            renderItems();
+            calculateAll();
+        };
+
+    </script>
+</body>
+</html>
