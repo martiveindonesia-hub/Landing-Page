@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Checklist - WO Pro Minimalist</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --text-light: #9ca3af;
+            --border-color: #e5e7eb;
+            --accent: #111827; /* Black accent for minimalism */
+            --success: #10b981;
+            --danger: #ef4444;
+            --font-family: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 40px 20px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .data-panel {
+            background: #f9fafb;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .data-panel-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .data-panel select, .data-panel input[type="file"] {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: white;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .btn-small {
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: white;
+            color: var(--text-main);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-small:hover {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+        }
+
+        .btn-small.dark {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .btn-small.dark:hover {
+            background: #374151;
+        }
+
+        .header {
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 400;
+            letter-spacing: -0.5px;
+            margin-bottom: 20px;
+        }
+
+        .client-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .input-group label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .minimal-input {
+            padding: 6px 0;
+            border: none;
+            border-bottom: 1px solid transparent;
+            font-size: 15px;
+            color: var(--text-main);
+            background: transparent;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+
+        .minimal-input:hover, .minimal-input:focus {
+            border-bottom-color: var(--border-color);
+        }
+
+        .progress-wrapper {
+            margin-top: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .progress-bar-bg {
+            flex-grow: 1;
+            height: 4px;
+            background: var(--border-color);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .phase-section {
+            margin-bottom: 50px;
+        }
+
+        .phase-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .phase-header h2 {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .timeline-badge {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .task-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .task-table th {
+            text-align: left;
+            padding: 10px 8px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-light);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .task-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #f3f4f6;
+            vertical-align: top;
+            transition: background 0.2s;
+        }
+
+        .task-table tr:hover td {
+            background-color: #fafafa;
+        }
+
+        .task-table tr.completed td {
+            opacity: 0.6;
+        }
+
+        .task-table tr.completed .task-name {
+            text-decoration: line-through;
+        }
+
+        /* Checkbox */
+        .custom-checkbox {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: var(--accent);
+            margin-top: 2px;
+        }
+
+        /* Editable content */
+        [contenteditable="true"] {
+            outline: none;
+            padding: 2px;
+            border-radius: 4px;
+        }
+
+        [contenteditable="true"]:hover, [contenteditable="true"]:focus {
+            background: #f3f4f6;
+        }
+
+        [contenteditable="true"]:empty:before {
+            content: attr(data-placeholder);
+            color: var(--text-light);
+            pointer-events: none;
+        }
+
+        .task-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .task-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .table-input {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid transparent;
+            font-size: 13px;
+            background: transparent;
+            outline: none;
+            color: var(--text-muted);
+        }
+
+        .table-input:hover, .table-input:focus {
+            background: #f9fafb;
+            border-color: var(--border-color);
+            border-radius: 4px;
+        }
+
+        .col-check { width: 4%; text-align: center; }
+        .col-task { width: 30%; }
+        .col-date { width: 14%; }
+        .col-pic { width: 14%; }
+        .col-vendor { width: 16%; }
+        .col-notes { width: 22%; }
+        .col-action { width: 30px; text-align: center; }
+
+        .btn-icon {
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            opacity: 0; /* Hidden by default for minimalism */
+            transition: all 0.2s;
+        }
+
+        .task-table tr:hover .btn-icon {
+            opacity: 1; /* Show on row hover */
+        }
+
+        .btn-icon:hover {
+            color: var(--danger);
+            background: #fee2e2;
+        }
+
+        .add-task-wrapper {
+            margin-top: 10px;
+        }
+
+        .btn-add-task {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 0;
+        }
+
+        .btn-add-task:hover {
+            color: var(--text-main);
+        }
+
+        .main-actions {
+            margin-top: 60px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .btn-large {
+            padding: 12px 24px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .btn-large:hover {
+            background: #374151;
+        }
+
+        /* Print Media */
+        @media print {
+            body { padding: 0; background: white; }
+            .data-panel, .col-action, .add-task-wrapper, .main-actions { display: none !important; }
+            .col-task { width: 32%; }
+            .col-notes { width: 24%; }
+            .minimal-input { border: none !important; }
+            .table-input { border: none !important; background: transparent !important; padding: 0; }
+            .phase-section { page-break-inside: avoid; }
+            .progress-fill { background: #000 !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="data-panel" id="dataPanel">
+    <div class="data-panel-group">
+        <select id="savedProjectsDropdown">
+            <option value="">-- Pilih Project Tersimpan --</option>
+        </select>
+        <button class="btn-small" onclick="loadProjectFromBrowser()">Muat Data</button>
+        <button class="btn-small dark" onclick="saveProjectToBrowser()">Simpan ke Browser</button>
+    </div>
+    <div class="data-panel-group">
+        <button class="btn-small" onclick="exportToJSON()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Download JSON
+        </button>
+        <div style="position: relative; overflow: hidden; display: inline-block;">
+            <button class="btn-small">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                Upload JSON
+            </button>
+            <input type="file" id="jsonFileInput" accept=".json" style="position: absolute; top: 0; right: 0; min-width: 100%; min-height: 100%; font-size: 100px; text-align: right; filter: alpha(opacity=0); opacity: 0; outline: none; cursor: inherit; display: block;" onchange="importFromJSON(event)">
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="header">
+        <h1>Master Checklist Pernikahan</h1>
+        
+        <div class="client-grid">
+            <div class="input-group">
+                <label>Nama Pengantin</label>
+                <input type="text" id="client-nama" class="minimal-input" placeholder="Contoh: Romeo & Juliet">
+            </div>
+            <div class="input-group">
+                <label>Tanggal Acara</label>
+                <input type="date" id="client-tanggal" class="minimal-input">
+            </div>
+            <div class="input-group">
+                <label>Lokasi / Venue</label>
+                <input type="text" id="client-lokasi" class="minimal-input" placeholder="Gedung / Hotel / Outdoor...">
+            </div>
+            <div class="input-group">
+                <label>Koordinator WO</label>
+                <input type="text" id="client-wo" class="minimal-input" placeholder="Nama Anda / Tim">
+            </div>
+        </div>
+
+        <div class="progress-wrapper">
+            <span id="progressText">0% Selesai</span>
+            <div class="progress-bar-bg">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="phase-section">
+        <div class="phase-header">
+            <h2>Fase 1: Persiapan Dasar</h2>
+            <span class="timeline-badge">6-12 Bulan Sebelum H</span>
+        </div>
+        <table class="task-table">
+            <thead>
+                <tr>
+                    <th class="col-check">✔</th>
+                    <th class="col-task">Tugas</th>
+                    <th class="col-date">Deadline</th>
+                    <th class="col-pic">PIC</th>
+                    <th class="col-vendor">Vendor</th>
+                    <th class="col-notes">Catatan</th>
+                    <th class="col-action"></th>
+                </tr>
+            </thead>
+            <tbody id="tbody-phase-1">
+                <tr>
+                    <td class="col-check"><input type="checkbox" class="custom-checkbox" onchange="updateProgress()"></td>
+                    <td class="col-task">
+                        <div class="task-name" contenteditable="true" data-placeholder="Ketik tugas...">Penentuan Konsep & Budget</div>
+                        <div class="task-desc" contenteditable="true" data-placeholder="Deskripsi...">Tema warna, adat, dan RAB awal.</div>
+                    </td>
+                    <td class="col-date"><input type="date" class="table-input"></td>
+                    <td class="col-pic"><input type="text" class="table-input" placeholder="Nama PIC"></td>
+                    <td class="col-vendor"><input type="text" class="table-input" placeholder="-"></td>
+                    <td class="col-notes"><input type="text" class="table-input" placeholder="Catatan..."></td>
+                    <td class="col-action"><button class="btn-icon" onclick="deleteTask(this)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></td>
+                </tr>
+                <tr>
+                    <td class="col-check"><input type="checkbox" class="custom-checkbox" onchange="updateProgress()"></td>
+                    <td class="col-task">
+                        <div class="task-name" contenteditable="true" data-placeholder="Ketik tugas...">Survey & DP Venue</div>
+                        <div class="task-desc" contenteditable="true" data-placeholder="Deskripsi...">Booking tempat acara dan akad.</div>
+                    </td>
+                    <td class="col-date"><input type="date" class="table-input"></td>
+                    <td class="col-pic"><input type="text" class="table-input" placeholder="Nama PIC"></td>
+                    <td class="col-vendor"><input type="text" class="table-input" placeholder="Venue"></td>
+                    <td class="col-notes"><input type="text" class="table-input" placeholder="Catatan..."></td>
+                    <td class="col-action"><button class="btn-icon" onclick="deleteTask(this)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="add-task-wrapper">
+            <button class="btn-add-task" onclick="addTask('tbody-phase-1')">+ Tambah Tugas</button>
+        </div>
+    </div>
+
+    <div class="phase-section">
+        <div class="phase-header">
+            <h2>Fase 2: Fiksasi Vendor</h2>
+            <span class="timeline-badge">4-6 Bulan Sebelum H</span>
+        </div>
+        <table class="task-table">
+            <thead>
+                <tr>
+                    <th class="col-check">✔</th>
+                    <th class="col-task">Tugas</th>
+                    <th class="col-date">Deadline</th>
+                    <th class="col-pic">PIC</th>
+                    <th class="col-vendor">Vendor</th>
+                    <th class="col-notes">Catatan</th>
+                    <th class="col-action"></th>
+                </tr>
+            </thead>
+            <tbody id="tbody-phase-2">
+                <tr>
+                    <td class="col-check"><input type="checkbox" class="custom-checkbox" onchange="updateProgress()"></td>
+                    <td class="col-task">
+                        <div class="task-name" contenteditable="true">Dekorasi & Katering</div>
+                        <div class="task-desc" contenteditable="true">Pilih konsep dan jadwal test food.</div>
+                    </td>
+                    <td class="col-date"><input type="date" class="table-input"></td>
+                    <td class="col-pic"><input type="text" class="table-input" placeholder="Nama PIC"></td>
+                    <td class="col-vendor"><input type="text" class="table-input" placeholder="Vendor"></td>
+                    <td class="col-notes"><input type="text" class="table-input" placeholder="Catatan..."></td>
+                    <td class="col-action"><button class="btn-icon" onclick="deleteTask(this)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></td>
+                </tr>
+                <tr>
+                    <td class="col-check"><input type="checkbox" class="custom-checkbox" onchange="updateProgress()"></td>
+                    <td class="col-task">
+                        <div class="task-name" contenteditable="true">MUA, Busana & Dokumentasi</div>
+                        <div class="task-desc" contenteditable="true">Booking MUA, foto, video, dan jadwal prewed.</div>
+                    </td>
+                    <td class="col-date"><input type="date" class="table-input"></td>
+                    <td class="col-pic"><input type="text" class="table-input" placeholder="Nama PIC"></td>
+                    <td class="col-vendor"><input type="text" class="table-input" placeholder="Vendor"></td>
+                    <td class="col-notes"><input type="text" class="table-input" placeholder="Catatan..."></td>
+                    <td class="col-action"><button class="btn-icon" onclick="deleteTask(this)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="add-task-wrapper">
+            <button class="btn-add-task" onclick="addTask('tbody-phase-2')">+ Tambah Tugas</button>
+        </div>
+    </div>
+
+    <div class="phase-section">
+        <div class="phase-header">
+            <h2>Fase 3: Detail & Administrasi</h2>
+            <span class="timeline-badge">2-3 Bulan Sebelum H</span>
+        </div>
+        <table class="task-table">
+            <thead>
+                <tr>
+                    <th class="col-check">✔</th>
+                    <th class="col-task">Tugas</th>
+                    <th class="col-date">Deadline</th>
+                    <th class="col-pic">PIC</th>
+                    <th class="col-vendor">Vendor</th>
+                    <th class="col-notes">Catatan</th>
+                    <th class="col-action"></th>
+                </tr>
+            </thead>
+            <tbody id="tbody-phase-3">
+                <tr>
+                    <td class="col-check"><input type="checkbox" class="custom-checkbox" onchange="updateProgress()"></td>
+                    <td class="col-task">
+                        <div class="task-name" contenteditable="true">Pendaftaran KUA/Sipil</div>
+                        <div class="task-desc" contenteditable="true">Pengurusan berkas legal pernikahan.</div>
+                    </td>
+                    <td class="col-date"><input type="date" class="table-input"></td>
+                    <td class="col-pic"><input type="text" class="table-input" placeholder="Nama PIC"></td>
+                    <td class="col-vendor"><input type="text" class="table-input" placeholder="-"></td>
+                    <td class="col-notes"><input type="text" class="table-input" placeholder="Catatan..."></td>
+                    <td class="col-action"><button class="btn-icon" onclick="deleteTask(this)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></td>
+                </tr>
+                <tr>
+                    <td class="col-check"><input type="checkbox" class="custom-checkbox" onchange="updateProgress()"></td>
+                    <td class="col-task">
+                        <div class="task-name" contenteditable="true">Undangan & Souvenir</div>
+                        <div class="task-desc" contenteditable="true">Cetak fisik, e-invitation, dan pesan souvenir.</div>
+                    </td>
+                    <td class="col-date"><input type="date" class="table-input"></td>
+                    <td class="col-pic"><input type="text" class="table-input" placeholder="Nama PIC"></td>
+                    <td class="col-vendor"><input type="text" class="table-input" placeholder="Vendor"></td>
+                    <td class="col-notes"><input type="text" class="table-input" placeholder="Catatan..."></td>
+                    <td class="col-action"><button class="btn-icon" onclick="deleteTask(this)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="add-task-wrapper">
+            <button class="btn-add-task" onclick="addTask('tbody-phase-3')">+ Tambah Tugas</button>
+        </div>
+    </div>
+
+    <div class="phase-section">
+        <div class="phase-header">
+            <h2>Fase 4: Finalisasi (TM & Gladi)</h2>
+            <span class="timeline-badge">1 Bulan - H-1</span>
+        </div>
+        <table class="task-table">
+            <thead>
+                <tr>
+                    <th class="col-check">✔</th>
+                    <th class="col-task">Tugas</th>
+                    <th class="col-date">Deadline</th>
+                    <th class="col-pic">PIC</th>
+                    <th class="col-vendor">Vendor</th>
+                    <th class="col-notes">Catatan</th>
+                    <th class="col-action"></th>
+                </tr>
+            </thead>
+            <tbody id="tbody-phase-4">
+                <tr>
+                    <td class="col-check"><input type="checkbox" class="custom-checkbox" onchange="updateProgress()"></td>
+                    <td class="col-task">
+                        <div class="task-name" contenteditable="true">Technical Meeting Vendor</div>
+                        <div class="task-desc" contenteditable="true">Rapat akhir rundown dengan semua pihak.</div>
+                    </td>
+                    <td class="col-date"><input type="date" class="table-input"></td>
+                    <td class="col-pic"><input type="text" class="table-input" placeholder="Nama PIC"></td>
+                    <td class="col-vendor"><input type="text" class="table-input" placeholder="Semua Vendor"></td>
+                    <td class="col-notes"><input type="text" class="table-input" placeholder="Catatan..."></td>
+                    <td class="col-action"><button class="btn-icon" onclick="deleteTask(this)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="add-task-wrapper">
+            <button class="btn-add-task" onclick="addTask('tbody-phase-4')">+ Tambah Tugas</button>
+        </div>
+    </div>
+
+    <!-- Main Actions -->
+    <div class="main-actions">
+        <button class="btn-large" onclick="window.print()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            Cetak ke PDF
+        </button>
+    </div>
+
+</div>
+
+<script>
+    // --- BASIC UI LOGIC ---
+    function updateProgress() {
+        const checkboxes = document.querySelectorAll('.custom-checkbox');
+        const checkedCheckboxes = document.querySelectorAll('.custom-checkbox:checked');
+        const total = checkboxes.length;
+        const checked = checkedCheckboxes.length;
+        const percentage = total === 0 ? 0 : Math.round((checked / total) * 100);
+        
+        document.getElementById('progressFill').style.width = percentage + '%';
+        document.getElementById('progressText').textContent = percentage + '% Selesai';
+
+        // Toggle visual style
+        checkboxes.forEach(cb => {
+            const row = cb.closest('tr');
+            if(cb.checked) row.classList.add('completed');
+            else row.classList.remove('completed');
+        });
+    }
+
+    function deleteTask(btn) {
+        const row = btn.closest('tr');
+        row.remove();
+        updateProgress();
+    }
+
+    function addTask(tbodyId) {
+        const tbody = document.getElementById(tbodyId);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="col-check"><input type="checkbox" class="custom-checkbox" onchange="updateProgress()"></td>
+            <td class="col-task">
+                <div class="task-name" contenteditable="true" data-placeholder="Nama Tugas...">Tugas Baru</div>
+                <div class="task-desc" contenteditable="true" data-placeholder="Deskripsi tugas...">Detail...</div>
+            </td>
+            <td class="col-date"><input type="date" class="table-input"></td>
+            <td class="col-pic"><input type="text" class="table-input" placeholder="Nama PIC"></td>
+            <td class="col-vendor"><input type="text" class="table-input" placeholder="Vendor"></td>
+            <td class="col-notes"><input type="text" class="table-input" placeholder="Catatan..."></td>
+            <td class="col-action"><button class="btn-icon" onclick="deleteTask(this)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></td>
+        `;
+        tbody.appendChild(tr);
+        updateProgress();
+        tr.querySelector('.task-name').focus();
+    }
+
+    // --- JSON DATA MANAGEMENT LOGIC ---
+
+    // Mengambil semua state UI menjadi JSON Object
+    function getAppState() {
+        const state = {
+            clientInfo: {
+                nama: document.getElementById('client-nama').value,
+                tanggal: document.getElementById('client-tanggal').value,
+                lokasi: document.getElementById('client-lokasi').value,
+                wo: document.getElementById('client-wo').value
+            },
+            phases: []
+        };
+
+        const phaseIds = ['tbody-phase-1', 'tbody-phase-2', 'tbody-phase-3', 'tbody-phase-4'];
+        phaseIds.forEach(id => {
+            const tbody = document.getElementById(id);
+            if(!tbody) return;
+            const tasks = [];
+            tbody.querySelectorAll('tr').forEach(tr => {
+                tasks.push({
+                    checked: tr.querySelector('.custom-checkbox').checked,
+                    name: tr.querySelector('.task-name').innerText,
+                    desc: tr.querySelector('.task-desc').innerText,
+                    date: tr.querySelector('.col-date input').value,
+                    pic: tr.querySelector('.col-pic input').value,
+                    vendor: tr.querySelector('.col-vendor input').value,
+                    notes: tr.querySelector('.col-notes input').value
+                });
+            });
+            state.phases.push({ phaseId: id, tasks: tasks });
+        });
+        return state;
+    }
+
+    // Merender JSON Object kembali ke UI
+    function loadAppState(state) {
+        if(!state) return;
+        
+        // Load Client Info
+        if(state.clientInfo) {
+            document.getElementById('client-nama').value = state.clientInfo.nama || '';
+            document.getElementById('client-tanggal').value = state.clientInfo.tanggal || '';
+            document.getElementById('client-lokasi').value = state.clientInfo.lokasi || '';
+            document.getElementById('client-wo').value = state.clientInfo.wo || '';
+        }
+
+        // Load Tasks
+        if(state.phases) {
+            state.phases.forEach(phase => {
+                const tbody = document.getElementById(phase.phaseId);
+                if(tbody) {
+                    tbody.innerHTML = ''; // Kosongkan tabel saat ini
+                    phase.tasks.forEach(task => {
+                        const tr = document.createElement('tr');
+                        if(task.checked) tr.classList.add('completed');
+                        tr.innerHTML = `
+                            <td class="col-check"><input type="checkbox" class="custom-checkbox" onchange="updateProgress()" ${task.checked ? 'checked' : ''}></td>
+                            <td class="col-task">
+                                <div class="task-name" contenteditable="true" data-placeholder="Nama Tugas...">${task.name}</div>
+                                <div class="task-desc" contenteditable="true" data-placeholder="Deskripsi tugas...">${task.desc}</div>
+                            </td>
+                            <td class="col-date"><input type="date" class="table-input" value="${task.date}"></td>
+                            <td class="col-pic"><input type="text" class="table-input" placeholder="Nama PIC" value="${task.pic}"></td>
+                            <td class="col-vendor"><input type="text" class="table-input" placeholder="Vendor" value="${task.vendor}"></td>
+                            <td class="col-notes"><input type="text" class="table-input" placeholder="Catatan..." value="${task.notes}"></td>
+                            <td class="col-action"><button class="btn-icon" onclick="deleteTask(this)"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            });
+        }
+        updateProgress();
+    }
+
+    // --- LOCAL STORAGE FUNCTIONS ---
+    function updateDropdown() {
+        const dropdown = document.getElementById('savedProjectsDropdown');
+        dropdown.innerHTML = '<option value="">-- Pilih Project Tersimpan --</option>';
+        const savedData = JSON.parse(localStorage.getItem('wo_projects')) || {};
+        for(const projectName in savedData) {
+            const option = document.createElement('option');
+            option.value = projectName;
+            option.textContent = projectName;
+            dropdown.appendChild(option);
+        }
+    }
+
+    function saveProjectToBrowser() {
+        const clientName = document.getElementById('client-nama').value.trim();
+        if(!clientName) {
+            alert("Harap isi 'Nama Pengantin' terlebih dahulu sebagai nama project!");
+            return;
+        }
+        
+        const state = getAppState();
+        const savedData = JSON.parse(localStorage.getItem('wo_projects')) || {};
+        savedData[clientName] = state;
+        localStorage.setItem('wo_projects', JSON.stringify(savedData));
+        
+        alert(`Data project "${clientName}" berhasil disimpan ke browser!`);
+        updateDropdown();
+        document.getElementById('savedProjectsDropdown').value = clientName;
+    }
+
+    function loadProjectFromBrowser() {
+        const selectedProject = document.getElementById('savedProjectsDropdown').value;
+        if(!selectedProject) {
+            alert("Silakan pilih project dari dropdown terlebih dahulu.");
+            return;
+        }
+
+        const savedData = JSON.parse(localStorage.getItem('wo_projects')) || {};
+        const state = savedData[selectedProject];
+        if(state) {
+            loadAppState(state);
+        }
+    }
+
+    // --- JSON EXPORT / IMPORT FUNCTIONS ---
+    function exportToJSON() {
+        const state = getAppState();
+        const clientName = state.clientInfo.nama || "TanpaNama";
+        const jsonStr = JSON.stringify(state, null, 2);
+        
+        const blob = new Blob([jsonStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `WO-Checklist-${clientName.replace(/\s+/g, '-')}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function importFromJSON(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const state = JSON.parse(e.target.result);
+                loadAppState(state);
+                // Reset file input so same file can be uploaded again if needed
+                document.getElementById('jsonFileInput').value = '';
+            } catch (err) {
+                alert("File JSON tidak valid atau rusak!");
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+        updateProgress();
+        updateDropdown();
+    });
+
+</script>
+</body>
+</html>
