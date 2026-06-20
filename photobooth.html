@@ -66,6 +66,7 @@
     <!-- Flash Effect & Countdown Overlay -->
     <div id="flashEffect" class="absolute inset-0 bg-white opacity-0 transition-opacity duration-150 z-[5] pointer-events-none"></div>
     <div id="countdownOverlay" class="absolute inset-0 bg-black/40 backdrop-blur-sm hidden flex-col items-center justify-center z-[5] pointer-events-none">
+        <div id="sequenceBadge" class="bg-white text-black px-5 py-2 rounded-full font-bold text-sm md:text-lg mb-6 shadow-xl hidden">Foto 1 / 3</div>
         <span id="countdownNumber" class="text-white text-[150px] md:text-[250px] font-black drop-shadow-[0_0_40px_rgba(255,255,255,0.5)] tabular-nums">3</span>
     </div>
 
@@ -74,8 +75,11 @@
         
         <!-- HEADER TOP BAR -->
         <header class="glass-panel rounded-2xl px-5 py-4 flex justify-between items-center pointer-events-auto">
-            <div class="flex items-center gap-4">
-                <div class="bg-white/20 p-2 rounded-xl border border-white/30 backdrop-blur-md">
+            <div class="flex items-center gap-3 md:gap-4">
+                <button onclick="toggleMenu()" class="glass-button p-2.5 rounded-xl text-white" title="Menu Mode">
+                    <i data-lucide="menu" class="w-5 h-5 md:w-6 md:h-6"></i>
+                </button>
+                <div class="bg-white/20 p-2 rounded-xl border border-white/30 backdrop-blur-md hidden md:block">
                     <i data-lucide="camera" class="w-6 h-6 text-white" id="defaultLogoIcon"></i>
                     <img id="appHeaderLogo" class="w-8 h-8 object-cover hidden rounded-lg" src="">
                 </div>
@@ -88,7 +92,7 @@
                 <button id="fullscreenBtn" class="glass-button p-3 rounded-xl hidden md:flex" title="Layar Penuh">
                     <i data-lucide="maximize" class="w-5 h-5 text-white"></i>
                 </button>
-                <button onclick="openModal('settingsModal')" class="glass-button p-3 rounded-xl" title="Pengaturan">
+                <button id="settingsBtnHeader" onclick="openModal('settingsModal')" class="glass-button p-3 rounded-xl" title="Pengaturan">
                     <i data-lucide="settings" class="w-5 h-5 text-white"></i>
                 </button>
                 <button onclick="toggleGallery()" class="glass-button px-4 py-3 rounded-xl flex items-center gap-2 bg-white/20 font-semibold" title="Buka Galeri">
@@ -111,6 +115,12 @@
                     <div class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/20 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </button>
             </div>
+
+            <!-- NEW: MODE SELECTOR -->
+            <button id="modeBtn" class="w-full md:w-36 h-[60px] glass-button rounded-2xl flex items-center justify-center gap-2 font-bold text-sm bg-white/10 hover:bg-white/20 transition-all">
+                <i id="modeIcon" data-lucide="scan" class="w-5 h-5 text-white"></i> 
+                <span id="modeText" class="text-white">1 Foto</span>
+            </button>
 
             <div class="w-full md:w-40 h-[60px]">
                 <select id="timerSelect" class="w-full h-full glass-input rounded-2xl px-4 text-sm font-bold appearance-none text-center cursor-pointer">
@@ -142,6 +152,42 @@
                 <i data-lucide="camera-off" class="w-16 h-16 mb-4 opacity-50"></i>
                 <p class="font-medium text-sm text-center">Jepret foto pertamamu<br>sekarang!</p>
             </div>
+        </div>
+    </div>
+
+    <!-- LAYER 3: APP MENU DRAWER (SLIDE FROM LEFT) -->
+    <div id="menuDrawer" class="fixed top-0 left-0 h-full w-[85%] md:w-80 glass-panel border-r border-white/20 shadow-2xl z-40 transform -translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col">
+        <div class="p-6 border-b border-white/10 flex justify-between items-center bg-black/20">
+            <h3 class="font-bold text-white tracking-widest text-lg flex items-center gap-3">
+                <i data-lucide="layout-grid" class="w-5 h-5"></i> MODE APLIKASI
+            </h3>
+            <button onclick="toggleMenu()" class="glass-button p-2 rounded-full text-white/70 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        
+        <div class="p-5 space-y-3 flex-1 overflow-y-auto">
+            <button onclick="changeAppMode('instan')" id="btnModeInstan" class="w-full text-left p-4 rounded-2xl glass-button flex items-center gap-4 hover:bg-white/20 transition-all border-transparent">
+                <div class="bg-blue-500/20 p-3 rounded-xl"><i data-lucide="zap" class="text-blue-400"></i></div>
+                <div>
+                    <div class="font-bold text-white">Photobooth Instan</div>
+                    <div class="text-[10px] text-white/60">Cepat, bersih tanpa frame/logo</div>
+                </div>
+            </button>
+            <button onclick="changeAppMode('custom')" id="btnModeCustom" class="w-full text-left p-4 rounded-2xl glass-button flex items-center gap-4 hover:bg-white/20 transition-all border-white/50 bg-white/10">
+                <div class="bg-purple-500/20 p-3 rounded-xl"><i data-lucide="palette" class="text-purple-400"></i></div>
+                <div>
+                    <div class="font-bold text-white">Photobooth Custom</div>
+                    <div class="text-[10px] text-white/60">Dengan frame kustom & judul</div>
+                </div>
+            </button>
+            <button onclick="changeAppMode('video')" id="btnModeVideo" class="w-full text-left p-4 rounded-2xl glass-button flex items-center gap-4 hover:bg-white/20 transition-all border-transparent">
+                <div class="bg-red-500/20 p-3 rounded-xl"><i data-lucide="video" class="text-red-400"></i></div>
+                <div>
+                    <div class="font-bold text-white">Mode Video</div>
+                    <div class="text-[10px] text-white/60">Rekam momen bergerak</div>
+                </div>
+            </button>
         </div>
     </div>
 
@@ -203,6 +249,25 @@
                     </div>
                 </div>
 
+                <!-- Orientasi -->
+                <div>
+                    <label class="block text-[10px] font-bold text-white/50 mb-2 uppercase tracking-wider">Orientasi Kamera</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="orientation" value="auto" checked class="hidden peer">
+                            <div class="text-center py-2.5 rounded-xl border border-white/20 peer-checked:bg-white peer-checked:text-black text-white/50 font-bold text-xs transition-all">Auto</div>
+                        </label>
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="orientation" value="portrait" class="hidden peer">
+                            <div class="text-center py-2.5 rounded-xl border border-white/20 peer-checked:bg-white peer-checked:text-black text-white/50 font-bold text-xs transition-all">Portrait</div>
+                        </label>
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="orientation" value="landscape" class="hidden peer">
+                            <div class="text-center py-2.5 rounded-xl border border-white/20 peer-checked:bg-white peer-checked:text-black text-white/50 font-bold text-xs transition-all">Landscape</div>
+                        </label>
+                    </div>
+                </div>
+
                 <!-- Toggles -->
                 <div class="space-y-2">
                     <div class="flex items-center justify-between p-3.5 bg-white/5 rounded-xl border border-white/10">
@@ -252,6 +317,7 @@
         
         <div class="w-full h-[65vh] flex justify-center items-center mt-10">
             <img id="previewImage" src="" class="max-w-full max-h-full object-contain rounded-2xl shadow-[0_0_40px_rgba(255,255,255,0.1)] border border-white/20">
+            <video id="previewVideo" src="" controls autoplay loop class="max-w-full max-h-full object-contain rounded-2xl shadow-[0_0_40px_rgba(255,255,255,0.1)] border border-white/20 hidden"></video>
         </div>
         
         <div class="absolute bottom-0 w-full p-6 lg:p-10 flex flex-wrap justify-center gap-4">
@@ -282,6 +348,22 @@
                 <i data-lucide="trash-2" class="w-5 h-5"></i>
             </button>
         </div>
+    </div>
+
+    <!-- RETAKE / CONFIRMATION MODAL -->
+    <div id="retakeModal" class="fixed inset-0 bg-black/80 backdrop-blur-xl hidden flex-col items-center justify-center z-[65] p-4 transition-opacity opacity-0">
+        <h2 class="text-white font-bold tracking-widest text-lg mb-6 drop-shadow-md">KONFIRMASI FOTO</h2>
+        <img id="retakePreview" src="" class="max-h-[60vh] max-w-[90vw] object-contain rounded-2xl shadow-[0_0_40px_rgba(255,255,255,0.1)] border border-white/20 mb-8">
+        
+        <div class="flex flex-col sm:flex-row gap-4 w-full max-w-md">
+            <button onclick="handleRetake()" class="glass-button flex-1 py-4 px-6 rounded-2xl flex justify-center items-center gap-2 text-white font-bold bg-red-500/20 hover:bg-red-500 border-red-500/50 transition-all">
+                <i data-lucide="rotate-ccw" class="w-5 h-5"></i> Ulang
+            </button>
+            <button id="btnNextPhoto" onclick="handleNextPhoto()" class="glass-button flex-1 py-4 px-6 rounded-2xl flex justify-center items-center gap-2 text-black font-bold bg-white hover:bg-gray-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.4)]">
+                <i data-lucide="check" class="w-5 h-5"></i> Oke, Lanjut
+            </button>
+        </div>
+        <p class="text-white/50 text-xs mt-6 font-medium text-center">Tekan SPASI atau ENTER pada remote untuk Lanjut</p>
     </div>
 
     <!-- WHATSAPP INPUT MODAL -->
@@ -315,6 +397,8 @@
         let settings = { 
             title: 'MARTIVE.ID', 
             format: 'png',
+            orientation: 'auto',
+            mode: 'single', // single, strip, grid
             sound: true,
             mirror: true,
             webhookUrl: '',
@@ -330,9 +414,88 @@
         let activePhotoId = null;
         let isCapturing = false;
 
+        // Global App Mode State
+        let currentAppMode = 'custom'; // instan, custom, video
+        let isMenuOpen = false;
+        
+        // Video Recording State
+        let mediaRecorder;
+        let recordedChunks = [];
+        let isRecordingVideo = false;
+        let recordingInterval;
+        let recordingTime = 0;
+
+        // Sequence State
+        let sequencePhotos = [];
+        let photosTarget = 1;
+        let currentPhotoStep = 1;
+        let pendingPhotoCanvas = null;
+
         const video = document.getElementById('videoElement');
         const canvas = document.getElementById('displayCanvas');
         const ctx = canvas.getContext('2d');
+
+        // Main Menu Logic
+        function toggleMenu() {
+            const drawer = document.getElementById('menuDrawer');
+            isMenuOpen = !isMenuOpen;
+            if (isMenuOpen) {
+                drawer.classList.remove('-translate-x-full');
+            } else {
+                drawer.classList.add('-translate-x-full');
+            }
+        }
+
+        function changeAppMode(mode) {
+            currentAppMode = mode;
+            toggleMenu();
+            showToast(`Mode diubah: ${mode.toUpperCase()}`, 'info');
+
+            // Reset UI Styles
+            document.querySelectorAll('#menuDrawer button').forEach(btn => {
+                btn.classList.remove('border-white/50', 'bg-white/10');
+                btn.classList.add('border-transparent');
+            });
+            
+            const activeBtnId = mode === 'instan' ? 'btnModeInstan' : mode === 'custom' ? 'btnModeCustom' : 'btnModeVideo';
+            document.getElementById(activeBtnId).classList.remove('border-transparent');
+            document.getElementById(activeBtnId).classList.add('border-white/50', 'bg-white/10');
+
+            // Apply specific rules
+            const captureBtn = document.getElementById('captureBtn');
+            const cycleFrameBtn = document.getElementById('cycleFrameBtn');
+            const settingsBtnHeader = document.getElementById('settingsBtnHeader');
+            const modeBtnSelector = document.getElementById('modeBtn');
+            const headerTitle = document.getElementById('appHeaderTitle');
+
+            // Reset Capture button to default first
+            captureBtn.classList.remove('bg-red-500', 'text-white', 'hover:bg-red-600', 'animate-pulse');
+            captureBtn.classList.add('bg-white', 'text-black', 'hover:bg-gray-100');
+
+            if (mode === 'instan') {
+                headerTitle.textContent = "PHOTOBOOTH";
+                cycleFrameBtn.classList.add('hidden');
+                settingsBtnHeader.classList.add('hidden');
+                modeBtnSelector.classList.remove('hidden');
+                activeFrameIndex = -1; // Force remove frames
+                captureBtn.innerHTML = `<i data-lucide="aperture" class="w-6 h-6"></i> AMBIL FOTO`;
+            } else if (mode === 'custom') {
+                headerTitle.textContent = settings.title;
+                cycleFrameBtn.classList.remove('hidden');
+                settingsBtnHeader.classList.remove('hidden');
+                modeBtnSelector.classList.remove('hidden');
+                captureBtn.innerHTML = `<i data-lucide="aperture" class="w-6 h-6"></i> AMBIL FOTO`;
+            } else if (mode === 'video') {
+                headerTitle.textContent = settings.title;
+                cycleFrameBtn.classList.add('hidden');
+                modeBtnSelector.classList.add('hidden'); // Disable strip/grid logic for video
+                activeFrameIndex = -1;
+                captureBtn.classList.remove('bg-white', 'text-black', 'hover:bg-gray-100');
+                captureBtn.classList.add('bg-red-500', 'text-white', 'hover:bg-red-600');
+                captureBtn.innerHTML = `<i data-lucide="video" class="w-6 h-6"></i> REKAM VIDEO`;
+            }
+            lucide.createIcons();
+        }
 
         // Custom Notification System
         function showToast(message, type = 'info') {
@@ -380,8 +543,22 @@
         async function initCamera(facingMode = 'user') {
             if (stream) stream.getTracks().forEach(t => t.stop());
             try {
+                let videoConstraints = { facingMode: facingMode };
+                
+                // Set ideal resolusi berdasarkan orientasi
+                if (settings.orientation === 'portrait') {
+                    videoConstraints.width = { ideal: 1080 };
+                    videoConstraints.height = { ideal: 1920 };
+                } else if (settings.orientation === 'landscape') {
+                    videoConstraints.width = { ideal: 1920 };
+                    videoConstraints.height = { ideal: 1080 };
+                } else {
+                    videoConstraints.width = { ideal: 1920 };
+                    videoConstraints.height = { ideal: 1080 };
+                }
+
                 stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+                    video: videoConstraints,
                     audio: false
                 });
                 video.srcObject = stream;
@@ -403,6 +580,7 @@
             canvas.height = window.innerHeight * dpr;
             document.getElementById('settingTitle').value = settings.title;
             document.querySelector(`input[name="format"][value="${settings.format}"]`).checked = true;
+            document.querySelector(`input[name="orientation"][value="${settings.orientation}"]`).checked = true;
             document.getElementById('settingMirror').checked = settings.mirror;
             document.getElementById('settingWebhookUrl').value = settings.webhookUrl;
         }
@@ -463,6 +641,11 @@
         function saveSettings() {
             settings.title = document.getElementById('settingTitle').value.toUpperCase();
             settings.format = document.querySelector('input[name="format"]:checked').value;
+            
+            const newOrientation = document.querySelector('input[name="orientation"]:checked').value;
+            const orientationChanged = settings.orientation !== newOrientation;
+            settings.orientation = newOrientation;
+
             settings.mirror = document.getElementById('settingMirror').checked;
             settings.sound = document.getElementById('settingSound').checked;
             settings.webhookUrl = document.getElementById('settingWebhookUrl').value.trim();
@@ -470,7 +653,27 @@
             document.getElementById('appHeaderTitle').textContent = settings.title;
             closeModal('settingsModal');
             showToast("Pengaturan disimpan", "success");
+
+            if (orientationChanged) {
+                initCamera(currentFacingMode); // Restart kamera
+            }
         }
+
+        // Mode Selector Logic
+        const modes = [
+            { id: 'single', icon: 'scan', text: '1 Foto' },
+            { id: 'strip', icon: 'film', text: 'Strip (3)' },
+            { id: 'grid', icon: 'grid', text: 'Grid (4)' }
+        ];
+        let currentModeIndex = 0;
+        
+        document.getElementById('modeBtn').onclick = () => {
+            currentModeIndex = (currentModeIndex + 1) % modes.length;
+            settings.mode = modes[currentModeIndex].id;
+            document.getElementById('modeText').textContent = modes[currentModeIndex].text;
+            document.getElementById('modeIcon').setAttribute('data-lucide', modes[currentModeIndex].icon);
+            lucide.createIcons();
+        };
 
         // Frame and Logo Upload Handlers
         document.getElementById('settingLogoUpload').addEventListener('change', (e) => {
@@ -529,51 +732,266 @@
             initCamera(currentFacingMode);
         };
 
-        document.getElementById('captureBtn').onclick = () => {
-            if (isCapturing) return;
-            const timer = parseInt(document.getElementById('timerSelect').value);
-            
-            // Tutup drawer jika terbuka
-            if(isGalleryOpen) toggleGallery();
+        // EVENT LISTENER UNTUK BLUETOOTH SHUTTER / KABEL REMOTE
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'Enter') {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                e.preventDefault();
 
-            if (timer > 0) startCountdown(timer); else executeCapture();
+                const isRetakeOpen = !document.getElementById('retakeModal').classList.contains('hidden');
+                if (isRetakeOpen) {
+                    handleNextPhoto();
+                    return;
+                }
+
+                const isSettingsOpen = !document.getElementById('settingsModal').classList.contains('hidden');
+                const isPreviewOpen = !document.getElementById('previewModal').classList.contains('hidden');
+                const isWAOpen = !document.getElementById('waModal').classList.contains('hidden');
+                const isMenuOpenRightNow = !document.getElementById('menuDrawer').classList.contains('-translate-x-full');
+
+                if (!isCapturing && !isSettingsOpen && !isPreviewOpen && !isWAOpen && !isMenuOpenRightNow) {
+                    document.getElementById('captureBtn').click();
+                }
+            }
+        });
+
+        document.getElementById('captureBtn').onclick = () => {
+            if (currentAppMode === 'video' && isRecordingVideo) {
+                stopVideoRecording();
+                return;
+            }
+
+            if (isCapturing || isRecordingVideo) return;
+            
+            photosTarget = (settings.mode === 'strip' && currentAppMode !== 'video') ? 3 : (settings.mode === 'grid' && currentAppMode !== 'video') ? 4 : 1;
+            currentPhotoStep = 1;
+            sequencePhotos = [];
+            
+            if(isGalleryOpen) toggleGallery();
+            
+            processNextCaptureStep();
         };
+
+        function processNextCaptureStep() {
+            const timer = parseInt(document.getElementById('timerSelect').value);
+            if (timer > 0) {
+                startCountdown(timer);
+            } else {
+                executeCapture();
+            }
+        }
 
         function startCountdown(seconds) {
             isCapturing = true;
             const overlay = document.getElementById('countdownOverlay');
             const numEl = document.getElementById('countdownNumber');
+            const badge = document.getElementById('sequenceBadge');
+            
+            if (photosTarget > 1) {
+                badge.textContent = `Foto ${currentPhotoStep} dari ${photosTarget}`;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+
             overlay.classList.remove('hidden'); overlay.classList.add('flex');
             
             let counter = seconds; numEl.textContent = counter; playSound('beep');
             const interval = setInterval(() => {
                 counter--;
                 if (counter > 0) { numEl.textContent = counter; playSound('beep'); } 
-                else { clearInterval(interval); overlay.classList.add('hidden'); overlay.classList.remove('flex'); executeCapture(); }
+                else { 
+                    clearInterval(interval); 
+                    overlay.classList.add('hidden'); overlay.classList.remove('flex'); 
+                    
+                    if (currentAppMode === 'video') {
+                        startVideoRecording();
+                    } else {
+                        executeCapture(); 
+                    }
+                }
             }, 1000);
         }
+
+        // --- VIDEO RECORDING LOGIC ---
+        function startVideoRecording() {
+            if (!stream) return;
+            isRecordingVideo = true;
+            isCapturing = false; // Reset capture state so keyboard doesn't block
+            recordedChunks = [];
+            playSound('beep');
+            
+            // Rekam dari canvas stream (menyertakan mirror, ratio yang benar)
+            const canvasStream = canvas.captureStream(30); 
+            try { 
+                mediaRecorder = new MediaRecorder(canvasStream, { mimeType: 'video/webm' }); 
+            } catch (e) { 
+                mediaRecorder = new MediaRecorder(canvasStream); 
+            }
+
+            mediaRecorder.ondataavailable = (e) => { 
+                if (e.data.size > 0) recordedChunks.push(e.data); 
+            };
+
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                const url = URL.createObjectURL(blob);
+                const newId = Date.now();
+                photos.unshift({ id: newId, data: url, ext: 'webm', type: 'video', driveUrl: null });
+                updateGallery();
+                openPreview(newId);
+            };
+
+            mediaRecorder.start();
+            
+            // UI Button berubah menjadi timer
+            const btn = document.getElementById('captureBtn');
+            btn.innerHTML = `<i data-lucide="square" class="w-6 h-6 fill-white"></i> <span id="recTimer" class="tabular-nums">00:00</span>`;
+            btn.classList.add('animate-pulse');
+            lucide.createIcons();
+            
+            recordingTime = 0;
+            recordingInterval = setInterval(() => {
+                recordingTime++;
+                const mins = String(Math.floor(recordingTime / 60)).padStart(2, '0');
+                const secs = String(recordingTime % 60).padStart(2, '0');
+                document.getElementById('recTimer').textContent = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        function stopVideoRecording() {
+            isRecordingVideo = false;
+            mediaRecorder.stop();
+            clearInterval(recordingInterval);
+            
+            const btn = document.getElementById('captureBtn');
+            btn.classList.remove('animate-pulse');
+            btn.innerHTML = `<i data-lucide="video" class="w-6 h-6"></i> REKAM VIDEO`;
+            lucide.createIcons();
+            playSound('shutter'); // Bunyi pertanda selesai
+        }
+        // -----------------------------
 
         function executeCapture() {
             playSound('shutter');
             const flash = document.getElementById('flashEffect');
             flash.classList.remove('opacity-0'); flash.classList.add('opacity-100');
+            
             setTimeout(() => {
                 flash.classList.remove('opacity-100'); flash.classList.add('opacity-0');
                 
-                // Save Photo
-                const mimeType = settings.format === 'jpeg' ? 'image/jpeg' : 'image/png';
-                const fileExt = settings.format === 'jpeg' ? 'jpg' : 'png';
-                // Reset drive url memory for new photo
-                settings.lastDriveUrl = ''; 
+                // Save current frame strictly from video (without overlay)
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+                const ctxTemp = tempCanvas.getContext('2d');
                 
-                photos.unshift({ id: Date.now(), data: canvas.toDataURL(mimeType, 1.0), ext: fileExt, driveUrl: null });
-                updateGallery();
-                isCapturing = false;
+                const vRatio = video.videoWidth / video.videoHeight;
+                const cRatio = canvas.width / canvas.height;
+                let sx, sy, sWidth, sHeight;
+                if (vRatio > cRatio) {
+                    sHeight = video.videoHeight; sWidth = sHeight * cRatio;
+                    sx = (video.videoWidth - sWidth) / 2; sy = 0;
+                } else {
+                    sWidth = video.videoWidth; sHeight = sWidth / cRatio;
+                    sx = 0; sy = (video.videoHeight - sHeight) / 2;
+                }
                 
-                // Otomatis buka galeri setelah foto (opsional, tapi bagus untuk UX)
-                if(!isGalleryOpen) toggleGallery();
+                if (currentFacingMode === 'user' && settings.mirror) { 
+                    ctxTemp.translate(tempCanvas.width, 0); ctxTemp.scale(-1, 1); 
+                }
+                ctxTemp.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, tempCanvas.width, tempCanvas.height);
+                
+                // Show Confirmation Modal
+                pendingPhotoCanvas = tempCanvas;
+                document.getElementById('retakePreview').src = tempCanvas.toDataURL('image/jpeg', 0.8);
+                
+                const btnNext = document.getElementById('btnNextPhoto');
+                if (currentPhotoStep < photosTarget) {
+                    btnNext.innerHTML = `<i data-lucide="arrow-right" class="w-5 h-5"></i> Oke, Lanjut`;
+                } else {
+                    btnNext.innerHTML = `<i data-lucide="check" class="w-5 h-5"></i> Oke, Simpan`;
+                }
+                lucide.createIcons();
+                openModal('retakeModal');
 
             }, 150);
+        }
+
+        function handleRetake() {
+            closeModal('retakeModal');
+            setTimeout(() => {
+                processNextCaptureStep(); // Ulangi step saat ini (tanpa menambah angka step)
+            }, 300);
+        }
+
+        function handleNextPhoto() {
+            closeModal('retakeModal');
+            sequencePhotos.push(pendingPhotoCanvas); // Simpan frame yang sudah disetujui
+            
+            setTimeout(() => {
+                if (currentPhotoStep < photosTarget) {
+                    currentPhotoStep++;
+                    processNextCaptureStep(); // Lanjut ke hitung mundur berikutnya
+                } else {
+                    finalizePhotos(); // Gabungkan foto jadi strip/grid
+                }
+            }, 300);
+        }
+
+        function finalizePhotos() {
+            const finalCanvas = document.createElement('canvas');
+            const fCtx = finalCanvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+
+            if (settings.mode === 'single') {
+                finalCanvas.width = w; finalCanvas.height = h;
+                fCtx.drawImage(sequencePhotos[0], 0, 0);
+            } 
+            else if (settings.mode === 'strip') {
+                const padding = 20;
+                finalCanvas.width = w;
+                finalCanvas.height = (h * 3) + (padding * 4);
+                
+                fCtx.fillStyle = '#ffffff';
+                fCtx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+                
+                for(let i=0; i<3; i++) {
+                    fCtx.drawImage(sequencePhotos[i], padding, padding + (i * (h + padding)), w - (padding*2), h);
+                }
+            }
+            else if (settings.mode === 'grid') {
+                const padding = 20;
+                finalCanvas.width = w * 2 + (padding * 3);
+                finalCanvas.height = h * 2 + (padding * 3);
+                
+                fCtx.fillStyle = '#ffffff';
+                fCtx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+                
+                fCtx.drawImage(sequencePhotos[0], padding, padding, w, h);
+                fCtx.drawImage(sequencePhotos[1], padding*2 + w, padding, w, h);
+                fCtx.drawImage(sequencePhotos[2], padding, padding*2 + h, w, h);
+                fCtx.drawImage(sequencePhotos[3], padding*2 + w, padding*2 + h, w, h);
+            }
+
+            // Apply Custom Overlay frame if it's set
+            if (activeFrameIndex !== -1 && customFrames[activeFrameIndex] && customFrames[activeFrameIndex].complete) {
+                fCtx.drawImage(customFrames[activeFrameIndex], 0, 0, finalCanvas.width, finalCanvas.height);
+            }
+
+            const mimeType = settings.format === 'jpeg' ? 'image/jpeg' : 'image/png';
+            const fileExt = settings.format === 'jpeg' ? 'jpg' : 'png';
+            settings.lastDriveUrl = ''; 
+            
+            const newId = Date.now();
+            photos.unshift({ id: newId, data: finalCanvas.toDataURL(mimeType, 1.0), ext: fileExt, driveUrl: null });
+            
+            updateGallery();
+            isCapturing = false;
+            
+            // LANGSUNG BUKA PREVIEW OTOMATIS
+            openPreview(newId);
         }
 
         function updateGallery() {
@@ -586,13 +1004,25 @@
 
             photos.forEach(p => {
                 const div = document.createElement('div');
-                div.className = 'photo-card relative group rounded-2xl overflow-hidden glass-panel cursor-pointer shadow-sm hover:shadow-xl transition-all aspect-[3/4] flex items-center justify-center';
-                div.innerHTML = `
-                    <img src="${p.data}" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-                        <span class="glass-button text-white text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1"><i data-lucide="zoom-in" class="w-4 h-4"></i> Lihat</span>
-                    </div>
-                `;
+                div.className = 'photo-card relative group rounded-2xl overflow-hidden glass-panel cursor-pointer shadow-sm hover:shadow-xl transition-all aspect-[3/4] flex items-center justify-center bg-black/40';
+                
+                if (p.type === 'video') {
+                    div.innerHTML = `
+                        <video src="${p.data}" class="w-full h-full object-cover"></video>
+                        <div class="absolute top-2 left-2 bg-red-500/80 px-2 py-1 rounded text-[10px] font-bold text-white flex gap-1 items-center z-10"><i data-lucide="video" class="w-3 h-3"></i></div>
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm z-20">
+                            <span class="glass-button text-white text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1"><i data-lucide="play" class="w-4 h-4 fill-white"></i> Putar</span>
+                        </div>
+                    `;
+                } else {
+                    div.innerHTML = `
+                        <img src="${p.data}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm z-20">
+                            <span class="glass-button text-white text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1"><i data-lucide="zoom-in" class="w-4 h-4"></i> Lihat</span>
+                        </div>
+                    `;
+                }
+                
                 div.onclick = () => openPreview(p.id);
                 container.appendChild(div);
             });
@@ -603,7 +1033,23 @@
             const photo = photos.find(p => p.id === id);
             if (!photo) return;
             activePhotoId = id;
-            document.getElementById('previewImage').src = photo.data;
+            
+            const imgEl = document.getElementById('previewImage');
+            const vidEl = document.getElementById('previewVideo');
+
+            if (photo.type === 'video') {
+                imgEl.classList.add('hidden');
+                vidEl.classList.remove('hidden');
+                vidEl.src = photo.data;
+                // Pause it initially or play it, user preference. Let's auto play.
+                vidEl.play().catch(e=>{});
+            } else {
+                vidEl.classList.add('hidden');
+                vidEl.pause();
+                imgEl.classList.remove('hidden');
+                imgEl.src = photo.data;
+            }
+
             openModal('previewModal');
         }
 
