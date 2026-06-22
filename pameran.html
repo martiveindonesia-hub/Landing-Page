@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mative.id exhibition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
+        :root {
+            /* Default: Clear Blue */
+            --bg-grad-1: #0f172a;
+            --bg-grad-2: #1e3a8a;
+            --bg-grad-3: #0891b2;
+            --accent: #67e8f9;
+            --accent-glow: rgba(103, 232, 249, 0.4);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.7);
+        }
+
+        [data-theme="pastel"] {
+            --bg-grad-1: #fff1f2;
+            --bg-grad-2: #ffe4e6;
+            --bg-grad-3: #fecdd3;
+            --accent: #fb7185;
+            --accent-glow: rgba(251, 113, 133, 0.4);
+            --glass-bg: rgba(255, 255, 255, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --text-main: #1f2937;
+            --text-muted: rgba(31, 41, 55, 0.7);
+        }
+
+        [data-theme="dark"] {
+            --bg-grad-1: #000000;
+            --bg-grad-2: #111111;
+            --bg-grad-3: #222222;
+            --accent: #ffffff;
+            --accent-glow: rgba(255, 255, 255, 0.2);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.5);
+        }
+
+        [data-theme="matcha"] {
+            --bg-grad-1: #f0fdf4;
+            --bg-grad-2: #dcfce7;
+            --bg-grad-3: #bbf7d0;
+            --accent: #16a34a;
+            --accent-glow: rgba(22, 163, 74, 0.4);
+            --glass-bg: rgba(255, 255, 255, 0.5);
+            --glass-border: rgba(255, 255, 255, 0.7);
+            --text-main: #064e3b;
+            --text-muted: rgba(6, 78, 59, 0.7);
+        }
+
+        [data-theme="sunset"] {
+            --bg-grad-1: #4a044e;
+            --bg-grad-2: #9f1239;
+            --bg-grad-3: #ea580c;
+            --accent: #fde047;
+            --accent-glow: rgba(253, 224, 71, 0.5);
+            --glass-bg: rgba(0, 0, 0, 0.2);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --text-main: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.8);
+        }
+
+        [data-theme="cyberpunk"] {
+            --bg-grad-1: #09090b;
+            --bg-grad-2: #2e1065;
+            --bg-grad-3: #170f4e;
+            --accent: #f0abfc;
+            --accent-glow: rgba(240, 171, 252, 0.6);
+            --glass-bg: rgba(20, 0, 40, 0.4);
+            --glass-border: rgba(240, 171, 252, 0.3);
+            --text-main: #e879f9;
+            --text-muted: rgba(232, 121, 249, 0.7);
+        }
+
+        [data-theme="pearl"] {
+            --bg-grad-1: #ffffff;
+            --bg-grad-2: #f8fafc;
+            --bg-grad-3: #f1f5f9;
+            --accent: #0f172a;
+            --accent-glow: rgba(15, 23, 42, 0.2);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --text-main: #0f172a;
+            --text-muted: rgba(15, 23, 42, 0.6);
+        }
+
+        [data-theme="crimson"] {
+            --bg-grad-1: #2a0a0a;
+            --bg-grad-2: #7f1d1d;
+            --bg-grad-3: #450a0a;
+            --accent: #fca5a5;
+            --accent-glow: rgba(252, 165, 165, 0.4);
+            --glass-bg: rgba(0, 0, 0, 0.3);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.7);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 50%, var(--bg-grad-3) 100%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background 0.8s ease;
+        }
+
+        .font-serif { font-family: 'Playfair Display', serif; }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .glass-header {
+            background: var(--bg-grad-1);
+            opacity: 0.9;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .custom-input {
+            width: 100%;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            border-radius: 0.5rem;
+            padding: 0.625rem;
+            font-size: 0.875rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .custom-input:focus { border-color: var(--accent); }
+        .custom-input::placeholder { color: var(--text-muted); opacity: 0.6; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        /* Animations & Utilities */
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hidden-el { display: none !important; }
+        
+        /* Auto Hide UI Utilities */
+        .ui-hidden { 
+            opacity: 0 !important; 
+            pointer-events: none !important; 
+        }
+        .hide-cursor { cursor: none !important; }
+    </style>
+</head>
+<body class="antialiased transition-colors duration-500 text-[var(--text-main)]">
+
+    <!-- Ornamen Latar Belakang -->
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none transition-opacity duration-500">
+        <div class="absolute top-[-10%] left-[-10%] w-96 h-96 rounded-full mix-blend-screen filter blur-[120px] opacity-30" style="background-color: var(--accent);"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[30rem] h-[30rem] rounded-full mix-blend-screen filter blur-[150px] opacity-20" style="background-color: var(--text-main);"></div>
+    </div>
+
+    <!-- Navigasi Utama -->
+    <nav class="glass-header fixed w-full z-40 top-0 transition-all duration-300 px-4 md:px-6 py-3 md:py-4 flex justify-between items-center shadow-lg">
+        <div class="flex items-center gap-3">
+            <button id="btn-open-admin" class="glass-panel p-2 rounded flex items-center justify-center hover:bg-[var(--accent)] hover:text-[#0f172a] transition group" title="Dashboard Admin">
+                <i data-lucide="layout-dashboard" class="w-5 h-5 text-[var(--accent)] group-hover:text-[#0f172a]"></i>
+            </button>
+            <h1 class="text-lg md:text-xl font-semibold tracking-wider flex items-center gap-2">
+                <span id="exhibition-name-display" class="drop-shadow-md">mative.id exhibition</span>
+            </h1>
+        </div>
+        <div class="flex gap-2 md:gap-4">
+            <button id="btn-play-all" class="flex items-center gap-2 glass-panel px-3 py-2 md:px-4 md:py-2 rounded-full hover:bg-[var(--accent)] hover:text-[#0f172a] transition border border-[var(--accent)] text-[var(--accent)]">
+                <i data-lucide="play" class="w-4 h-4"></i>
+                <span class="text-sm font-medium hidden sm:inline">Mulai Tontonan</span>
+            </button>
+            <button id="btn-toggle-fullscreen" class="glass-panel p-2 rounded-full hover:bg-white/10 transition" title="Layar Penuh (Fullscreen)">
+                <i data-lucide="maximize" id="icon-fullscreen" class="w-5 h-5"></i>
+            </button>
+            <button id="btn-open-settings" class="glass-panel p-2 rounded-full hover:bg-white/10 transition" title="Pengaturan Tema & Sistem">
+                <i data-lucide="settings" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Sidebar Admin -->
+    <aside id="admin-sidebar" class="fixed top-0 left-0 h-full w-full sm:w-96 glass-panel z-50 transform -translate-x-full transition-transform duration-500 shadow-2xl flex flex-col border-r border-[var(--glass-border)] bg-[var(--bg-grad-1)]">
+        <div class="p-5 border-b border-[var(--glass-border)] flex justify-between items-center bg-black/20">
+            <h2 class="text-xl font-semibold flex items-center gap-2"><i data-lucide="upload-cloud" class="w-5 h-5 text-[var(--accent)]"></i> Tambah Karya</h2>
+            <button id="btn-close-admin" class="text-[var(--text-muted)] hover:text-[var(--accent)] transition">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+        
+        <div class="p-5 flex-1 overflow-y-auto space-y-5 custom-scrollbar">
+            <!-- Upload Foto -->
+            <div>
+                <label class="block text-xs text-[var(--text-muted)] mb-2 font-medium">Unggah Foto Karya *</label>
+                <div class="flex items-center justify-center w-full">
+                    <label class="flex flex-col items-center justify-center w-full h-40 border-2 border-[var(--glass-border)] border-dashed rounded-xl cursor-pointer hover:bg-[var(--glass-bg)] transition relative overflow-hidden group">
+                        <div id="upload-placeholder" class="flex flex-col items-center justify-center pt-5 pb-6">
+                            <i data-lucide="image-plus" class="w-8 h-8 mb-3 text-[var(--text-muted)] group-hover:text-[var(--accent)] transition"></i>
+                            <p class="mb-1 text-sm text-[var(--text-muted)]"><span class="font-semibold text-[var(--accent)]">Klik untuk unggah</span></p>
+                            <p class="text-xs text-[var(--text-muted)]/60">PNG, JPG atau WEBP</p>
+                        </div>
+                        <img id="upload-preview" src="" class="hidden-el absolute inset-0 w-full h-full object-cover">
+                        <input id="admin-file-upload" type="file" class="hidden" accept="image/*" />
+                    </label>
+                </div>
+            </div>
+
+            <!-- Form Metadata -->
+            <div>
+                <label class="block text-xs text-[var(--text-muted)] mb-1">Judul Karya *</label>
+                <input type="text" id="admin-title" class="custom-input" placeholder="Mis: Gema Kesunyian">
+            </div>
+            <div>
+                <label class="block text-xs text-[var(--text-muted)] mb-1">Kategori / Tema *</label>
+                <input type="text" id="admin-category" class="custom-input" placeholder="Mis: Alam, Abstrak, Portrait...">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs text-[var(--text-muted)] mb-1">Nama Seniman *</label>
+                    <input type="text" id="admin-artist" class="custom-input" placeholder="Nama Lengkap">
+                </div>
+                <div>
+                    <label class="block text-xs text-[var(--text-muted)] mb-1">Tahun *</label>
+                    <input type="text" id="admin-year" class="custom-input" placeholder="2024">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs text-[var(--text-muted)] mb-1">Media / Teknik (Opsional)</label>
+                <input type="text" id="admin-medium" class="custom-input" placeholder="Mis: Fotografi Digital, Cetakan Pigmen">
+            </div>
+            <div>
+                <label class="block text-xs text-[var(--text-muted)] mb-1">Deskripsi Karya (Opsional)</label>
+                <textarea id="admin-desc" rows="3" class="custom-input resize-none" placeholder="Cerita di balik foto ini..."></textarea>
+            </div>
+            <div>
+                <label class="block text-xs text-[var(--text-muted)] mb-1">Bio Singkat Seniman (Opsional)</label>
+                <textarea id="admin-bio" rows="2" class="custom-input resize-none" placeholder="Latar belakang singkat seniman..."></textarea>
+            </div>
+        </div>
+
+        <div class="p-5 border-t border-[var(--glass-border)] bg-black/20">
+            <button id="btn-save-new-photo" class="w-full bg-[var(--accent)] hover:bg-opacity-90 text-[#0f172a] font-bold py-3 rounded-xl transition shadow-[0_0_15px_var(--accent-glow)]">
+                Simpan & Tampilkan di Galeri
+            </button>
+        </div>
+    </aside>
+
+    <!-- Galeri Utama -->
+    <main class="pt-28 pb-16 px-4 md:px-6 max-w-7xl mx-auto min-h-[80vh]">
+        <header class="mb-10 md:mb-14 text-center fade-in">
+            <h2 id="gallery-main-title" class="text-4xl md:text-5xl font-serif mb-4 drop-shadow-md text-[var(--text-main)]">Koleksi Eksklusif</h2>
+            <p class="text-[var(--text-muted)] max-w-2xl mx-auto font-light text-sm md:text-base">Eksplorasi visual dan pameran karya digital. Ketuk karya untuk melihat detail dalam mode sinematik.</p>
+            
+            <!-- Filter Kategori Dinamis -->
+            <div id="category-filters" class="flex flex-wrap justify-center gap-2 md:gap-3 mt-8">
+                <!-- Tombol kategori -->
+            </div>
+        </header>
+
+        <!-- Grid Foto -->
+        <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Item Galeri dimuat via JS -->
+        </div>
+    </main>
+
+    <!-- Modal Lightbox (Layar Penuh) -->
+    <div id="lightbox" class="fixed inset-0 z-50 hidden-el bg-black/95 backdrop-blur-3xl flex flex-col transition-all duration-300">
+        
+        <!-- Lightbox Toolbar (Bisa Auto-Hide) -->
+        <div id="lightbox-toolbar" class="absolute top-0 w-full p-4 flex justify-between items-center z-50 bg-gradient-to-b from-black/80 to-transparent transition-opacity duration-500">
+            <div class="flex items-center gap-4 text-white/80 text-xs md:text-sm">
+                <span id="slide-counter" class="glass-panel px-3 py-1.5 rounded-full font-medium tracking-wide border-white/20">1 / 6</span>
+                <span id="slideshow-indicator" class="hidden-el px-3 py-1.5 bg-[var(--accent)]/20 text-[var(--accent)] rounded-full border border-[var(--accent)]/30 flex items-center gap-2 font-medium">
+                    <i data-lucide="play-circle" class="w-4 h-4 animate-pulse"></i> Memutar
+                </span>
+            </div>
+            <div class="flex gap-2 md:gap-4">
+                <button id="btn-delete-photo" class="text-red-400 hover:text-red-500 hover:bg-red-500/10 p-2 rounded-full transition" title="Hapus Karya">
+                    <i data-lucide="trash-2" class="w-5 h-5 md:w-6 md:h-6"></i>
+                </button>
+                <button id="btn-toggle-info" class="text-white/70 hover:text-white hover:bg-white/10 p-2 rounded-full transition" title="Tampilkan/Sembunyikan Info (Mode Sinematik)">
+                    <i data-lucide="eye" id="icon-info-toggle" class="w-5 h-5 md:w-6 md:h-6"></i>
+                </button>
+                <button id="btn-toggle-slideshow" class="text-white/70 hover:text-white hover:bg-white/10 p-2 rounded-full transition" title="Mulai/Jeda Slideshow">
+                    <i data-lucide="play" id="icon-play-toggle" class="w-5 h-5 md:w-6 md:h-6"></i>
+                </button>
+                <button id="btn-close-lightbox" class="text-white/70 hover:text-white hover:bg-white/10 p-2 rounded-full transition bg-black/20" title="Tutup">
+                    <i data-lucide="x" class="w-5 h-5 md:w-6 md:h-6"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Area Navigasi Panah (Bisa Auto-Hide) -->
+        <button id="btn-prev" class="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-40 glass-panel p-2 md:p-4 rounded-full text-white/70 hover:text-white hover:bg-white/20 transition transition-opacity duration-500 bg-black/40 border-white/10">
+            <i data-lucide="chevron-left" class="w-6 h-6 md:w-8 md:h-8"></i>
+        </button>
+        <button id="btn-next" class="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 z-40 glass-panel p-2 md:p-4 rounded-full text-white/70 hover:text-white hover:bg-white/20 transition transition-opacity duration-500 bg-black/40 border-white/10">
+            <i data-lucide="chevron-right" class="w-6 h-6 md:w-8 md:h-8"></i>
+        </button>
+
+        <!-- Area Foto Utama -->
+        <div class="flex-1 flex items-center justify-center relative p-2 md:p-8 mt-16 md:mt-0 transition-all duration-500 overflow-hidden" id="image-main-area">
+            <div id="image-wrapper" class="transition-all duration-500 max-h-full max-w-full flex items-center justify-center">
+                <img id="lightbox-img" src="" alt="Karya" class="max-h-[85vh] md:max-h-[75vh] max-w-[95vw] md:max-w-[85vw] object-contain drop-shadow-2xl transition-opacity duration-300 rounded-sm">
+            </div>
+        </div>
+
+        <!-- Panel Info Mendatar (Bawah) -->
+        <div id="lightbox-info-panel" class="w-full glass-panel border-t border-white/10 p-4 md:p-6 lg:p-8 flex-shrink-0 transition-all duration-500 transform translate-y-0 opacity-100 bg-gradient-to-t from-black/90 to-black/60 max-h-[45vh] overflow-y-auto custom-scrollbar z-50">
+            <div id="info-content" class="max-w-6xl mx-auto flex flex-col md:flex-row gap-4 md:gap-8 items-start">
+                
+                <!-- Sisi Kiri: Judul & Seniman -->
+                <div class="flex-1 min-w-0 md:border-r border-white/10 md:pr-8">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span id="lb-year" class="text-[var(--accent)] text-xs md:text-sm font-semibold tracking-wider uppercase px-2 py-0.5 rounded border border-[var(--accent)]/30 bg-[var(--accent)]/10">2023</span>
+                        <span id="lb-category" class="text-white/60 text-xs md:text-sm tracking-wide">Kategori</span>
+                    </div>
+                    <h3 id="lb-title" class="text-2xl md:text-4xl font-serif mb-2 text-white truncate w-full">Judul Karya</h3>
+                    <p class="text-base md:text-lg font-light text-white/80">Karya oleh <span id="lb-artist" class="font-semibold text-white">Seniman</span></p>
+                </div>
+                
+                <!-- Sisi Kanan: Deskripsi & Bio -->
+                <div class="flex-[1.5] space-y-3 text-white/70 font-light text-xs md:text-sm leading-relaxed w-full mt-4 md:mt-0">
+                    <div>
+                        <strong class="text-white font-medium block mb-0.5">Media / Teknik</strong>
+                        <p id="lb-medium">Fotografi Digital</p>
+                    </div>
+                    <div>
+                        <strong class="text-white font-medium block mb-0.5">Deskripsi</strong>
+                        <p id="lb-desc" class="line-clamp-3 md:line-clamp-none">Deskripsi karya...</p>
+                    </div>
+                    <div class="pt-3 mt-3 border-t border-white/10">
+                        <strong class="text-white font-medium block mb-0.5 text-xs">Tentang Seniman</strong>
+                        <p id="lb-bio" class="text-xs line-clamp-2 md:line-clamp-none opacity-80">Biografi...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kotak Dialog Kustom (Pengganti Alert/Confirm) -->
+    <div id="custom-dialog" class="fixed inset-0 z-[100] hidden-el bg-black/80 backdrop-blur-md flex justify-center items-center p-4 transition-opacity duration-300">
+        <div class="glass-panel border border-[var(--glass-border)] p-6 md:p-8 rounded-2xl max-w-sm w-full text-center fade-in shadow-2xl bg-gradient-to-b from-white/10 to-transparent">
+            <div id="dialog-icon" class="w-12 h-12 rounded-full bg-[var(--accent)]/20 text-[var(--accent)] flex items-center justify-center mx-auto mb-4 border border-[var(--accent)]/30">
+                <i data-lucide="info" id="dialog-icon-inner" class="w-6 h-6"></i>
+            </div>
+            <h4 id="dialog-title" class="text-xl font-semibold mb-2 text-white">Informasi</h4>
+            <p id="dialog-msg" class="text-sm text-white/70 mb-8 leading-relaxed">Pesan teks muncul di sini.</p>
+            <div class="flex gap-3 justify-center w-full">
+                <button id="btn-dialog-cancel" class="flex-1 px-4 py-2.5 rounded-xl border border-white/20 text-white hover:bg-white/10 transition hidden-el font-medium">Batal</button>
+                <button id="btn-dialog-ok" class="flex-1 px-4 py-2.5 rounded-xl bg-[var(--accent)] text-[#0f172a] font-bold hover:brightness-110 transition shadow-lg">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Pengaturan -->
+    <div id="settings-modal" class="fixed inset-0 z-[60] hidden-el bg-black/80 backdrop-blur-sm flex justify-center items-center p-4">
+        <div class="glass-panel border border-[var(--glass-border)] w-full max-w-md rounded-2xl p-6 relative fade-in bg-[var(--bg-grad-1)] max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <button id="btn-close-settings" class="absolute top-4 right-4 text-[var(--text-muted)] hover:text-[var(--accent)] transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="text-xl font-semibold mb-6 flex items-center gap-2 text-[var(--text-main)]">
+                <i data-lucide="sliders" class="w-5 h-5 text-[var(--accent)]"></i> Konfigurasi Sistem
+            </h3>
+            
+            <div class="space-y-6">
+                <!-- Branding -->
+                <div>
+                    <h4 class="font-medium text-sm text-[var(--text-main)] mb-2">Nama Eksibisi</h4>
+                    <input type="text" id="setting-exhibition-name" class="custom-input" value="mative.id exhibition">
+                </div>
+
+                <!-- Pemilihan Tema (7 Tema) -->
+                <div>
+                    <h4 class="font-medium text-sm text-[var(--text-main)] mb-2">Tema Visual</h4>
+                    <select id="select-theme" class="custom-input appearance-none">
+                        <option value="default">Clear Blue (Biru Kaca)</option>
+                        <option value="pearl">Pearl White (Monokrom Terang)</option>
+                        <option value="dark">Modern Dark (Hitam Elegan)</option>
+                        <option value="sunset">Sunset Glow (Senja Hangat)</option>
+                        <option value="cyberpunk">Cyberpunk Neon (Ungu & Pink)</option>
+                        <option value="crimson">Royal Crimson (Merah Gelap)</option>
+                        <option value="matcha">Matcha Mint (Hijau Lembut)</option>
+                    </select>
+                </div>
+
+                <!-- Frame Toggle -->
+                <div class="flex items-center justify-between border-t border-[var(--glass-border)] pt-4">
+                    <div>
+                        <h4 class="font-medium text-sm text-[var(--text-main)]">Bingkai Kanvas (Passepartout)</h4>
+                        <p class="text-[10px] text-[var(--text-muted)]">Margin putih pada foto di layar penuh</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="toggle-frame" class="sr-only peer">
+                        <div class="w-11 h-6 bg-black/30 border border-[var(--glass-border)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent)]"></div>
+                    </label>
+                </div>
+
+                <!-- Interval Slideshow -->
+                <div class="border-t border-[var(--glass-border)] pt-4">
+                    <h4 class="font-medium text-sm text-[var(--text-main)] mb-2">Durasi Tontonan Otomatis</h4>
+                    <select id="select-interval" class="custom-input appearance-none">
+                        <option value="3000">Cepat (3 Detik)</option>
+                        <option value="5000">Normal (5 Detik)</option>
+                        <option value="10000">Santai (10 Detik)</option>
+                        <option value="30000">Lama (30 Detik)</option>
+                        <option value="60000">Sangat Lama (1 Menit)</option>
+                        <option value="0">Mati (Manual Saja)</option>
+                    </select>
+                </div>
+
+                <!-- Manajemen Data -->
+                <div class="pt-4 border-t border-[var(--glass-border)]">
+                    <h4 class="font-medium text-sm text-[var(--text-main)] mb-2">Manajemen Data & Backup</h4>
+                    <div class="flex gap-2 mb-3">
+                        <button id="btn-export-json" class="flex-1 flex items-center justify-center gap-2 bg-[var(--glass-bg)] border border-[var(--glass-border)] py-2 rounded text-xs hover:bg-[var(--accent)] hover:text-[#0f172a] transition">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i> Unduh Data (.json)
+                        </button>
+                        <label class="flex-1 flex items-center justify-center gap-2 bg-[var(--glass-bg)] border border-[var(--glass-border)] py-2 rounded text-xs cursor-pointer hover:bg-[var(--accent)] hover:text-[#0f172a] transition">
+                            <i data-lucide="upload" class="w-3.5 h-3.5"></i> Pulihkan Data
+                            <input type="file" id="input-import-json" accept=".json" class="hidden">
+                        </label>
+                    </div>
+                    
+                    <div class="bg-black/20 p-3 rounded border border-[var(--glass-border)]">
+                        <p class="text-[10px] text-[var(--text-muted)] mb-2 leading-relaxed">
+                            <i data-lucide="database" class="w-3 h-3 inline mr-1 text-[var(--accent)]"></i> <b>Sinkronisasi Google Sheet</b><br/>
+                            Format Kolom (A-H): Judul, Kategori, Seniman, Tahun, Media, Deskripsi, Bio, URL Gambar. <br/>Akses Sheet harus Publik (Viewer).
+                        </p>
+                        <input type="text" id="setting-gsheet-url" class="custom-input text-xs mb-2" placeholder="Tempel Tautan Google Sheet di sini...">
+                        <button id="btn-sync-gsheet" class="w-full flex items-center justify-center gap-2 bg-[var(--glass-bg)] border border-[var(--accent)]/50 py-2 rounded text-xs text-[var(--accent)] hover:bg-[var(--accent)] hover:text-[#0f172a] transition font-medium">
+                            <i data-lucide="refresh-cw" id="icon-sync" class="w-3 h-3"></i> Tarik Data (Sync)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <button id="btn-save-settings" class="mt-6 w-full bg-[var(--accent)] text-[#0f172a] font-bold py-3 rounded-xl transition shadow-[0_4px_15px_var(--accent-glow)] hover:scale-[1.02]">
+                Simpan Konfigurasi
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- Custom Dialog System (Pengganti Alert/Confirm) ---
+        async function showDialog(title, message, type = 'info') {
+            return new Promise((resolve) => {
+                const dialog = document.getElementById('custom-dialog');
+                const titleEl = document.getElementById('dialog-title');
+                const msgEl = document.getElementById('dialog-msg');
+                const btnOk = document.getElementById('btn-dialog-ok');
+                const btnCancel = document.getElementById('btn-dialog-cancel');
+                const icon = document.getElementById('dialog-icon-inner');
+                const iconContainer = document.getElementById('dialog-icon');
+                
+                titleEl.textContent = title;
+                msgEl.textContent = message;
+                
+                dialog.classList.remove('hidden-el');
+                
+                // Styling icon based on type
+                if(type === 'confirm' || type === 'warning') {
+                    icon.setAttribute('data-lucide', 'alert-triangle');
+                    iconContainer.className = "w-12 h-12 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center mx-auto mb-4 border border-red-500/30";
+                    btnOk.className = "flex-1 px-4 py-2.5 rounded-xl bg-red-500 text-white font-bold hover:bg-red-600 transition shadow-lg shadow-red-500/30";
+                    btnOk.textContent = "Ya, Lanjutkan";
+                    btnCancel.classList.remove('hidden-el');
+                } else if(type === 'success') {
+                    icon.setAttribute('data-lucide', 'check-circle');
+                    iconContainer.className = "w-12 h-12 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center mx-auto mb-4 border border-green-500/30";
+                    btnOk.className = "flex-1 px-4 py-2.5 rounded-xl bg-green-500 text-white font-bold hover:bg-green-600 transition shadow-lg shadow-green-500/30";
+                    btnOk.textContent = "Oke";
+                    btnCancel.classList.add('hidden-el');
+                } else {
+                    icon.setAttribute('data-lucide', 'info');
+                    iconContainer.className = "w-12 h-12 rounded-full bg-[var(--accent)]/20 text-[var(--accent)] flex items-center justify-center mx-auto mb-4 border border-[var(--accent)]/30";
+                    btnOk.className = "flex-1 px-4 py-2.5 rounded-xl bg-[var(--accent)] text-[#0f172a] font-bold hover:brightness-110 transition shadow-lg shadow-[var(--accent-glow)]";
+                    btnOk.textContent = "Tutup";
+                    btnCancel.classList.add('hidden-el');
+                }
+                
+                lucide.createIcons();
+
+                btnOk.onclick = () => {
+                    dialog.classList.add('hidden-el');
+                    resolve(true);
+                };
+                
+                btnCancel.onclick = () => {
+                    dialog.classList.add('hidden-el');
+                    resolve(false);
+                };
+            });
+        }
+
+        // --- Data & State ---
+        let galleryData = [];
+        let currentUploadedBase64 = null;
+
+        let state = {
+            currentIndex: 0,
+            currentCategory: 'Semua',
+            isSlideshowPlaying: false,
+            slideshowTimer: null,
+            isInfoPanelVisible: true,
+            settings: {
+                exhibitionName: "mative.id exhibition",
+                theme: "default",
+                useFrame: false,
+                interval: 5000 // default 5s
+            }
+        };
+
+        lucide.createIcons();
+
+        // --- Elemen DOM Umum ---
+        const galleryGrid = document.getElementById('gallery-grid');
+        const categoryFilters = document.getElementById('category-filters');
+        const exhibitionNameDisplay = document.getElementById('exhibition-name-display');
+        
+        // Elemen Lightbox
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const imageWrapper = document.getElementById('image-wrapper');
+        const imageMainArea = document.getElementById('image-main-area');
+        const infoPanel = document.getElementById('lightbox-info-panel');
+        
+        // UI Otomatis Sembunyi
+        const topToolbar = document.getElementById('lightbox-toolbar');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+
+        // --- STREAMING_CHUNK:Render & Filter Logic... ---
+        function getFilteredData() {
+            if (state.currentCategory === 'Semua') return galleryData;
+            return galleryData.filter(item => item.category === state.currentCategory);
+        }
+
+        function renderCategories() {
+            if (!categoryFilters) return;
+            categoryFilters.innerHTML = '';
+            
+            const categories = ['Semua', ...new Set(galleryData.map(item => item.category || 'Lainnya'))];
+            
+            categories.forEach(category => {
+                const btn = document.createElement('button');
+                const isActive = state.currentCategory === category;
+                
+                btn.className = `px-4 py-1.5 rounded-full text-xs md:text-sm font-medium transition-all duration-300 border ${
+                    isActive 
+                    ? 'bg-[var(--accent)] text-[#0f172a] border-[var(--accent)] shadow-[0_0_15px_var(--accent-glow)] opacity-100 scale-105' 
+                    : 'glass-panel text-[var(--text-main)] border-[var(--glass-border)] hover:bg-[var(--glass-bg)] opacity-70 hover:opacity-100'
+                }`;
+                btn.textContent = category;
+                btn.onclick = () => {
+                    state.currentCategory = category;
+                    renderCategories();
+                    renderGallery();
+                };
+                categoryFilters.appendChild(btn);
+            });
+        }
+
+        function renderGallery() {
+            galleryGrid.innerHTML = '';
+            const displayData = getFilteredData();
+
+            if(displayData.length === 0) {
+                galleryGrid.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center py-20 opacity-50"><i data-lucide="image-off" class="w-16 h-16 mb-4"></i><p class="text-lg">Belum ada karya untuk ditampilkan.</p></div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            displayData.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = `glass-panel rounded-xl overflow-hidden cursor-pointer group hover:-translate-y-2 transition-all duration-300 flex flex-col h-full bg-black/10 border-[var(--glass-border)] hover:border-[var(--accent)]/50 hover:shadow-[0_10px_30px_var(--accent-glow)]`;
+                card.onclick = () => openLightbox(index);
+                
+                card.innerHTML = `
+                    <div class="relative h-60 overflow-hidden flex-shrink-0 bg-black/50">
+                        <img src="${item.imageUrl}" alt="${item.title}" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-700 opacity-90 group-hover:opacity-100">
+                        <div class="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded text-[10px] text-white border border-white/20 uppercase tracking-wider shadow-lg">
+                            ${item.category || 'Lainnya'}
+                        </div>
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col justify-between">
+                        <div>
+                            <p class="text-[var(--accent)] text-[10px] md:text-xs font-semibold tracking-wider mb-1">${item.year}</p>
+                            <h3 class="text-lg md:text-xl font-serif text-[var(--text-main)] mb-1 group-hover:text-[var(--accent)] transition line-clamp-1">${item.title}</h3>
+                        </div>
+                        <p class="text-[var(--text-muted)] text-sm font-light mt-2 border-t border-[var(--glass-border)] pt-2 flex items-center gap-2">
+                            <i data-lucide="user" class="w-3.5 h-3.5"></i> ${item.artist}
+                        </p>
+                    </div>
+                `;
+                galleryGrid.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        // --- STREAMING_CHUNK:Lightbox & Cinema Mode Logic... ---
+        function openLightbox(index) {
+            state.currentIndex = index;
+            updateLightboxContent();
+            lightbox.classList.remove('hidden-el');
+            document.body.style.overflow = 'hidden';
+            
+            // Animasi panel info dari bawah
+            if (state.isInfoPanelVisible) {
+                setTimeout(() => infoPanel.classList.remove('opacity-0', 'translate-y-full'), 50);
+            }
+        }
+
+        function closeLightbox() {
+            lightbox.classList.add('hidden-el');
+            document.body.style.overflow = 'auto';
+            stopSlideshow();
+        }
+
+        function toggleInfoPanel() {
+            const icon = document.getElementById('icon-info-toggle');
+            state.isInfoPanelVisible = !state.isInfoPanelVisible;
+            
+            if (state.isInfoPanelVisible) {
+                // Munculkan panel
+                infoPanel.classList.remove('hidden-el');
+                setTimeout(() => {
+                    infoPanel.classList.remove('opacity-0', 'translate-y-full');
+                    imageMainArea.classList.replace('max-h-[100vh]', 'max-h-full'); 
+                }, 10);
+                icon.setAttribute('data-lucide', 'eye');
+            } else {
+                // Sembunyikan panel (Mode Sinematik)
+                infoPanel.classList.add('opacity-0', 'translate-y-full');
+                setTimeout(() => {
+                    infoPanel.classList.add('hidden-el');
+                    // Buat gambar jadi sangat besar karena info hilang
+                    imageMainArea.classList.replace('max-h-full', 'max-h-[100vh]');
+                }, 500); // Tunggu transisi CSS selesai
+                icon.setAttribute('data-lucide', 'eye-off');
+            }
+            lucide.createIcons();
+        }
+
+        function updateLightboxContent() {
+            const displayData = getFilteredData();
+            if (displayData.length === 0) return;
+
+            const data = displayData[state.currentIndex];
+            
+            lightboxImg.style.opacity = '0.2';
+            setTimeout(() => {
+                lightboxImg.src = data.imageUrl;
+                lightboxImg.onload = () => { lightboxImg.style.opacity = '1'; };
+                lightboxImg.onerror = () => { 
+                    lightboxImg.src = 'https://placehold.co/800x600/1a1a1a/ffffff?text=Image+Not+Found'; 
+                    lightboxImg.style.opacity = '1';
+                };
+            }, 150);
+
+            document.getElementById('lb-title').textContent = data.title;
+            document.getElementById('lb-artist').textContent = data.artist;
+            document.getElementById('lb-year').textContent = data.year;
+            document.getElementById('lb-category').textContent = data.category || '-';
+            document.getElementById('lb-medium').textContent = data.medium;
+            document.getElementById('lb-desc').textContent = data.description;
+            document.getElementById('lb-bio').textContent = data.bio;
+            document.getElementById('slide-counter').textContent = `${state.currentIndex + 1} / ${displayData.length}`;
+
+            // Terapkan Passepartout
+            if (state.settings.useFrame) {
+                imageWrapper.className = "bg-white p-4 md:p-8 lg:p-12 rounded shadow-[0_0_50px_rgba(255,255,255,0.15)] transition-all duration-500 max-h-full flex items-center justify-center";
+                lightboxImg.classList.add('shadow-inner');
+            } else {
+                imageWrapper.className = "transition-all duration-500 max-h-full max-w-full flex items-center justify-center";
+                lightboxImg.classList.remove('shadow-inner');
+            }
+        }
+
+        function nextSlide() {
+            const displayData = getFilteredData();
+            if(displayData.length === 0) return;
+            state.currentIndex = (state.currentIndex + 1) % displayData.length;
+            updateLightboxContent();
+            if(state.isSlideshowPlaying) resetSlideshowTimer();
+        }
+
+        function prevSlide() {
+            const displayData = getFilteredData();
+            if(displayData.length === 0) return;
+            state.currentIndex = (state.currentIndex - 1 + displayData.length) % displayData.length;
+            updateLightboxContent();
+            if(state.isSlideshowPlaying) resetSlideshowTimer();
+        }
+
+        // --- STREAMING_CHUNK:Slideshow & Auto-hide UI Logic... ---
+        function toggleSlideshow() {
+            if (state.isSlideshowPlaying) stopSlideshow();
+            else startSlideshow();
+        }
+
+        function startSlideshow() {
+            if(state.settings.interval === 0) {
+                showDialog("Pemberitahuan", "Slideshow dinonaktifkan di pengaturan. Ubah durasi di menu Pengaturan untuk menggunakan fitur ini.", "warning");
+                return;
+            }
+            state.isSlideshowPlaying = true;
+            document.getElementById('slideshow-indicator').classList.remove('hidden-el');
+            document.getElementById('icon-play-toggle').setAttribute('data-lucide', 'pause');
+            lucide.createIcons();
+            
+            const displayData = getFilteredData();
+            if(lightbox.classList.contains('hidden-el') && displayData.length > 0) openLightbox(0);
+            state.slideshowTimer = setInterval(nextSlide, state.settings.interval);
+            resetUITimer(); // Mulai timer auto-hide
+        }
+
+        function stopSlideshow() {
+            state.isSlideshowPlaying = false;
+            document.getElementById('slideshow-indicator').classList.add('hidden-el');
+            document.getElementById('icon-play-toggle').setAttribute('data-lucide', 'play');
+            lucide.createIcons();
+            clearInterval(state.slideshowTimer);
+            
+            // Paksa UI muncul kembali
+            document.body.classList.remove('hide-cursor');
+            topToolbar.classList.remove('ui-hidden');
+            btnPrev.classList.remove('ui-hidden');
+            btnNext.classList.remove('ui-hidden');
+        }
+
+        function resetSlideshowTimer() {
+            if (state.isSlideshowPlaying) {
+                clearInterval(state.slideshowTimer);
+                state.slideshowTimer = setInterval(nextSlide, state.settings.interval);
+            }
+        }
+
+        // Logika Auto-Hide UI (Sembunyikan tombol & kursor saat slideshow jalan tanpa interaksi)
+        let hideUITimeout;
+        function resetUITimer() {
+            // Selalu munculkan saat ada gerakan
+            document.body.classList.remove('hide-cursor');
+            topToolbar.classList.remove('ui-hidden');
+            btnPrev.classList.remove('ui-hidden');
+            btnNext.classList.remove('ui-hidden');
+            
+            clearTimeout(hideUITimeout);
+
+            // Jika slideshow jalan, sembunyikan lagi setelah 2.5s
+            if (state.isSlideshowPlaying && !lightbox.classList.contains('hidden-el')) {
+                hideUITimeout = setTimeout(() => {
+                    document.body.classList.add('hide-cursor');
+                    topToolbar.classList.add('ui-hidden');
+                    btnPrev.classList.add('ui-hidden');
+                    btnNext.classList.add('ui-hidden');
+                }, 2500);
+            }
+        }
+
+        document.addEventListener('mousemove', resetUITimer);
+        document.addEventListener('touchstart', resetUITimer);
+
+        // --- STREAMING_CHUNK:Admin & Settings Logic... ---
+        // Admin Panel
+        const adminSidebar = document.getElementById('admin-sidebar');
+        document.getElementById('btn-open-admin').addEventListener('click', () => adminSidebar.classList.remove('-translate-x-full'));
+        document.getElementById('btn-close-admin').addEventListener('click', () => adminSidebar.classList.add('-translate-x-full'));
+
+        // Upload Preview
+        document.getElementById('admin-file-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    currentUploadedBase64 = evt.target.result;
+                    document.getElementById('upload-preview').src = currentUploadedBase64;
+                    document.getElementById('upload-preview').classList.remove('hidden-el');
+                    document.getElementById('upload-placeholder').classList.add('hidden-el');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Simpan Karya Baru
+        document.getElementById('btn-save-new-photo').addEventListener('click', async () => {
+            const title = document.getElementById('admin-title').value;
+            const category = document.getElementById('admin-category').value;
+            const artist = document.getElementById('admin-artist').value;
+            const year = document.getElementById('admin-year').value;
+
+            if(!title || !category || !artist || !year || !currentUploadedBase64) {
+                await showDialog("Form Belum Lengkap", "Harap isi Judul, Kategori, Seniman, Tahun, dan pastikan Anda telah memilih File Foto!", "warning");
+                return;
+            }
+
+            const newItem = {
+                id: Date.now(), title, category, artist, year,
+                medium: document.getElementById('admin-medium').value || "-",
+                description: document.getElementById('admin-desc').value || "-",
+                bio: document.getElementById('admin-bio').value || "-",
+                imageUrl: currentUploadedBase64
+            };
+
+            galleryData.unshift(newItem); // Tambah ke awal array
+            state.currentCategory = 'Semua';
+            renderCategories();
+            renderGallery();
+            
+            // Reset Form
+            document.querySelectorAll('#admin-sidebar input[type="text"], #admin-sidebar textarea').forEach(i => i.value = '');
+            document.getElementById('upload-preview').classList.add('hidden-el');
+            document.getElementById('upload-placeholder').classList.remove('hidden-el');
+            document.getElementById('admin-file-upload').value = '';
+            currentUploadedBase64 = null;
+
+            await showDialog("Berhasil", "Karya baru telah ditambahkan ke galeri.", "success");
+            adminSidebar.classList.add('-translate-x-full');
+        });
+
+        async function deleteCurrentPhoto() {
+            const displayData = getFilteredData();
+            if (displayData.length === 0) return;
+
+            const isConfirmed = await showDialog("Konfirmasi Hapus", "Hapus foto ini dari galeri secara permanen? Pastikan Anda sudah mem-backup data.", "confirm");
+            if (!isConfirmed) return;
+
+            const photoId = displayData[state.currentIndex].id;
+            galleryData = galleryData.filter(item => item.id !== photoId);
+            
+            closeLightbox();
+            renderCategories();
+            renderGallery();
+            showDialog("Terhapus", "Foto berhasil dihapus.", "success");
+        }
+
+        // Pengaturan
+        const settingsModal = document.getElementById('settings-modal');
+        document.getElementById('btn-open-settings').addEventListener('click', () => {
+            document.getElementById('setting-exhibition-name').value = state.settings.exhibitionName;
+            document.getElementById('toggle-frame').checked = state.settings.useFrame;
+            document.getElementById('select-interval').value = state.settings.interval.toString();
+            document.getElementById('select-theme').value = state.settings.theme;
+            settingsModal.classList.remove('hidden-el');
+        });
+        document.getElementById('btn-close-settings').addEventListener('click', () => settingsModal.classList.add('hidden-el'));
+
+        // Ubah Tema Real-time
+        document.getElementById('select-theme').addEventListener('change', (e) => {
+            document.documentElement.setAttribute('data-theme', e.target.value);
+        });
+
+        // Simpan Pengaturan
+        document.getElementById('btn-save-settings').addEventListener('click', async () => {
+            state.settings.exhibitionName = document.getElementById('setting-exhibition-name').value || "mative.id exhibition";
+            state.settings.useFrame = document.getElementById('toggle-frame').checked;
+            state.settings.interval = parseInt(document.getElementById('select-interval').value);
+            state.settings.theme = document.getElementById('select-theme').value;
+            
+            exhibitionNameDisplay.textContent = state.settings.exhibitionName;
+            document.documentElement.setAttribute('data-theme', state.settings.theme);
+
+            if (!lightbox.classList.contains('hidden-el')) {
+                updateLightboxContent();
+                resetSlideshowTimer();
+            }
+            
+            settingsModal.classList.add('hidden-el');
+            await showDialog("Tersimpan", "Konfigurasi sistem telah diperbarui.", "success");
+        });
+
+        // Export JSON
+        document.getElementById('btn-export-json').addEventListener('click', () => {
+            if(galleryData.length === 0) {
+                showDialog("Data Kosong", "Belum ada data karya untuk diunduh.", "info");
+                return;
+            }
+            const dataStr = JSON.stringify(galleryData, null, 2);
+            const blob = new Blob([dataStr], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `mative_gallery_backup_${new Date().getTime()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // Import JSON
+        document.getElementById('input-import-json').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(evt) {
+                try {
+                    const importedData = JSON.parse(evt.target.result);
+                    if(Array.isArray(importedData)) {
+                        galleryData = importedData;
+                        state.currentCategory = 'Semua';
+                        renderCategories();
+                        renderGallery();
+                        settingsModal.classList.add('hidden-el');
+                        await showDialog("Berhasil", "Data galeri berhasil dipulihkan!", "success");
+                    } else {
+                        throw new Error("Format Array salah");
+                    }
+                } catch(err) {
+                    await showDialog("Error", "File JSON tidak valid atau rusak.", "warning");
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = ''; 
+        });
+
+        // Google Sheets Sync
+        document.getElementById('btn-sync-gsheet').addEventListener('click', async () => {
+            const urlInput = document.getElementById('setting-gsheet-url').value.trim();
+            if (!urlInput) {
+                await showDialog("Error", "Harap masukkan tautan Google Sheet.", "warning");
+                return;
+            }
+
+            const idMatch = urlInput.match(/\/d\/([a-zA-Z0-9-_]+)/);
+            if (!idMatch) {
+                await showDialog("Error URL", "URL tidak valid. Salin tautan penuh dari Google Sheets.", "warning");
+                return;
+            }
+            
+            const sheetId = idMatch[1];
+            const fetchUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
+
+            const syncBtn = document.getElementById('btn-sync-gsheet');
+            const syncIcon = document.getElementById('icon-sync');
+            
+            syncBtn.classList.add('opacity-50', 'pointer-events-none');
+            syncIcon.classList.add('animate-spin');
+
+            try {
+                const response = await fetch(fetchUrl);
+                const text = await response.text();
+                const jsonString = text.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\);/)[1];
+                const data = JSON.parse(jsonString);
+                const rows = data.table.rows;
+                let newItems = [];
+                
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i].c;
+                    if (!row || !row[0] || !row[0].v) continue; 
+                    
+                    const imageUrl = row[7] ? row[7].v : "";
+                    if (imageUrl) {
+                        newItems.push({
+                            id: Date.now() + i + Math.random(),
+                            title: row[0] ? row[0].v : "Tanpa Judul", 
+                            category: row[1] ? row[1].v : "Lainnya", 
+                            artist: row[2] ? row[2].v : "Anonim", 
+                            year: row[3] ? row[3].v : "-", 
+                            medium: row[4] ? row[4].v : "-", 
+                            description: row[5] ? row[5].v : "-", 
+                            bio: row[6] ? row[6].v : "-", 
+                            imageUrl: imageUrl
+                        });
+                    }
+                }
+
+                if (newItems.length > 0) {
+                    galleryData = [...newItems, ...galleryData];
+                    state.currentCategory = 'Semua';
+                    renderCategories();
+                    renderGallery();
+                    settingsModal.classList.add('hidden-el');
+                    document.getElementById('setting-gsheet-url').value = '';
+                    await showDialog("Sinkronisasi Berhasil", `${newItems.length} karya baru berhasil ditambahkan dari Google Sheet.`, "success");
+                } else {
+                    await showDialog("Data Kosong", "Tidak ada data foto yang valid ditemukan. Pastikan kolom H (URL Gambar) diisi.", "info");
+                }
+            } catch (error) {
+                await showDialog("Sinkronisasi Gagal", "Pastikan akses Google Sheet disetel ke 'Siapa saja yang memiliki tautan' (Publik).", "warning");
+            } finally {
+                syncBtn.classList.remove('opacity-50', 'pointer-events-none');
+                syncIcon.classList.remove('animate-spin');
+            }
+        });
+
+        // --- STREAMING_CHUNK:Global Event Listeners & Fullscreen... ---
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => console.log(err));
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        document.addEventListener('fullscreenchange', () => {
+            const iconFs = document.getElementById('icon-fullscreen');
+            if (document.fullscreenElement) {
+                iconFs.setAttribute('data-lucide', 'minimize');
+            } else {
+                iconFs.setAttribute('data-lucide', 'maximize');
+            }
+            lucide.createIcons();
+        });
+
+        document.getElementById('btn-close-lightbox').addEventListener('click', closeLightbox);
+        document.getElementById('btn-next').addEventListener('click', nextSlide);
+        document.getElementById('btn-prev').addEventListener('click', prevSlide);
+        document.getElementById('btn-toggle-slideshow').addEventListener('click', toggleSlideshow);
+        document.getElementById('btn-play-all').addEventListener('click', () => startSlideshow());
+        document.getElementById('btn-delete-photo').addEventListener('click', deleteCurrentPhoto);
+        document.getElementById('btn-toggle-fullscreen').addEventListener('click', toggleFullscreen);
+        document.getElementById('btn-toggle-info').addEventListener('click', toggleInfoPanel);
+
+        // Keyboard & Swipe Navigation
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('custom-dialog').classList.contains('hidden-el') === false) return; // Block keys if dialog is open
+
+            if (!lightbox.classList.contains('hidden-el')) {
+                if (e.key === 'Escape') closeLightbox();
+                if (e.key === 'ArrowRight') nextSlide();
+                if (e.key === 'ArrowLeft') prevSlide();
+                if (e.key === ' ') {
+                    e.preventDefault();
+                    toggleSlideshow();
+                }
+                if (e.key === 'i' || e.key === 'I') toggleInfoPanel();
+            }
+        });
+
+        // Touch swipe variables
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        lightbox.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, {passive: true});
+
+        lightbox.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, {passive: true});
+
+        function handleSwipe() {
+            if(lightbox.classList.contains('hidden-el')) return;
+            const threshold = 50;
+            if (touchEndX < touchStartX - threshold) nextSlide(); // Swipe Left -> Next
+            if (touchEndX > touchStartX + threshold) prevSlide(); // Swipe Right -> Prev
+        }
+
+        // Inisialisasi awal UI
+        renderCategories();
+        renderGallery();
+        document.documentElement.setAttribute('data-theme', state.settings.theme);
+
+    </script>
+</body>
+</html>
