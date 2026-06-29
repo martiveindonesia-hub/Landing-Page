@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dashboard Invoicing - martive.id</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- html2pdf for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Chart.js for Graphic -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --color-brand-50: #f0fdf4; --color-brand-100: #dcfce7; --color-brand-200: #bbf7d0;
+            --color-brand-500: #22c55e; --color-brand-600: #16a34a; --color-brand-700: #15803d;
+            --color-brand-800: #166534; --color-brand-900: #14532d;
+        }
+
+        html { scroll-behavior: smooth; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .invoice-paper { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
+        .pdf-desc-cell { white-space: pre-wrap; word-break: break-word; }
+        
+        /* Table page break handling for html2pdf */
+        #invoice-paper table { page-break-inside: auto !important; }
+        #invoice-paper tr { page-break-inside: avoid !important; page-break-after: auto !important; }
+        #invoice-paper thead { display: table-header-group !important; }
+        .avoid-break { page-break-inside: avoid !important; }
+        
+        /* Print rules */
+        @media print {
+            body * { visibility: hidden; }
+            #view-preview, #view-preview * { visibility: visible; }
+            #view-preview { position: absolute; left: 0; top: 0; width: 100%; margin:0; padding:0; box-shadow:none; }
+            #chart-container, button, aside, header, .md\:hidden { display: none !important; }
+        }
+
+        /* Touch friendly improvements */
+        input, select, textarea, button { font-size: 16px !important; } 
+    </style>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            50: 'var(--color-brand-50)', 100: 'var(--color-brand-100)', 200: 'var(--color-brand-200)',
+                            500: 'var(--color-brand-500)', 600: 'var(--color-brand-600)', 700: 'var(--color-brand-700)',
+                            800: 'var(--color-brand-800)', 900: 'var(--color-brand-900)',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans flex h-screen overflow-hidden">
+
+    <!-- APP LOCK SCREEN -->
+    <div id="lock-screen" class="fixed inset-0 bg-gray-50/95 backdrop-blur-sm z-[200] flex flex-col items-center justify-center transition-opacity duration-500 hidden px-4">
+        <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-sm text-center border border-gray-100">
+            <div class="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-lock text-brand-500 text-2xl"></i></div>
+            <h2 id="lock-title" class="text-2xl font-bold text-gray-800 mb-2">Akses Keamanan</h2>
+            <p id="lock-desc" class="text-sm text-gray-500 mb-6">Masukkan PIN keamanan aplikasi Anda.</p>
+            <input type="password" id="pin-input" class="w-full text-center text-3xl tracking-[0.5em] border-gray-300 rounded-lg shadow-sm focus:ring-brand-500 focus:border-brand-500 px-4 py-3 border transition-colors mb-4 font-mono" maxlength="6" pattern="\d*" inputmode="numeric" onkeypress="if(event.key === 'Enter') submitPin()">
+            <button onclick="submitPin()" class="w-full bg-brand-600 hover:bg-brand-700 text-white py-3.5 rounded-lg font-bold shadow-md transition-all active:scale-95 text-lg">Buka Sistem</button>
+        </div>
+    </div>
+
+    <!-- CUSTOM CONFIRM MODAL -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[150] hidden flex flex-col items-center justify-center px-4 transition-opacity">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-sm text-center">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-triangle-exclamation text-red-600 text-2xl"></i></div>
+            <h3 class="text-lg font-bold mb-2">Konfirmasi Tindakan</h3>
+            <p id="confirm-msg" class="text-gray-600 text-sm mb-6">Apakah Anda yakin ingin melanjutkan?</p>
+            <div class="flex gap-3">
+                <button onclick="cancelConfirm()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-xl font-bold transition-colors">Batal</button>
+                <button onclick="executeConfirm()" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-bold transition-colors shadow-md">Ya, Lanjutkan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN AUTH MODAL (909090) -->
+    <div id="admin-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[150] hidden flex flex-col items-center justify-center px-4 transition-opacity">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-sm text-center border-t-4 border-purple-600">
+            <i class="fa-solid fa-user-shield text-purple-600 text-4xl mb-4 mt-2 block"></i>
+            <h3 class="text-xl font-bold mb-2 text-gray-800">Verifikasi Admin</h3>
+            <p class="text-gray-500 text-sm mb-6">Masukkan PIN Master (909090) untuk mengubah konfigurasi API.</p>
+            <input type="password" id="admin-pin-input" class="w-full text-center text-3xl tracking-[0.5em] border-gray-300 rounded-xl px-4 py-3 mb-6 font-mono focus:ring-purple-500 focus:border-purple-500 border bg-gray-50" maxlength="6" inputmode="numeric">
+            <div class="flex gap-3">
+                <button onclick="closeAdminModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-xl font-bold transition-colors">Batal</button>
+                <button onclick="verifyAdmin()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-xl font-bold transition-colors shadow-md">Verifikasi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="fixed top-20 right-4 sm:right-6 transform translate-x-full opacity-0 transition-all duration-300 z-[110] bg-gray-800 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center border-l-4 border-brand-500 max-w-[90vw] sm:max-w-md">
+        <i class="fa-solid fa-circle-info mr-3 text-lg shrink-0" id="toast-icon"></i>
+        <span id="toast-msg" class="text-sm font-medium leading-tight">Notifikasi</span>
+    </div>
+
+    <!-- Sidebar (Desktop) -->
+    <aside class="w-64 bg-brand-900 text-white flex-col transition-all duration-300 z-40 hidden md:flex h-screen shrink-0 shadow-lg">
+        <div class="h-16 flex items-center px-6 border-b border-brand-800">
+            <div id="sidebar-logo-container" class="flex items-center gap-3 overflow-hidden">
+                <i class="fa-solid fa-cube text-brand-500 text-2xl shrink-0"></i>
+                <span class="text-xl font-bold tracking-tight text-white truncate" id="sidebar-company-name">martive.id</span>
+            </div>
+        </div>
+        <nav class="flex-1 py-6 px-3 space-y-1.5 overflow-y-auto">
+            <button onclick="nav('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl bg-brand-800 text-white transition-all hover:pl-5"><i class="fa-solid fa-chart-pie w-6 text-center mr-2 text-brand-100"></i> Dashboard</button>
+            <button onclick="openNewInvoice()" id="nav-create" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-all hover:pl-5"><i class="fa-solid fa-file-invoice w-6 text-center mr-2"></i> Buat Dokumen</button>
+            <button onclick="nav('recap')" id="nav-recap" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-all hover:pl-5"><i class="fa-solid fa-calendar-check w-6 text-center mr-2"></i> Rekap Bulanan</button>
+            <button onclick="nav('history')" id="nav-history" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-all hover:pl-5"><i class="fa-solid fa-clock-rotate-left w-6 text-center mr-2"></i> Riwayat & CRM</button>
+            <button onclick="nav('marketing')" id="nav-marketing" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-all hover:pl-5"><i class="fa-solid fa-bullhorn w-6 text-center mr-2 text-yellow-400"></i> Marketing Promo</button>
+            <button onclick="nav('settings')" id="nav-settings" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-all hover:pl-5"><i class="fa-solid fa-gear w-6 text-center mr-2"></i> Pengaturan</button>
+        </nav>
+    </aside>
+
+    <!-- Sidebar (Mobile Sliding) -->
+    <aside id="mobile-sidebar" class="fixed inset-y-0 left-0 bg-brand-900 text-white w-64 transform -translate-x-full transition-transform duration-300 z-50 flex flex-col md:hidden shadow-2xl">
+        <div class="h-16 flex items-center justify-between px-6 border-b border-brand-800">
+            <div id="mobile-slide-logo-container" class="flex items-center gap-3 overflow-hidden">
+                <i class="fa-solid fa-cube text-brand-500 text-xl shrink-0"></i>
+                <span class="text-lg font-bold truncate" id="mobile-slide-company-name">martive.id</span>
+            </div>
+            <button onclick="toggleMobileMenu()" class="text-brand-200 hover:text-white p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+        <nav class="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+            <button onclick="nav('dashboard')" id="nav-dashboard-mob" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl bg-brand-800 text-white transition-colors"><i class="fa-solid fa-chart-pie w-6 text-center mr-2 text-brand-100"></i> Dashboard</button>
+            <button onclick="openNewInvoice()" id="nav-create-mob" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-colors"><i class="fa-solid fa-file-invoice w-6 text-center mr-2"></i> Buat Dokumen</button>
+            <button onclick="nav('recap')" id="nav-recap-mob" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-colors"><i class="fa-solid fa-calendar-check w-6 text-center mr-2"></i> Rekap Bulanan</button>
+            <button onclick="nav('history')" id="nav-history-mob" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-colors"><i class="fa-solid fa-clock-rotate-left w-6 text-center mr-2"></i> Riwayat & CRM</button>
+            <button onclick="nav('marketing')" id="nav-marketing-mob" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-colors"><i class="fa-solid fa-bullhorn w-6 text-center mr-2 text-yellow-400"></i> Marketing Promo</button>
+            <button onclick="nav('settings')" id="nav-settings-mob" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-colors"><i class="fa-solid fa-gear w-6 text-center mr-2"></i> Pengaturan</button>
+        </nav>
+    </aside>
+
+    <div id="mobile-overlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-black/60 z-40 hidden backdrop-blur-sm transition-opacity"></div>
+    <div class="md:hidden fixed top-0 w-full bg-brand-900 text-white h-16 flex items-center justify-between px-4 z-30 shadow-md">
+        <div id="mobile-logo-container" class="flex items-center gap-3 overflow-hidden">
+            <i class="fa-solid fa-cube text-brand-500 text-xl shrink-0"></i><span class="text-lg font-bold truncate" id="mobile-company-name">martive.id</span>
+        </div>
+        <button onclick="toggleMobileMenu()" class="text-white hover:text-brand-200 focus:outline-none p-2 active:scale-95"><i class="fa-solid fa-bars text-2xl"></i></button>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-y-auto mt-16 md:mt-0 relative w-full" id="main-content">
+        
+        <header class="h-16 bg-white border-b flex items-center justify-between px-6 lg:px-8 hidden md:flex sticky top-0 z-10 shrink-0">
+            <h1 class="text-xl font-bold text-gray-800 tracking-tight" id="page-title">Dashboard</h1>
+            <div class="flex gap-3">
+                <button onclick="nav('marketing')" class="bg-amber-100 hover:bg-amber-200 text-amber-700 px-5 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center shadow-sm"><i class="fa-solid fa-bullhorn mr-2"></i>Broadcast</button>
+                <button onclick="openNewInvoice()" class="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 flex items-center"><i class="fa-solid fa-plus mr-2"></i>Buat Dokumen</button>
+            </div>
+        </header>
+
+        <div class="p-4 sm:p-6 lg:p-8 flex-1 w-full max-w-[100vw]">
+
+            <!-- 1. DASHBOARD VIEW -->
+            <div id="view-dashboard" class="space-y-6">
+                <div class="flex gap-3 md:hidden mb-2">
+                    <button onclick="openNewInvoice()" class="flex-[2] bg-brand-600 text-white px-4 py-3.5 rounded-xl font-bold shadow-sm active:scale-95 flex items-center justify-center"><i class="fa-solid fa-plus mr-2"></i> Buat Dokumen</button>
+                    <button onclick="nav('marketing')" class="flex-1 bg-amber-100 text-amber-700 px-4 py-3.5 rounded-xl font-bold shadow-sm active:scale-95 flex items-center justify-center"><i class="fa-solid fa-bullhorn"></i></button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                    <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 flex items-center justify-between group hover:border-brand-200 transition-colors">
+                        <div><p class="text-sm text-gray-500 font-medium mb-1">Invoice Aktif</p><p class="text-3xl font-black text-gray-900" id="stat-total-count">0</p></div>
+                        <div class="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors"><i class="fa-solid fa-file-invoice text-2xl"></i></div>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 flex items-center justify-between group hover:border-brand-200 transition-colors">
+                        <div><p class="text-sm text-gray-500 font-medium mb-1">Total Nilai Tagihan</p><p class="text-xl sm:text-2xl font-black text-gray-900" id="stat-total-amount">Rp 0</p></div>
+                        <div class="w-14 h-14 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 group-hover:bg-brand-600 group-hover:text-white transition-colors"><i class="fa-solid fa-money-bill-wave text-2xl"></i></div>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 flex items-center justify-between group hover:border-brand-200 transition-colors">
+                        <div><p class="text-sm text-gray-500 font-medium mb-1">Total Piutang</p><p class="text-xl sm:text-2xl font-black text-red-600" id="stat-unpaid-amount">Rp 0</p></div>
+                        <div class="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-colors"><i class="fa-solid fa-clock text-2xl"></i></div>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 flex items-center justify-between group hover:border-brand-200 transition-colors">
+                        <div><p class="text-sm text-gray-500 font-medium mb-1">Estimasi Aktif</p><p class="text-3xl font-black text-blue-600" id="stat-est-count">0</p></div>
+                        <div class="w-14 h-14 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors"><i class="fa-solid fa-file-contract text-2xl"></i></div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="px-6 py-5 border-b flex justify-between items-center bg-white">
+                        <h2 class="text-lg font-bold text-gray-800">Dokumen Terakhir</h2>
+                        <button onclick="nav('history')" class="text-sm text-brand-600 font-bold px-4 py-2 rounded-xl bg-brand-50 hover:bg-brand-100 transition-colors">Lihat Semua</button>
+                    </div>
+                    <div class="overflow-x-auto w-full">
+                        <table class="w-full text-sm text-left text-gray-500 min-w-[600px]">
+                            <thead class="text-xs text-gray-400 uppercase bg-gray-50/50 border-b">
+                                <tr><th class="px-6 py-4 w-36 font-semibold">No. Dokumen</th><th class="px-6 py-4 font-semibold">Klien</th><th class="px-6 py-4 w-32 font-semibold">Tanggal</th><th class="px-6 py-4 w-40 text-right font-semibold">Total</th><th class="px-6 py-4 w-28 text-center font-semibold">Status</th></tr>
+                            </thead>
+                            <tbody id="recent-invoices-body"></tbody>
+                        </table>
+                        <div id="empty-dashboard" class="text-center py-12 text-gray-500 hidden">
+                            <i class="fa-regular fa-folder-open text-5xl text-gray-300 mb-4 block"></i>
+                            <p class="font-medium">Belum ada data dokumen</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. CREATE INVOICE VIEW -->
+            <div id="view-create" class="hidden max-w-5xl mx-auto space-y-4 sm:space-y-6">
+                <form id="invoice-form" onsubmit="event.preventDefault(); generatePreview();">
+                    <div class="bg-white p-5 sm:p-7 rounded-2xl shadow-sm border border-gray-100 grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+                        <div>
+                            <h3 class="text-lg font-black mb-5 text-gray-800 flex items-center"><span class="bg-gray-100 text-gray-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">1</span> Info Dokumen</h3>
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div><label class="block text-sm font-bold mb-1.5 text-gray-700">Jenis Dokumen</label><select id="doc-type" onchange="toggleDocType()" class="w-full border-gray-300 rounded-xl px-4 py-3 bg-brand-50 font-bold text-brand-800 focus:ring-brand-500 border outline-none transition-colors"><option value="invoice">Invoice Tagihan</option><option value="estimasi">Quotation / Estimasi</option></select></div>
+                                    <div><label class="block text-sm font-bold mb-1.5 text-gray-700">Bahasa</label><select id="inv-lang" class="w-full border-gray-300 rounded-xl px-4 py-3 bg-gray-50 focus:ring-brand-500 border outline-none transition-colors"><option value="id">🇮🇩 Indonesia</option><option value="en">🇬🇧 English</option></select></div>
+                                </div>
+                                <div><label class="block text-sm font-bold mb-1.5 text-gray-700" id="lbl-form-no">No. Invoice</label><input type="text" id="inv-no" required class="w-full border-gray-300 rounded-xl px-4 py-3 focus:ring-brand-500 border font-mono font-bold text-gray-800 outline-none transition-colors"></div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div><label class="block text-sm font-bold mb-1.5 text-gray-700">Tanggal Buat</label><input type="date" id="inv-date" required class="w-full border-gray-300 rounded-xl px-4 py-3 focus:ring-brand-500 border outline-none transition-colors"></div>
+                                    <div><label class="block text-sm font-bold mb-1.5 text-gray-700" id="lbl-form-due">Jatuh Tempo</label><input type="date" id="inv-due" required class="w-full border-gray-300 rounded-xl px-4 py-3 focus:ring-brand-500 border outline-none transition-colors"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-black mb-5 text-gray-800 flex items-center"><span class="bg-gray-100 text-gray-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">2</span> Info Klien</h3>
+                            <div class="space-y-4">
+                                <div><label class="block text-sm font-bold mb-1.5 text-gray-700">Nama Perusahaan / Klien</label><input list="client-list" id="client-name" required class="w-full border-gray-300 rounded-xl px-4 py-3 focus:ring-brand-500 border outline-none transition-colors font-medium text-gray-900" oninput="handleClientAutofill()" placeholder="Ketik nama klien..."><datalist id="client-list"></datalist></div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div><label class="block text-sm font-bold mb-1.5 text-gray-700">Email Klien</label><input type="email" id="client-email" class="w-full border-gray-300 rounded-xl px-4 py-3 focus:ring-brand-500 border outline-none transition-colors" placeholder="email@klien.com"></div>
+                                    <div><label class="block text-sm font-bold mb-1.5 text-gray-700">No. WhatsApp</label><input type="tel" id="client-phone" class="w-full border-gray-300 rounded-xl px-4 py-3 focus:ring-brand-500 border outline-none transition-colors" placeholder="0812..."></div>
+                                </div>
+                                <div><label class="block text-sm font-bold mb-1.5 text-gray-700">Alamat Lengkap</label><textarea id="client-address" rows="2" class="w-full border-gray-300 rounded-xl px-4 py-3 focus:ring-brand-500 border outline-none transition-colors"></textarea></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 sm:p-7 rounded-2xl shadow-sm border border-gray-100 mb-6">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 gap-3">
+                            <h3 class="text-lg font-black text-gray-800 flex items-center"><span class="bg-gray-100 text-gray-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">3</span> Rincian Item</h3>
+                            <button type="button" onclick="addItemRow()" class="w-full sm:w-auto text-sm bg-brand-50 hover:bg-brand-100 text-brand-700 px-5 py-2.5 rounded-xl border border-brand-200 font-bold transition-colors shadow-sm"><i class="fa-solid fa-plus mr-2"></i> Tambah Item</button>
+                        </div>
+                        <div class="overflow-x-auto w-full pb-2">
+                            <table class="w-full text-left min-w-[750px]" id="items-table">
+                                <thead><tr class="text-sm font-bold text-gray-500 border-b border-gray-200 bg-gray-50"><th class="p-4 w-1/6 min-w-[120px] rounded-tl-lg">Kode (Katalog)</th><th class="p-4 w-2/6 min-w-[200px]">Deskripsi Lengkap</th><th class="p-4 text-right min-w-[140px]">Harga Satuan</th><th class="p-4 text-center min-w-[80px]">Qty</th><th class="p-4 text-right min-w-[140px]">Subtotal</th><th class="p-4 w-12 text-center rounded-tr-lg"></th></tr></thead>
+                                <tbody id="items-body"></tbody>
+                            </table>
+                            <datalist id="catalog-list"></datalist>
+                        </div>
+                        <div class="mt-6 flex justify-end">
+                            <div class="w-full sm:w-2/3 lg:w-1/3 space-y-3 bg-gray-50 p-5 rounded-2xl border border-gray-200">
+                                <div class="flex justify-between text-sm font-bold"><span>Subtotal:</span><span id="form-subtotal" class="text-gray-800">Rp 0</span></div>
+                                <div class="flex justify-between text-sm font-bold items-center text-gray-600"><span>Diskon (%):</span><input type="number" id="form-discount" min="0" max="100" value="0" class="w-20 text-right border-gray-300 rounded-lg px-3 py-2 focus:ring-brand-500 border outline-none" oninput="calculateTotal()"></div>
+                                <div class="flex justify-between text-sm font-bold items-center text-gray-600"><span>Pajak (%):</span><input type="number" id="form-tax" min="0" max="100" value="0" class="w-20 text-right border-gray-300 rounded-lg px-3 py-2 focus:ring-brand-500 border outline-none" oninput="calculateTotal()"></div>
+                                <div class="flex justify-between font-black border-t border-gray-300 pt-4 mt-3 text-xl text-gray-900"><span>Total:</span><span id="form-total" class="text-brand-600">Rp 0</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-5 sm:p-7 rounded-2xl shadow-sm border border-gray-100 mb-8">
+                        <label class="block text-sm font-black mb-3 text-gray-800 flex items-center"><span class="bg-gray-100 text-gray-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">4</span> Catatan & Instruksi</label>
+                        <textarea id="inv-notes" rows="3" class="w-full border-gray-300 rounded-xl px-4 py-3 focus:ring-brand-500 border outline-none transition-colors" placeholder="Catatan pembayaran atau instruksi tambahan..."></textarea>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row justify-end gap-3 pb-10">
+                        <button type="button" onclick="nav('dashboard')" class="w-full sm:w-auto px-6 py-4 sm:py-3 border border-gray-300 rounded-xl text-gray-700 font-bold hover:bg-gray-100 transition-colors">Batal & Kembali</button>
+                        <button type="submit" class="w-full sm:w-auto px-8 py-4 sm:py-3 bg-gray-900 hover:bg-black text-white rounded-xl font-black shadow-lg active:scale-95 flex justify-center items-center transition-all">Pratinjau PDF <i class="fa-solid fa-arrow-right ml-3"></i></button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 3. PREVIEW VIEW -->
+            <div id="view-preview" class="hidden pb-20">
+                <div class="max-w-[210mm] mx-auto mb-4 sm:mb-6 flex flex-col sm:flex-row justify-between items-stretch sm:items-center bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-gray-200 gap-3">
+                    <button onclick="nav('create')" class="text-gray-700 bg-gray-100 hover:bg-gray-200 px-5 py-3 rounded-xl font-bold flex justify-center items-center transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i> Edit Kembali</button>
+                    <div class="flex gap-3">
+                        <button onclick="triggerWhatsAppFromPreview()" class="flex-1 sm:flex-none bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-3 rounded-xl font-bold shadow-md transition-all flex justify-center items-center"><i class="fa-brands fa-whatsapp text-lg sm:mr-2"></i> <span class="hidden sm:inline">Kirim WA</span></button>
+                        <button onclick="saveAndDownloadPDF()" id="btn-download-pdf" class="flex-[2] sm:flex-none bg-brand-600 hover:bg-brand-700 text-white px-6 py-3 rounded-xl font-black shadow-md transition-all flex justify-center items-center"><i class="fa-solid fa-file-pdf mr-2"></i> Simpan & Unduh PDF</button>
+                    </div>
+                </div>
+
+                <p class="text-center text-xs text-gray-500 mb-2 sm:hidden font-medium"><i class="fa-solid fa-arrows-left-right mr-1"></i> Geser PDF ke samping</p>
+                <div class="overflow-x-auto w-full pb-8 rounded-2xl touch-pan-x">
+                    <div class="bg-white invoice-paper p-8 sm:p-14 mx-auto" id="invoice-paper" style="width: 210mm; min-width: 210mm; min-height: 297mm; position: relative;">
+                        <!-- PDF Header -->
+                        <div class="flex justify-between items-start border-b-4 border-gray-100 pb-8 mb-8">
+                            <div class="flex gap-5 items-start max-w-[60%]">
+                                <img id="pdf-logo" src="" alt="Logo" class="w-20 h-20 object-cover rounded-lg hidden shadow-sm shrink-0">
+                                <div>
+                                    <h1 class="text-3xl sm:text-4xl font-black text-brand-600 tracking-tight leading-none mb-1.5" id="pdf-company-name">martive.id</h1>
+                                    <p class="text-gray-500 text-xs sm:text-sm leading-relaxed" id="pdf-company-desc"></p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <h2 class="text-2xl sm:text-4xl font-black text-gray-200 uppercase tracking-widest" id="lbl-invoice-title">INVOICE</h2>
+                                <p class="text-gray-800 font-black mt-1 sm:mt-2 text-base sm:text-xl" id="pdf-inv-no">INV-000</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Client & Date -->
+                        <div class="flex justify-between mb-8 sm:mb-12">
+                            <div class="w-[55%] pr-4">
+                                <p class="text-[10px] sm:text-xs font-black text-gray-400 mb-1.5 uppercase tracking-widest" id="lbl-billed-to">Ditagihkan Kepada:</p>
+                                <h3 class="text-base sm:text-xl font-black text-gray-900 mb-1" id="pdf-client-name">Nama Klien</h3>
+                                <p class="text-gray-600 text-xs sm:text-sm whitespace-pre-line leading-relaxed" id="pdf-client-address">Alamat</p>
+                                <p class="text-gray-600 text-xs sm:text-sm mt-1 font-medium" id="pdf-client-email">email</p>
+                            </div>
+                            <div class="text-right w-[40%]">
+                                <div class="mb-4">
+                                    <p class="text-[10px] sm:text-xs font-black text-gray-400 mb-1 uppercase tracking-widest" id="lbl-inv-date">Tanggal:</p>
+                                    <p class="text-sm sm:text-base font-bold text-gray-800" id="pdf-date">Date</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] sm:text-xs font-black text-gray-400 mb-1 uppercase tracking-widest" id="lbl-due-date">Jatuh Tempo:</p>
+                                    <p class="text-sm sm:text-base font-bold text-gray-800" id="pdf-due">Due</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Table Items -->
+                        <table class="w-full text-left mb-8 sm:mb-12" style="border-collapse: collapse;">
+                            <thead>
+                                <tr class="border-y-2 border-gray-200 text-xs sm:text-sm bg-gray-50/50">
+                                    <th class="py-3 px-3 font-black text-gray-800 w-[55%]" id="lbl-th-desc">Deskripsi Item</th>
+                                    <th class="py-3 px-3 font-black text-gray-800 text-right w-[20%]" id="lbl-th-price">Harga</th>
+                                    <th class="py-3 px-3 font-black text-gray-800 text-center w-[5%]" id="lbl-th-qty">Qty</th>
+                                    <th class="py-3 px-3 font-black text-gray-800 text-right w-[20%]" id="lbl-th-total">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pdf-items-body" class="text-xs sm:text-sm text-gray-800"></tbody>
+                        </table>
+
+                        <!-- Totals Area -->
+                        <div class="flex justify-end mb-10 sm:mb-14 avoid-break">
+                            <div class="w-[70%] sm:w-[50%]">
+                                <div class="flex justify-between py-2.5 text-sm border-t border-gray-200 text-gray-600 font-medium">
+                                    <span id="lbl-subtotal">Subtotal</span><span id="pdf-subtotal" class="font-bold text-gray-900">Rp 0</span>
+                                </div>
+                                <div class="flex justify-between py-2.5 text-sm text-gray-600 font-medium" id="pdf-discount-row">
+                                    <span><span id="lbl-discount">Diskon</span> (<span id="pdf-discount-val">0</span>%)</span><span id="pdf-discount-amount" class="text-red-500 font-bold">- Rp 0</span>
+                                </div>
+                                <div class="flex justify-between py-2.5 text-sm text-gray-600 font-medium" id="pdf-tax-row">
+                                    <span><span id="lbl-tax">Pajak</span> (<span id="pdf-tax-val">0</span>%)</span><span id="pdf-tax-amount" class="font-bold text-gray-900">+ Rp 0</span>
+                                </div>
+                                <div class="flex justify-between py-4 font-black text-lg sm:text-xl border-t-4 border-brand-100 mt-2 bg-brand-50 px-4 rounded-lg text-brand-700">
+                                    <span id="lbl-grand-total">TOTAL</span><span id="pdf-total">Rp 0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notes Area -->
+                        <div class="mb-10 p-5 bg-gray-50 rounded-xl border border-gray-100 avoid-break">
+                            <p class="text-[10px] sm:text-xs font-black uppercase mb-2.5 text-gray-500 tracking-widest" id="lbl-notes-title">Catatan & Instruksi:</p>
+                            <p class="text-xs sm:text-sm whitespace-pre-wrap leading-relaxed text-gray-800 font-medium" id="pdf-notes">-</p>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="text-center text-gray-400 text-[10px] sm:text-xs mt-auto pt-8 border-t border-gray-100 avoid-break font-medium">
+                            <p id="lbl-thanks">Terima kasih atas kerja sama Anda.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. RECAP VIEW -->
+            <div id="view-recap" class="hidden space-y-4 sm:space-y-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="px-5 sm:px-7 py-5 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white">
+                        <div>
+                            <h2 class="text-xl font-black text-gray-800">Rekapitulasi Keuangan</h2>
+                            <p class="text-sm text-gray-500 mt-1">Hanya menghitung Invoice (Estimasi tidak dihitung).</p>
+                        </div>
+                        <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+                            <select id="recap-year-filter" onchange="renderRecap()" class="flex-1 sm:flex-none border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:ring-brand-500 font-bold bg-gray-50 outline-none"><option value="all">Semua Tahun</option></select>
+                            <button onclick="exportRecapCSV()" class="flex-1 sm:flex-none text-sm bg-green-50 hover:bg-green-100 text-green-700 px-5 py-2.5 rounded-xl border border-green-200 font-black transition-colors shadow-sm flex items-center justify-center"><i class="fa-solid fa-file-excel sm:mr-2"></i> <span class="hidden sm:inline">Export CSV</span></button>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 sm:p-6 border-b hidden sm:block bg-gray-50/30" id="chart-container">
+                        <div class="relative h-64 sm:h-80 w-full"><canvas id="recapChart"></canvas></div>
+                    </div>
+                    
+                    <div class="overflow-x-auto w-full">
+                        <table class="w-full text-sm text-left min-w-[750px]">
+                            <thead class="text-xs uppercase bg-gray-100 text-gray-500 border-b border-gray-200">
+                                <tr>
+                                    <th class="px-5 py-4 w-12 text-center"></th>
+                                    <th class="px-5 py-4 font-bold">Bulan</th>
+                                    <th class="px-5 py-4 text-center font-bold">Jml (Inv)</th>
+                                    <th class="px-5 py-4 text-right font-bold">Tagihan Total</th>
+                                    <th class="px-5 py-4 text-right text-green-600 font-bold">Lunas</th>
+                                    <th class="px-5 py-4 text-right text-red-600 font-bold">Piutang</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recap-body" class="text-gray-700"></tbody>
+                        </table>
+                        <div id="empty-recap" class="text-center py-16 hidden">
+                            <i class="fa-solid fa-chart-column text-5xl text-gray-300 mb-4 block"></i>
+                            <p class="text-gray-500 font-bold text-lg">Belum ada data rekapitulasi.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. HISTORY VIEW -->
+            <div id="view-history" class="hidden space-y-4">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="px-5 sm:px-7 py-5 border-b bg-white flex justify-between items-center"><h2 class="text-xl font-black text-gray-800">Riwayat & CRM Dokumen</h2></div>
+                    <div class="overflow-x-auto w-full">
+                        <table class="w-full text-sm text-left min-w-[950px]">
+                            <thead class="text-xs uppercase bg-gray-50 text-gray-500 border-b border-gray-200">
+                                <tr><th class="px-6 py-4 w-36 font-bold">No. Dokumen</th><th class="px-6 py-4 w-32 font-bold">Tanggal</th><th class="px-6 py-4 font-bold">Klien</th><th class="px-6 py-4 text-right font-bold">Nominal</th><th class="px-6 py-4 text-center font-bold w-32">Status</th><th class="px-6 py-4 text-center font-bold w-48">Aksi Cepat</th></tr>
+                            </thead>
+                            <tbody id="history-body" class="text-gray-700"></tbody>
+                        </table>
+                        <div id="empty-history" class="text-center py-16 hidden">
+                            <i class="fa-regular fa-folder-open text-5xl text-gray-300 mb-4 block"></i>
+                            <p class="text-gray-500 font-bold text-lg">Riwayat dokumen masih kosong.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MARKETING VIEW (NEW) -->
+            <div id="view-marketing" class="hidden max-w-5xl mx-auto space-y-6">
+                <div class="bg-gradient-to-r from-amber-500 to-amber-600 rounded-2xl shadow-md p-6 sm:p-8 text-white relative overflow-hidden">
+                    <i class="fa-solid fa-bullhorn absolute -right-6 -bottom-6 text-9xl opacity-20 transform -rotate-12"></i>
+                    <h2 class="text-2xl sm:text-3xl font-black mb-2 relative z-10">Marketing & Retensi</h2>
+                    <p class="text-amber-100 font-medium relative z-10">Kirim pesan promo dan ucapan terima kasih ke klien lama Anda untuk memicu repeat order.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <button onclick="applyMarketingTemplate('promo')" class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm hover:border-amber-400 hover:ring-2 hover:ring-amber-100 transition-all text-left group text-sm">
+                        <div class="w-10 h-10 bg-amber-50 rounded-full flex items-center justify-center text-amber-600 mb-3 group-hover:scale-110 transition-transform"><i class="fa-solid fa-percent text-lg"></i></div>
+                        <h4 class="font-bold text-gray-800 mb-1">Promo & Diskon</h4>
+                        <p class="text-gray-500 text-xs">Kirim info diskon khusus untuk next order.</p>
+                    </button>
+                    <button onclick="applyMarketingTemplate('thanks')" class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm hover:border-green-400 hover:ring-2 hover:ring-green-100 transition-all text-left group text-sm">
+                        <div class="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center text-green-600 mb-3 group-hover:scale-110 transition-transform"><i class="fa-solid fa-handshake-angle text-lg"></i></div>
+                        <h4 class="font-bold text-gray-800 mb-1">Follow-up / Thanks</h4>
+                        <p class="text-gray-500 text-xs">Jaga relasi beberapa minggu setelah project.</p>
+                    </button>
+                    <button onclick="applyMarketingTemplate('holiday')" class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm hover:border-purple-400 hover:ring-2 hover:ring-purple-100 transition-all text-left group text-sm">
+                        <div class="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center text-purple-600 mb-3 group-hover:scale-110 transition-transform"><i class="fa-solid fa-champagne-glasses text-lg"></i></div>
+                        <h4 class="font-bold text-gray-800 mb-1">Event / Hari Raya</h4>
+                        <p class="text-gray-500 text-xs">Ucapan Idul Fitri, Tahun Baru, dll.</p>
+                    </button>
+                </div>
+
+                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-100">
+                    <div class="grid grid-cols-1 gap-5">
+                        <div>
+                            <label class="block text-sm font-bold mb-2 text-gray-700">Pilih Target Klien (Dari Riwayat)</label>
+                            <select id="mkt-client" class="w-full border-gray-300 rounded-xl px-4 py-3 bg-gray-50 focus:ring-amber-500 border font-medium text-gray-800 outline-none" onchange="updateMktPreview()"><option value="">-- Pilih Klien --</option></select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold mb-2 text-gray-700 flex justify-between">Pesan Broadcast <span class="text-xs font-normal text-gray-400 bg-gray-100 px-2 py-0.5 rounded">Gunakan tag: [NAMA_KLIEN] [NAMA_PERUSAHAAN]</span></label>
+                            <textarea id="mkt-msg" rows="6" class="w-full border-gray-300 rounded-xl px-4 py-3 focus:ring-amber-500 border outline-none transition-colors text-sm" oninput="updateMktPreview()"></textarea>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex flex-col sm:flex-row gap-3">
+                        <button onclick="sendMarketingWA()" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-4 rounded-xl font-black shadow-md transition-all active:scale-95 text-lg flex items-center justify-center"><i class="fa-brands fa-whatsapp mr-2 text-xl"></i> Kirim via WhatsApp</button>
+                        <button onclick="sendMarketingEmail()" class="sm:flex-none sm:px-8 bg-gray-800 hover:bg-black text-white py-4 rounded-xl font-bold shadow-md transition-all active:scale-95 flex items-center justify-center"><i class="fa-solid fa-envelope mr-2"></i> Email</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. SETTINGS VIEW -->
+            <div id="view-settings" class="hidden max-w-5xl mx-auto space-y-6 pb-10">
+                <!-- Tema -->
+                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-100">
+                    <h2 class="text-xl font-black mb-5 border-b pb-3 text-gray-800 flex items-center"><div class="w-8 h-8 rounded bg-brand-50 text-brand-600 flex items-center justify-center mr-3"><i class="fa-solid fa-palette text-sm"></i></div> Tampilan & Tema</h2>
+                    <div class="flex gap-4">
+                        <button onclick="setTheme('green')" class="w-12 h-12 rounded-full bg-[#22c55e] focus:ring-4 focus:ring-[#22c55e]/50 shadow-sm transition-transform hover:scale-110"></button>
+                        <button onclick="setTheme('blue')" class="w-12 h-12 rounded-full bg-[#3b82f6] focus:ring-4 focus:ring-[#3b82f6]/50 shadow-sm transition-transform hover:scale-110"></button>
+                        <button onclick="setTheme('indigo')" class="w-12 h-12 rounded-full bg-[#6366f1] focus:ring-4 focus:ring-[#6366f1]/50 shadow-sm transition-transform hover:scale-110"></button>
+                        <button onclick="setTheme('slate')" class="w-12 h-12 rounded-full bg-[#64748b] focus:ring-4 focus:ring-[#64748b]/50 shadow-sm transition-transform hover:scale-110"></button>
+                    </div>
+                </div>
+
+                <!-- Keamanan -->
+                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-100">
+                    <h2 class="text-xl font-black mb-5 border-b pb-3 text-gray-800 flex items-center"><div class="w-8 h-8 rounded bg-red-50 text-red-600 flex items-center justify-center mr-3"><i class="fa-solid fa-shield-halved text-sm"></i></div> Keamanan Akses (PIN Aplikasi)</h2>
+                    <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
+                        <div class="flex-1"><label class="block text-sm font-bold mb-2 text-gray-600">Setel PIN Baru (6 Angka)</label><input type="password" id="setting-pin" class="w-full border border-gray-300 rounded-xl px-4 py-3 tracking-[0.3em] font-mono focus:ring-brand-500 text-lg outline-none" maxlength="6" inputmode="numeric"></div>
+                        <button onclick="savePin()" class="bg-gray-800 hover:bg-black text-white px-6 py-3 rounded-xl font-bold shadow-md transition-all">Simpan PIN</button>
+                        <button onclick="confirmRemovePin()" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-6 py-3 rounded-xl font-bold transition-all">Hapus PIN</button>
+                    </div>
+                </div>
+
+                <!-- Profil Perusahaan -->
+                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-brand-500">
+                    <h2 class="text-xl font-black mb-5 border-b pb-3 text-gray-800 flex items-center"><div class="w-8 h-8 rounded bg-brand-50 text-brand-600 flex items-center justify-center mr-3"><i class="fa-solid fa-building text-sm"></i></div> Profil Perusahaan & Branding</h2>
+                    <div class="mb-6 bg-gray-50 p-5 rounded-2xl border border-gray-200">
+                        <label class="block text-sm font-bold mb-3 text-gray-700">Logo Dokumen (Rasio 1:1 / Kotak)</label>
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+                            <div class="w-24 h-24 border-2 border-dashed border-gray-300 rounded-2xl bg-white flex items-center justify-center overflow-hidden shrink-0">
+                                <img id="comp-logo-preview" src="" class="w-full h-full object-cover hidden">
+                                <i id="comp-logo-placeholder" class="fa-solid fa-image text-gray-300 text-3xl"></i>
+                            </div>
+                            <input type="file" id="comp-logo-input" accept="image/*" class="text-sm bg-white border border-gray-300 rounded-xl p-2 w-full sm:w-auto font-medium" onchange="handleLogoUpload(event)">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div><label class="block text-sm font-bold mb-1.5 text-gray-700">Nama Brand / PT</label><input type="text" id="comp-name" class="w-full border-gray-300 rounded-xl px-4 py-3 border focus:ring-brand-500 outline-none"></div>
+                        <div><label class="block text-sm font-bold mb-1.5 text-gray-700">Tagline / Bidang Usaha</label><input type="text" id="comp-tagline" class="w-full border-gray-300 rounded-xl px-4 py-3 border focus:ring-brand-500 outline-none"></div>
+                        <div><label class="block text-sm font-bold mb-1.5 text-gray-700">Email Utama</label><input type="email" id="comp-email" class="w-full border-gray-300 rounded-xl px-4 py-3 border focus:ring-brand-500 outline-none"></div>
+                        <div><label class="block text-sm font-bold mb-1.5 text-gray-700">No. CS / WhatsApp</label><input type="text" id="comp-phone" class="w-full border-gray-300 rounded-xl px-4 py-3 border focus:ring-brand-500 outline-none"></div>
+                        <div class="md:col-span-2"><label class="block text-sm font-bold mb-1.5 text-gray-700">Alamat Lengkap</label><textarea id="comp-address" rows="2" class="w-full border-gray-300 rounded-xl px-4 py-3 border focus:ring-brand-500 outline-none"></textarea></div>
+                        <div class="md:col-span-2"><label class="block text-sm font-bold mb-1.5 text-gray-700">Instruksi Default PDF (Bahasa Indonesia)</label><textarea id="comp-notes" rows="2" class="w-full border-gray-300 rounded-xl px-4 py-3 border focus:ring-brand-500 outline-none text-sm"></textarea></div>
+                        <div class="md:col-span-2"><label class="block text-sm font-bold mb-1.5 text-gray-700">Instruksi Default PDF (English)</label><textarea id="comp-notes-en" rows="2" class="w-full border-gray-300 rounded-xl px-4 py-3 border focus:ring-brand-500 outline-none text-sm"></textarea></div>
+                    </div>
+                </div>
+
+                <!-- Template Pesan Follow up CRM -->
+                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-100">
+                    <h2 class="text-xl font-black mb-5 border-b pb-3 text-gray-800 flex items-center"><div class="w-8 h-8 rounded bg-blue-50 text-blue-600 flex items-center justify-center mr-3"><i class="fa-solid fa-message text-sm"></i></div> Template CRM (Riwayat)</h2>
+                    <p class="text-xs sm:text-sm text-gray-600 mb-5 bg-blue-50/50 p-4 rounded-xl border border-blue-100 font-medium">Tag pendukung: <code class="font-bold text-blue-700">[NAMA_KLIEN] [NO_INVOICE] [TOTAL] [JATUH_TEMPO] [NAMA_PERUSAHAAN]</code></p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div><label class="block text-sm font-bold mb-1.5 text-gray-700">WA - Tagih Pembayaran (ID)</label><textarea id="tpl-wa-pending" rows="3" class="w-full border-gray-300 rounded-xl px-4 py-3 text-sm border focus:ring-brand-500 outline-none"></textarea></div>
+                        <div><label class="block text-sm font-bold mb-1.5 text-gray-700">WA - Bukti Lunas (ID)</label><textarea id="tpl-wa-paid" rows="3" class="w-full border-gray-300 rounded-xl px-4 py-3 text-sm border focus:ring-brand-500 outline-none"></textarea></div>
+                        <div><label class="block text-sm font-bold mb-1.5 text-gray-700">WA - Tagih Pembayaran (EN)</label><textarea id="tpl-wa-pending-en" rows="3" class="w-full border-gray-300 rounded-xl px-4 py-3 text-sm border focus:ring-brand-500 outline-none"></textarea></div>
+                        <div><label class="block text-sm font-bold mb-1.5 text-gray-700">WA - Bukti Lunas (EN)</label><textarea id="tpl-wa-paid-en" rows="3" class="w-full border-gray-300 rounded-xl px-4 py-3 text-sm border focus:ring-brand-500 outline-none"></textarea></div>
+                    </div>
+                </div>
+
+                <!-- Server API & Database Backup -->
+                <div class="bg-gray-900 p-6 sm:p-8 rounded-2xl shadow-xl text-white relative overflow-hidden">
+                    <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-gray-800 rounded-full opacity-50"></div>
+                    <h2 class="text-xl font-black mb-4 border-b border-gray-700 pb-3 relative z-10 flex items-center"><i class="fa-solid fa-server text-brand-400 mr-3"></i> Konfigurasi Server & Database</h2>
+                    
+                    <!-- Webhook Settings with Admin Lock -->
+                    <div class="mb-8 relative z-10 bg-gray-800/80 p-5 rounded-xl border border-gray-700">
+                        <label class="block text-sm font-bold mb-2 text-gray-300 flex justify-between items-center">
+                            <span>Google Sheets Webhook URL / API</span>
+                            <span class="text-xs font-normal bg-purple-500/20 text-purple-300 px-2 py-1 rounded-md"><i class="fa-solid fa-lock text-[10px] mr-1"></i> Admin Only</span>
+                        </label>
+                        <div class="flex gap-2">
+                            <input type="url" id="setting-webhook" readonly class="flex-1 border-0 rounded-lg px-4 py-3 bg-gray-700 text-gray-400 font-mono text-sm outline-none transition-all shadow-inner focus:ring-0">
+                            <button onclick="openAdminModal()" id="btn-edit-webhook" class="bg-gray-700 hover:bg-gray-600 text-white px-4 rounded-lg font-bold transition-colors"><i class="fa-solid fa-pen"></i></button>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2">Digunakan untuk sinkronisasi form ke Google Sheets dan tarik Data Katalog.</p>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3 relative z-10">
+                        <button onclick="saveCompanyProfile()" class="bg-brand-500 hover:bg-brand-400 text-gray-900 px-6 py-3.5 rounded-xl font-black shadow-lg transition-colors w-full sm:w-auto text-center"><i class="fa-solid fa-floppy-disk mr-2"></i> Simpan Pengaturan</button>
+                        <button onclick="syncCatalog()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3.5 rounded-xl font-bold shadow transition-colors w-full sm:w-auto text-center"><i class="fa-solid fa-cloud-arrow-down mr-2"></i> Sinkron Katalog</button>
+                        <div class="flex-1 flex gap-3 justify-end">
+                            <button onclick="exportData()" class="bg-gray-700 hover:bg-gray-600 text-white px-5 py-3.5 rounded-xl font-bold border border-gray-600 transition-colors w-full sm:w-auto text-center shadow-md"><i class="fa-solid fa-download mr-2"></i> Export JSON</button>
+                            <div class="relative w-full sm:w-auto">
+                                <input type="file" id="import-file" class="hidden" accept=".json" onchange="confirmImportData(event)">
+                                <button onclick="document.getElementById('import-file').click()" class="w-full bg-amber-600 hover:bg-amber-500 text-white px-5 py-3.5 rounded-xl font-bold shadow-md transition-colors text-center"><i class="fa-solid fa-upload mr-2"></i> Import JSON</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- Core Variables ---
+        let defaultWebhook = 'https://script.google.com/macros/s/AKfycbx6m1wRbMgA8UYEivm8cvCWhhYcebt2C9-1vFQgyZa1_ZwY7rBI70oOXaSqQmbivxFV/exec';
+        let webhookUrl = localStorage.getItem('martive_webhook') || defaultWebhook;
+        
+        let invoices = JSON.parse(localStorage.getItem('martive_invoices')) || [];
+        let companyProfile = JSON.parse(localStorage.getItem('martive_company')) || {};
+        let clients = JSON.parse(localStorage.getItem('martive_clients')) || [];
+        let catalog = JSON.parse(localStorage.getItem('martive_catalog')) || [];
+        let currentInvoiceData = null;
+        let tempLogoBase64 = null; 
+        let recapChartInstance = null;
+        
+        const defaultProfile = {
+            name: "martive.id", tagline: "Digital Agency & Software House",
+            address: "Jl. Denpasar Raya No. 123, Bali", email: "hello@martive.id", phone: "+62 812-3456-7890",
+            notes: "Pembayaran transfer ke:\nBCA 123456789 a.n Martive\nHarap konfirmasi setelah melakukan pembayaran.", notes_en: "Transfer payment to:\nBCA 123456789 a.n Martive\nPlease confirm after payment is made.",
+            waPending: "Halo [NAMA_KLIEN],\nBerikut adalah detail tagihan [NO_INVOICE] sejumlah [TOTAL]. Jatuh tempo pada: [JATUH_TEMPO].",
+            waPaid: "Halo [NAMA_KLIEN],\nPembayaran untuk [NO_INVOICE] sejumlah [TOTAL] telah kami terima dengan baik. Terima kasih!",
+            waPending_en: "Hi [NAMA_KLIEN],\nInvoice [NO_INVOICE] for [TOTAL] is attached. Due date: [JATUH_TEMPO].",
+            waPaid_en: "Hi [NAMA_KLIEN],\nPayment for [NO_INVOICE] ([TOTAL]) has been received. Thank you!"
+        };
+
+        const i18nDict = {
+            id: { 
+                invoice: { title: "INVOICE", date: "Tanggal Invoice:", due: "Jatuh Tempo:" },
+                estimasi: { title: "ESTIMASI", date: "Tanggal Estimasi:", due: "Berlaku Hingga:" },
+                billedTo: "Ditujukan Kepada:", desc: "Deskripsi Item", price: "Harga Satuan", qty: "Qty", total: "Total", subtotal: "Subtotal", discount: "Diskon", tax: "Pajak", grandTotal: "TOTAL KESELURUHAN", notesTitle: "Catatan & Instruksi:", thanks: "Terima kasih atas kepercayaan Anda." 
+            },
+            en: { 
+                invoice: { title: "INVOICE", date: "Invoice Date:", due: "Due Date:" },
+                estimasi: { title: "QUOTATION", date: "Quote Date:", due: "Valid Until:" },
+                billedTo: "Billed To:", desc: "Item Description", price: "Unit Price", qty: "Qty", total: "Total", subtotal: "Subtotal", discount: "Discount", tax: "Tax", grandTotal: "GRAND TOTAL", notesTitle: "Notes & Instructions:", thanks: "Thank you for your business." 
+            }
+        };
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', () => {
+            checkSecurity();
+            const theme = localStorage.getItem('martive_theme') || 'green';
+            setTheme(theme, true);
+            
+            const populate = (key) => {
+                const el = document.getElementById(key.includes('tpl') || key.includes('comp') ? key : `comp-${key}`) || document.getElementById(`tpl-${key.replace(/_en/,'-en').replace(/([A-Z])/g, '-$1').toLowerCase()}`);
+                if(el) el.value = companyProfile[key] || defaultProfile[key] || '';
+            };
+            ['name','tagline','address','email','phone','notes','notes_en','waPending','waPaid','waPending_en','waPaid_en'].forEach(populate);
+            
+            document.getElementById('setting-webhook').value = webhookUrl;
+
+            if (companyProfile.logoBase64) {
+                document.getElementById('comp-logo-preview').src = companyProfile.logoBase64;
+                document.getElementById('comp-logo-preview').classList.remove('hidden');
+                document.getElementById('comp-logo-placeholder').classList.add('hidden');
+                tempLogoBase64 = companyProfile.logoBase64;
+            }
+
+            updateBrandingUI(); updateClientDatalist(); updateCatalogDatalist(); populateMarketingClients();
+            
+            document.getElementById('inv-lang').addEventListener('change', function(e) {
+                document.getElementById('inv-notes').value = e.target.value === 'en' ? (companyProfile.notes_en || defaultProfile.notes_en) : (companyProfile.notes || defaultProfile.notes);
+            });
+
+            nav('dashboard');
+        });
+
+        // --- Modals & Global UI ---
+        function showToast(msg, type='info') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.className = `fixed top-[80px] right-4 sm:right-6 transform transition-all duration-300 z-[110] px-5 py-3.5 rounded-xl shadow-2xl flex items-center text-white border-l-4 ${type==='success'?'bg-gray-800 border-green-500':type==='error'?'bg-red-800 border-red-400':type==='warning'?'bg-amber-700 border-amber-400':'bg-gray-800 border-blue-500'}`;
+            const icon = document.getElementById('toast-icon');
+            icon.className = `mr-3 text-lg shrink-0 fa-solid ${type==='success'?'fa-circle-check text-green-400':type==='error'?'fa-triangle-exclamation text-red-400':type==='warning'?'fa-circle-exclamation text-amber-400':'fa-circle-info text-blue-400'}`;
+            toast.classList.remove('translate-x-full', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-x-full', 'opacity-0'), 3500);
+        }
+
+        let confirmCallback = null;
+        function showConfirmModal(msg, callback) {
+            document.getElementById('confirm-msg').innerText = msg;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+            confirmCallback = callback;
+        }
+        function executeConfirm() { document.getElementById('confirm-modal').classList.add('hidden'); if(confirmCallback) confirmCallback(); confirmCallback=null; }
+        function cancelConfirm() { document.getElementById('confirm-modal').classList.add('hidden'); confirmCallback=null; }
+
+        function openAdminModal() { document.getElementById('admin-modal').classList.remove('hidden'); document.getElementById('admin-pin-input').value=''; setTimeout(()=>document.getElementById('admin-pin-input').focus(),100); }
+        function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
+        function verifyAdmin() {
+            if(document.getElementById('admin-pin-input').value === '909090') {
+                closeAdminModal();
+                const inp = document.getElementById('setting-webhook');
+                inp.readOnly = false; inp.classList.remove('bg-gray-700','text-gray-400','border-0'); inp.classList.add('bg-white','text-gray-900','border','border-purple-500','ring-2','ring-purple-200');
+                showToast("Akses Admin Terbuka. URL bisa diedit.", "success");
+            } else showToast("PIN Admin Salah!", "error");
+        }
+
+        function nav(viewId) {
+            ['dashboard', 'create', 'recap', 'preview', 'history', 'settings', 'marketing'].forEach(v => document.getElementById(`view-${v}`).classList.add('hidden'));
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => { btn.classList.remove('bg-brand-800', 'text-white'); btn.classList.add('text-brand-100'); });
+            ['', '-mob'].forEach(suf => { let btn = document.getElementById(`nav-${viewId}${suf}`); if(btn) { btn.classList.add('bg-brand-800', 'text-white'); btn.classList.remove('text-brand-100'); } });
+
+            const titles = { 'dashboard': 'Dashboard', 'create': 'Buat Dokumen', 'recap': 'Rekap Bulanan', 'preview': 'Pratinjau Dokumen', 'history': 'Riwayat & CRM', 'settings': 'Pengaturan Sistem', 'marketing': 'Marketing Broadcast' };
+            document.getElementById('page-title').innerText = titles[viewId];
+
+            if(viewId === 'dashboard') updateDashboardStats();
+            if(viewId === 'history') renderHistory();
+            if(viewId === 'recap') renderRecap();
+            if(viewId === 'marketing') populateMarketingClients();
+
+            const overlay = document.getElementById('mobile-overlay');
+            if(!overlay.classList.contains('hidden')) toggleMobileMenu();
+            document.getElementById('main-content').scrollTo(0,0);
+        }
+
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('mobile-sidebar'); const overlay = document.getElementById('mobile-overlay');
+            sidebar.classList.toggle('-translate-x-full'); overlay.classList.toggle('hidden');
+        }
+
+        function setTheme(theme, silent=false) {
+            const root = document.documentElement;
+            const t = {
+                green: {50:'#f0fdf4', 100:'#dcfce7', 500:'#22c55e', 600:'#16a34a', 800:'#166534', 900:'#14532d'},
+                blue:  {50:'#eff6ff', 100:'#dbeafe', 500:'#3b82f6', 600:'#2563eb', 800:'#1e40af', 900:'#1e3a8a'},
+                indigo:{50:'#eef2ff', 100:'#e0e7ff', 500:'#6366f1', 600:'#4f46e5', 800:'#3730a3', 900:'#312e81'},
+                slate: {50:'#f8fafc', 100:'#f1f5f9', 500:'#64748b', 600:'#475569', 800:'#1e293b', 900:'#0f172a'}
+            }[theme] || {50:'#f0fdf4', 100:'#dcfce7', 500:'#22c55e', 600:'#16a34a', 800:'#166534', 900:'#14532d'};
+            
+            Object.keys(t).forEach(k => root.style.setProperty(`--color-brand-${k}`, t[k]));
+            localStorage.setItem('martive_theme', theme);
+            if(!silent) showToast("Tema berhasil diterapkan", 'success');
+        }
+
+        function updateBrandingUI() {
+            const name = companyProfile.name || 'Sistem Invoicing';
+            const logo = tempLogoBase64 ? `<img src="${tempLogoBase64}" class="w-8 h-8 rounded shrink-0 bg-white">` : `<i class="fa-solid fa-cube text-brand-500 text-2xl shrink-0"></i>`;
+            document.getElementById('sidebar-logo-container').innerHTML = `${logo}<span class="text-xl font-bold text-white truncate">${name}</span>`;
+            document.getElementById('mobile-slide-logo-container').innerHTML = `${logo}<span class="text-lg font-bold truncate">${name}</span>`;
+            document.getElementById('mobile-logo-container').innerHTML = `${logo}<span class="text-lg font-bold truncate">${name}</span>`;
+            document.getElementById('pdf-logo').src = tempLogoBase64 || '';
+            if(tempLogoBase64) document.getElementById('pdf-logo').classList.remove('hidden');
+        }
+
+        // --- Security (App PIN) ---
+        let appPin = localStorage.getItem('martive_pin'); let isFirstTime = !localStorage.getItem('martive_first_time');
+        function checkSecurity() {
+            const screen = document.getElementById('lock-screen');
+            if (appPin) { screen.classList.remove('hidden'); setTimeout(() => document.getElementById('pin-input').focus(), 100); } 
+            else if (isFirstTime) { screen.classList.remove('hidden'); document.getElementById('lock-title').innerText = 'Selamat Datang!'; document.getElementById('lock-desc').innerText = 'Buat PIN 6 angka. Kosongkan & Buka jika tidak perlu.'; } 
+            else { screen.classList.add('hidden'); }
+        }
+        function submitPin() {
+            const input = document.getElementById('pin-input').value;
+            if (appPin && input !== appPin) { showToast("PIN salah!", 'error'); document.getElementById('pin-input').value=''; return; }
+            if (isFirstTime && input.length>0 && input.length<4) { showToast("Minimal 4 angka", 'warning'); return; }
+            if(isFirstTime && input) { localStorage.setItem('martive_pin', input); appPin = input; }
+            localStorage.setItem('martive_first_time', 'false'); isFirstTime = false;
+            document.getElementById('lock-screen').classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => document.getElementById('lock-screen').classList.add('hidden'), 500); updateDashboardStats();
+        }
+        function savePin() {
+            const p = document.getElementById('setting-pin').value;
+            if(p && p.length<4) return showToast("Minimal 4 angka", 'warning');
+            if(p) { localStorage.setItem('martive_pin', p); appPin=p; showToast("PIN disimpan", 'success'); document.getElementById('setting-pin').value=''; } updateDashboardStats();
+        }
+        function confirmRemovePin() { showConfirmModal("Hapus perlindungan PIN Aplikasi?", () => { localStorage.removeItem('martive_pin'); appPin=null; showToast("PIN dihapus", 'success'); updateDashboardStats(); }); }
+
+        // --- Helpers ---
+        function formatRupiah(num) { return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(num); }
+        function parseDate(str) { const d=new Date(str); return isNaN(d)?new Date().toISOString().slice(0,10):d.toISOString().slice(0,10); }
+        function getPhone(p) { let n=(p||'').replace(/\D/g,''); if(n.startsWith('0'))n='62'+n.substring(1); return n; }
+
+        // --- Document Form ---
+        function toggleDocType() {
+            const type = document.getElementById('doc-type').value;
+            document.getElementById('lbl-form-no').innerText = type === 'invoice' ? 'No. Invoice' : 'No. Estimasi / Quotation';
+            document.getElementById('lbl-form-due').innerText = type === 'invoice' ? 'Jatuh Tempo' : 'Berlaku Hingga';
+            if(!currentInvoiceData) document.getElementById('inv-no').value = generateAutoNo(type);
+        }
+        function generateAutoNo(type) {
+            const d = new Date(); const prefix = type === 'invoice' ? 'INV-' : 'EST-';
+            const p = `${prefix}${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}-`;
+            return p + String(invoices.filter(i=>(i.invoiceNo||'').startsWith(p)).length+1).padStart(3,'0');
+        }
+        function openNewInvoice() {
+            document.getElementById('invoice-form').reset(); document.getElementById('items-body').innerHTML = '';
+            document.getElementById('inv-lang').dispatchEvent(new Event('change')); document.getElementById('doc-type').value = 'invoice';
+            addItemRow(); document.getElementById('inv-date').valueAsDate = new Date();
+            let due = new Date(); due.setDate(due.getDate()+14); document.getElementById('inv-due').valueAsDate = due;
+            toggleDocType(); currentInvoiceData = null; calculateTotal(); nav('create');
+        }
+
+        function updateClientDatalist() { document.getElementById('client-list').innerHTML = clients.map(c=>`<option value="${c.name}">`).join(''); }
+        function handleClientAutofill() {
+            const c = clients.find(x=>x.name === document.getElementById('client-name').value);
+            if(c) { document.getElementById('client-email').value=c.email||''; document.getElementById('client-phone').value=c.phone||''; document.getElementById('client-address').value=c.address||''; }
+        }
+        function updateCatalogDatalist() { document.getElementById('catalog-list').innerHTML = catalog.map(c=>`<option value="${c.kode}">${c.deskripsi}</option>`).join(''); }
+        function handleItemAutofill(el) {
+            const r = el.closest('tr'); const found = catalog.find(x=>x.kode===el.value);
+            if(found) { r.querySelector('.item-desc').value=found.deskripsi; r.querySelector('.item-price').value=found.harga; calculateTotal(); }
+        }
+
+        function addItemRow(kode='', desc='', price='', qty=1) {
+            const tr = document.createElement('tr'); tr.className='item-row border-b border-gray-100 hover:bg-gray-50 transition-colors';
+            tr.innerHTML = `<td class="p-3"><input list="catalog-list" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm item-code outline-none focus:border-brand-400" value="${kode}" oninput="handleItemAutofill(this)" placeholder="Kode"></td><td class="p-3"><textarea class="w-full border border-gray-300 rounded-lg p-2.5 text-sm item-desc resize-y outline-none focus:border-brand-400" rows="1" placeholder="Deskripsi Barang/Jasa">${desc}</textarea></td><td class="p-3"><input type="number" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm text-right item-price outline-none focus:border-brand-400 font-medium" value="${price}" oninput="calculateTotal()"></td><td class="p-3"><input type="number" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm text-center item-qty outline-none focus:border-brand-400 font-medium" value="${qty}" oninput="calculateTotal()"></td><td class="p-3 text-right font-bold text-gray-800 item-subtotal pt-5">Rp 0</td><td class="p-3 text-center pt-4"><button type="button" onclick="this.closest('tr').remove(); calculateTotal()" class="text-gray-400 hover:text-red-500 hover:bg-red-50 w-8 h-8 rounded transition-colors"><i class="fa-solid fa-trash"></i></button></td>`;
+            document.getElementById('items-body').appendChild(tr); calculateTotal();
+        }
+
+        function calculateTotal() {
+            let sub = 0;
+            document.querySelectorAll('.item-row').forEach(r => {
+                const pr = Math.abs(parseFloat(r.querySelector('.item-price').value)||0), qt = Math.abs(parseFloat(r.querySelector('.item-qty').value)||0);
+                r.querySelector('.item-subtotal').innerText = formatRupiah(pr*qt); sub += (pr*qt);
+            });
+            const dPct = Math.abs(parseFloat(document.getElementById('form-discount').value)||0), tPct = Math.abs(parseFloat(document.getElementById('form-tax').value)||0);
+            const disc = sub*(dPct/100), tax = (sub-disc)*(tPct/100), tot = sub-disc+tax;
+            document.getElementById('form-subtotal').innerText = formatRupiah(sub); document.getElementById('form-total').innerText = formatRupiah(tot);
+            return {sub, disc, dPct, tax, tPct, tot};
+        }
+
+        // --- PDF Generation ---
+        function generatePreview() {
+            const calc = calculateTotal(); const items = [];
+            document.querySelectorAll('.item-row').forEach(r => { items.push({ kode: r.querySelector('.item-code').value, desc: r.querySelector('.item-desc').value, price: Math.abs(parseFloat(r.querySelector('.item-price').value)||0), qty: Math.abs(parseFloat(r.querySelector('.item-qty').value)||0), total: Math.abs(parseFloat(r.querySelector('.item-price').value)||0)*Math.abs(parseFloat(r.querySelector('.item-qty').value)||0) }); });
+            if(items.length===0) return showToast("Tambahkan minimal 1 rincian item", "warning");
+
+            const l = document.getElementById('inv-lang').value; const docType = document.getElementById('doc-type').value;
+            const dRaw = document.getElementById('inv-date').value, dueRaw = document.getElementById('inv-due').value;
+            const dStr = new Date(dRaw).toLocaleDateString(l==='en'?'en-US':'id-ID',{day:'2-digit',month:'short',year:'numeric'});
+            const dueStr = new Date(dueRaw).toLocaleDateString(l==='en'?'en-US':'id-ID',{day:'2-digit',month:'short',year:'numeric'});
+            const note = document.getElementById('inv-notes').value.trim() || (l==='en'?companyProfile.notes_en:companyProfile.notes);
+
+            currentInvoiceData = {
+                id: currentInvoiceData?currentInvoiceData.id:Date.now().toString(), docType: docType, invoiceNo: document.getElementById('inv-no').value,
+                lang: l, rawDate: dRaw, date: dStr, dueDate: dueStr, clientName: document.getElementById('client-name').value, clientEmail: document.getElementById('client-email').value, clientPhone: document.getElementById('client-phone').value, clientAddress: document.getElementById('client-address').value,
+                items, notes: note, calc, status: currentInvoiceData?currentInvoiceData.status:'unpaid'
+            };
+
+            const dict = i18nDict[l];
+            document.getElementById('lbl-invoice-title').innerText=dict[docType].title; document.getElementById('lbl-inv-date').innerText=dict[docType].date; document.getElementById('lbl-due-date').innerText=dict[docType].due;
+            document.getElementById('lbl-billed-to').innerText=dict.billedTo; document.getElementById('lbl-th-desc').innerText=dict.desc; document.getElementById('lbl-th-price').innerText=dict.price; document.getElementById('lbl-th-qty').innerText=dict.qty; document.getElementById('lbl-th-total').innerText=dict.total; document.getElementById('lbl-subtotal').innerText=dict.subtotal; document.getElementById('lbl-discount').innerText=dict.discount; document.getElementById('lbl-tax').innerText=dict.tax; document.getElementById('lbl-grand-total').innerText=dict.grandTotal; document.getElementById('lbl-notes-title').innerText=dict.notesTitle; document.getElementById('lbl-thanks').innerText=dict.thanks;
+
+            document.getElementById('pdf-company-name').innerText=companyProfile.name||''; document.getElementById('pdf-company-desc').innerHTML=`${companyProfile.tagline||''}<br>${companyProfile.address||''}<br>${companyProfile.email||''} | ${companyProfile.phone||''}`;
+            document.getElementById('pdf-inv-no').innerText=currentInvoiceData.invoiceNo; document.getElementById('pdf-client-name').innerText=currentInvoiceData.clientName; document.getElementById('pdf-client-address').innerText=currentInvoiceData.clientAddress; document.getElementById('pdf-client-email').innerText=currentInvoiceData.clientEmail; document.getElementById('pdf-date').innerText=currentInvoiceData.date; document.getElementById('pdf-due').innerText=currentInvoiceData.dueDate; document.getElementById('pdf-notes').innerText=currentInvoiceData.notes;
+
+            document.getElementById('pdf-items-body').innerHTML = items.map((i,idx)=>`<tr class="avoid-break ${idx!==items.length-1?'border-b border-gray-100':''}"><td class="py-3 px-3 pdf-desc-cell font-medium">${i.desc}</td><td class="py-3 px-3 text-right">${formatRupiah(i.price)}</td><td class="py-3 px-3 text-center">${i.qty}</td><td class="py-3 px-3 text-right font-bold">${formatRupiah(i.total)}</td></tr>`).join('');
+            
+            document.getElementById('pdf-subtotal').innerText=formatRupiah(calc.sub);
+            document.getElementById('pdf-discount-row').style.display=calc.dPct>0?'flex':'none'; document.getElementById('pdf-discount-val').innerText=calc.dPct; document.getElementById('pdf-discount-amount').innerText='- '+formatRupiah(calc.disc);
+            document.getElementById('pdf-tax-row').style.display=calc.tPct>0?'flex':'none'; document.getElementById('pdf-tax-val').innerText=calc.tPct; document.getElementById('pdf-tax-amount').innerText='+ '+formatRupiah(calc.tax);
+            document.getElementById('pdf-total').innerText=formatRupiah(calc.tot);
+
+            nav('preview');
+        }
+
+        let isProcessingPDF = false;
+        function saveAndDownloadPDF() {
+            if(!currentInvoiceData || isProcessingPDF) return; isProcessingPDF = true;
+            const btn = document.getElementById('btn-download-pdf'); const orig = btn.innerHTML; btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Proses...`;
+
+            const cName = currentInvoiceData.clientName;
+            if(cName) {
+                const ex = clients.find(c=>c.name===cName);
+                if(ex) { ex.email=currentInvoiceData.clientEmail; ex.phone=currentInvoiceData.clientPhone; ex.address=currentInvoiceData.clientAddress; }
+                else clients.push({name:cName, email:currentInvoiceData.clientEmail, phone:currentInvoiceData.clientPhone, address:currentInvoiceData.clientAddress});
+                localStorage.setItem('martive_clients', JSON.stringify(clients)); updateClientDatalist();
+            }
+
+            const el = document.getElementById('invoice-paper');
+            const opt = { margin:0, filename:`${currentInvoiceData.docType==='estimasi'?'Estimasi':'Invoice'}_${currentInvoiceData.invoiceNo}.pdf`, image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,logging:false, useCORS:true}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}, pagebreak:{mode:['avoid-all','css','legacy']} };
+            showToast("Menyusun PDF...", 'info');
+
+            html2pdf().set(opt).from(el).save().then(()=>{
+                const exIdx = invoices.findIndex(i=>i.id===currentInvoiceData.id);
+                if(exIdx>=0) { currentInvoiceData.status=invoices[exIdx].status||'unpaid'; invoices[exIdx]=currentInvoiceData; }
+                else invoices.unshift(currentInvoiceData);
+                localStorage.setItem('martive_invoices', JSON.stringify(invoices));
+                syncToGoogleSheets(currentInvoiceData);
+                showToast("PDF Diunduh & Tersimpan!", 'success');
+                btn.innerHTML=orig; isProcessingPDF=false; setTimeout(()=>nav('history'),1000);
+            }).catch(e=>{ btn.innerHTML=orig; isProcessingPDF=false; showToast("Gagal proses PDF", 'error'); });
+        }
+
+        function convertToInvoice(id) {
+            const inv = invoices.find(i=>i.id===id); if(!inv) return;
+            editInvoice(id); document.getElementById('doc-type').value = 'invoice'; toggleDocType(); showToast("Quotation disiapkan jadi Invoice", "success");
+        }
+
+        // --- Dashboard & Recap ---
+        function updateDashboardStats() {
+            let t=0, u=0, estC=0; const realInvs = invoices.filter(i=>i.docType !== 'estimasi');
+            realInvs.forEach(i=>{ t+=(i.calc.finalTotal||i.calc.tot); if(i.status!=='paid') u+=(i.calc.finalTotal||i.calc.tot); });
+            invoices.forEach(i=>{ if(i.docType==='estimasi') estC++; });
+
+            document.getElementById('stat-total-count').innerText=realInvs.length; document.getElementById('stat-total-amount').innerText=formatRupiah(t); document.getElementById('stat-unpaid-amount').innerText=formatRupiah(u); document.getElementById('stat-est-count').innerText=estC;
+            
+            const b=document.getElementById('recent-invoices-body'), emp=document.getElementById('empty-dashboard'); b.innerHTML='';
+            if(invoices.length===0) { emp.classList.remove('hidden'); b.closest('table').classList.add('hidden'); }
+            else {
+                emp.classList.add('hidden'); b.closest('table').classList.remove('hidden');
+                b.innerHTML=invoices.slice(0,5).map(i=>{
+                    const st=i.docType==='estimasi'?'<span class="text-blue-700 font-bold bg-blue-100 px-2 py-1 rounded text-xs">Estimasi</span>':(i.status==='paid'?'<span class="text-green-700 font-bold bg-green-100 px-2 py-1 rounded text-xs">Lunas</span>':'<span class="text-red-600 font-bold bg-red-100 px-2 py-1 rounded text-xs">Pending</span>');
+                    return `<tr class="border-b hover:bg-gray-50"><td class="px-6 py-4 font-bold text-gray-800">${i.invoiceNo}</td><td class="px-6 py-4 truncate max-w-[150px] font-medium">${i.clientName}</td><td class="px-6 py-4">${i.date}</td><td class="px-6 py-4 text-right font-bold text-gray-900">${formatRupiah(i.calc.finalTotal||i.calc.tot)}</td><td class="px-6 py-4 text-center">${st}</td></tr>`;
+                }).join('');
+            }
+        }
+
+        function renderHistory() {
+            const b=document.getElementById('history-body'), emp=document.getElementById('empty-history'); b.innerHTML='';
+            if(invoices.length===0){ emp.classList.remove('hidden'); b.closest('table').classList.add('hidden'); }
+            else {
+                emp.classList.add('hidden'); b.closest('table').classList.remove('hidden');
+                b.innerHTML=invoices.map(i=>{
+                    const isEst=i.docType==='estimasi';
+                    const actBtn=isEst?`<button onclick="convertToInvoice('${i.id}')" class="px-2 py-1.5 rounded-lg text-xs font-bold bg-indigo-100 text-indigo-700 hover:bg-indigo-600 hover:text-white transition-colors w-full mb-1 shadow-sm"><i class="fa-solid fa-file-export mr-1"></i> Jadikan Invoice</button>`:`<button onclick="togglePaymentStatus('${i.id}')" class="px-2 py-1.5 rounded-lg text-[11px] font-black uppercase ${i.status==='paid'?'bg-green-100 text-green-700 hover:bg-green-200':'bg-red-100 text-red-700 hover:bg-red-200'} transition-colors w-full mb-1 shadow-sm">${i.status==='paid'?'<i class="fa-solid fa-check"></i> Lunas':'Pending'}</button>`;
+                    const bge=isEst?'<span class="bg-blue-100 text-blue-700 text-[10px] px-1 rounded ml-1 font-bold">EST</span>':(i.lang==='en'?'<span class="bg-gray-200 text-gray-700 text-[10px] px-1 rounded ml-1 font-bold">EN</span>':'');
+                    return `<tr class="border-b hover:bg-gray-50/80 transition-colors"><td class="px-6 py-4 font-black text-gray-800 whitespace-nowrap">${i.invoiceNo}${bge}</td><td class="px-6 py-4 whitespace-nowrap font-medium text-gray-600">${i.date}</td><td class="px-6 py-4"><div class="font-bold text-gray-900">${i.clientName}</div><div class="text-xs text-gray-400 mt-1">${i.clientPhone||'-'}</div></td><td class="px-6 py-4 text-right font-black text-gray-900">${formatRupiah(i.calc.finalTotal||i.calc.tot)}</td><td class="px-6 py-4 text-center align-middle">${actBtn}</td><td class="px-6 py-4 text-center"><div class="flex justify-center gap-2"><button onclick="editInvoice('${i.id}')" class="bg-gray-100 text-gray-600 p-2.5 rounded-lg hover:bg-blue-500 hover:text-white transition-colors shadow-sm"><i class="fa-solid fa-pen"></i></button><button onclick="triggerFollowupWA('${i.id}')" class="bg-emerald-50 text-emerald-600 p-2.5 rounded-lg hover:bg-emerald-500 hover:text-white transition-colors shadow-sm"><i class="fa-brands fa-whatsapp"></i></button><button onclick="triggerFollowupEmail('${i.id}')" class="bg-gray-100 text-indigo-600 p-2.5 rounded-lg hover:bg-indigo-500 hover:text-white transition-colors shadow-sm"><i class="fa-solid fa-envelope"></i></button><button onclick="confirmDeleteInvoice('${i.id}')" class="bg-red-50 text-red-500 p-2.5 rounded-lg hover:bg-red-500 hover:text-white transition-colors shadow-sm"><i class="fa-solid fa-trash"></i></button></div></td></tr>`;
+                }).join('');
+            }
+        }
+
+        function togglePaymentStatus(id) { const idx=invoices.findIndex(i=>i.id===id); if(idx===-1)return; invoices[idx].status = invoices[idx].status==='paid'?'unpaid':'paid'; localStorage.setItem('martive_invoices', JSON.stringify(invoices)); renderHistory(); showToast("Status diupdate", 'success'); }
+        function confirmDeleteInvoice(id) { showConfirmModal("Hapus permanen dokumen ini?", () => { invoices=invoices.filter(i=>i.id!==id); localStorage.setItem('martive_invoices',JSON.stringify(invoices)); renderHistory(); showToast("Terhapus", 'success'); }); }
+        function editInvoice(id) {
+            const inv=invoices.find(i=>i.id===id); if(!inv)return;
+            document.getElementById('doc-type').value=inv.docType||'invoice'; document.getElementById('inv-lang').value=inv.lang||'id'; document.getElementById('inv-no').value=inv.invoiceNo; document.getElementById('inv-date').value=parseDate(inv.rawDate||inv.date); document.getElementById('inv-due').value=parseDate(inv.dueDate); document.getElementById('client-name').value=inv.clientName; document.getElementById('client-email').value=inv.clientEmail||''; document.getElementById('client-phone').value=inv.clientPhone||''; document.getElementById('client-address').value=inv.clientAddress||''; document.getElementById('inv-notes').value=inv.notes||'';
+            document.getElementById('items-body').innerHTML=''; inv.items.forEach(i=>addItemRow(i.kode||'', i.desc, i.price, i.qty));
+            document.getElementById('form-discount').value=inv.calc.discountPct||inv.calc.dPct||0; document.getElementById('form-tax').value=inv.calc.taxPct||inv.calc.tPct||0;
+            toggleDocType(); currentInvoiceData=inv; calculateTotal(); nav('create'); showToast("Data dimuat untuk diedit", 'success');
+        }
+
+        function renderRecap() {
+            const tb=document.getElementById('recap-body'), emp=document.getElementById('empty-recap'), flt=document.getElementById('recap-year-filter'), cht=document.getElementById('chart-container');
+            if(!tb || !emp || !flt || !cht) return; tb.innerHTML='';
+            const realInvs = invoices.filter(i=>i.docType !== 'estimasi');
+            const yrs=[...new Set(realInvs.map(i=>new Date(i.rawDate||parseInt(i.id.substring(0,13))||Date.now()).getFullYear()))].sort((a,b)=>b-a);
+            const selYr=flt.value; if(flt.options.length<=1 && yrs.length>0) yrs.forEach(y=>flt.add(new Option(`Tahun ${y}`,y)));
+            
+            const fil=selYr==='all'?realInvs:realInvs.filter(i=>new Date(i.rawDate||parseInt(i.id.substring(0,13))||Date.now()).getFullYear().toString()===selYr);
+            if(fil.length===0){ emp.classList.remove('hidden'); tb.closest('table').classList.add('hidden'); cht.classList.add('hidden'); return; }
+            emp.classList.add('hidden'); tb.closest('table').classList.remove('hidden'); cht.classList.remove('hidden');
+
+            const grp={};
+            fil.forEach(i=>{
+                let d=new Date(i.rawDate||parseInt(i.id.substring(0,13))||Date.now()); const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+                if(!grp[k]) grp[k]={l:d.toLocaleDateString('id-ID',{month:'short',year:'numeric'}), t:0, p:0, c:0, cli:{}, arr:[]};
+                const amt=i.calc.finalTotal||i.calc.tot||0; grp[k].t+=amt; grp[k].c++; if(i.status==='paid')grp[k].p+=amt;
+                const cn=i.clientName||'Unknown'; grp[k].cli[cn]=(grp[k].cli[cn]||0)+amt; grp[k].arr.push(i);
+            });
+
+            let gT=0, gP=0, gC=0;
+            Object.keys(grp).sort().reverse().forEach(k=>{
+                const g=grp[k]; gT+=g.t; gP+=g.p; gC+=g.c;
+                tb.innerHTML+=`<tr class="border-b hover:bg-brand-50 cursor-pointer transition-colors" onclick="document.getElementById('acc-${k}').classList.toggle('hidden')"><td class="px-5 py-4 text-center"><i class="fa-solid fa-chevron-down text-gray-400"></i></td><td class="px-5 py-4 font-black text-gray-900">${g.l}</td><td class="px-5 py-4 text-center font-bold text-gray-600">${g.c}</td><td class="px-5 py-4 text-right font-black text-gray-800">${formatRupiah(g.t)}</td><td class="px-5 py-4 text-right font-black text-green-600">${formatRupiah(g.p)}</td><td class="px-5 py-4 text-right font-black text-red-600">${formatRupiah(g.t-g.p)}</td></tr>
+                <tr id="acc-${k}" class="hidden bg-gray-50"><td colspan="6" class="px-5 py-6"><div class="overflow-x-auto bg-white rounded-xl border border-gray-200 shadow-sm"><table class="w-full text-xs text-left"><thead class="bg-gray-100 border-b"><tr><th class="p-3 font-bold">Invoice</th><th class="p-3 font-bold">Klien</th><th class="p-3 text-right font-bold">Nominal</th><th class="p-3 text-center font-bold">Status</th></tr></thead><tbody>${g.arr.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(i=>`<tr class="border-b last:border-0"><td class="p-3 font-bold text-gray-800">${i.invoiceNo}</td><td class="p-3 font-medium">${i.clientName}</td><td class="p-3 text-right font-bold text-gray-800">${formatRupiah(i.calc.finalTotal||i.calc.tot)}</td><td class="p-3 text-center">${i.status==='paid'?'<span class="text-green-600 font-bold bg-green-50 px-2 py-1 rounded">Lunas</span>':'<span class="text-red-500 font-bold bg-red-50 px-2 py-1 rounded">Pending</span>'}</td></tr>`).join('')}</tbody></table></div></td></tr>`;
+            });
+            tb.innerHTML+=`<tr class="bg-gray-100 border-t-4 border-gray-200"><td colspan="2" class="px-5 py-5 font-black uppercase text-gray-800 tracking-wider">Total Tagihan Aktual</td><td class="px-5 py-5 text-center font-black text-brand-700 text-lg">${gC}</td><td class="px-5 py-5 text-right font-black text-lg">${formatRupiah(gT)}</td><td class="px-5 py-5 text-right font-black text-green-600 text-lg">${formatRupiah(gP)}</td><td class="px-5 py-5 text-right font-black text-red-600 text-lg">${formatRupiah(gT-gP)}</td></tr>`;
+            
+            const cD = Object.keys(grp).sort().map(k=>grp[k]); 
+            if(recapChartInstance) recapChartInstance.destroy();
+            const rootStyle = getComputedStyle(document.documentElement);
+            recapChartInstance = new Chart(document.getElementById('recapChart').getContext('2d'), { type: 'bar', data: { labels: cD.map(d=>d.l.split(' ')[0]), datasets: [{label:'Pendapatan', data:cD.map(d=>d.p), backgroundColor: rootStyle.getPropertyValue('--color-brand-500').trim()||'#22c55e', borderRadius:6}, {label:'Piutang', data:cD.map(d=>d.t-d.p), backgroundColor:'#ef4444', borderRadius:6}] }, options: {responsive:true, maintainAspectRatio:false, scales:{x:{stacked:true},y:{stacked:true}}} });
+        }
+        function exportRecapCSV() {
+            const realInvs = invoices.filter(i=>i.docType !== 'estimasi'); if(realInvs.length===0) return showToast("Kosong", "warning");
+            const selYr=document.getElementById('recap-year-filter').value; let csv="Bulan/Tahun,Invoice,Tanggal,Klien,Status,Subtotal,Diskon(%),Pajak(%),Total Bersih\n";
+            let fil=selYr==='all'?realInvs:realInvs.filter(i=>new Date(i.rawDate||parseInt(i.id.substring(0,13))||Date.now()).getFullYear().toString()===selYr);
+            fil.sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(i=>{ const d=new Date(i.rawDate||parseInt(i.id.substring(0,13))||Date.now()).toLocaleDateString('id-ID',{month:'short',year:'numeric'}); csv+=`${d},${i.invoiceNo},${i.date},"${(i.clientName||'').replace(/"/g,'""')}",${i.status==='paid'?'Lunas':'Pending'},${i.calc.sub||i.calc.subtotal},${i.calc.dPct||i.calc.discountPct},${i.calc.tPct||i.calc.taxPct},${i.calc.tot||i.calc.finalTotal}\n`; });
+            const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'})); a.download=`Rekap_Tagihan_${selYr}.csv`; a.click(); showToast("CSV Diunduh", "success");
+        }
+
+        // --- CRM Follow-up & Marketing ---
+        function parseMsg(tpl, inv) { return (tpl||'').replace(/\[NAMA_KLIEN\]/g, inv.clientName||'-').replace(/\[NO_INVOICE\]/g, inv.invoiceNo||'-').replace(/\[TOTAL\]/g, formatRupiah(inv.calc.finalTotal||inv.calc.tot)).replace(/\[JATUH_TEMPO\]/g, inv.dueDate||'-').replace(/\[NAMA_PERUSAHAAN\]/g, companyProfile.name||'Perusahaan Kami'); }
+        function triggerFollowupWA(id) { const inv=invoices.find(i=>i.id===id); if(!inv) return; const ph=getPhone(inv.clientPhone); if(!ph) return showToast("No. WA kosong/invalid", 'warning'); const isP=inv.status==='paid', l=inv.lang||'id'; const tpl=l==='en'?(isP?companyProfile.waPaid_en:companyProfile.waPending_en):(isP?companyProfile.waPaid:companyProfile.waPending); window.open(`https://wa.me/${ph}?text=${encodeURIComponent(parseMsg(tpl,inv))}`, '_blank'); }
+        function triggerFollowupEmail(id) { const inv=invoices.find(i=>i.id===id); if(!inv) return; if(!inv.clientEmail) return showToast("Email kosong", 'warning'); const isP=inv.status==='paid', l=inv.lang||'id'; const subj=l==='en'?(isP?`Receipt ${inv.invoiceNo}`:`Invoice ${inv.invoiceNo}`):(isP?`Kwitansi ${inv.invoiceNo}`:`Tagihan ${inv.invoiceNo}`); const tpl=l==='en'?(isP?companyProfile.emailPaid_en:companyProfile.emailPending_en):(isP?companyProfile.emailPaid:companyProfile.emailPending); window.open(`mailto:${inv.clientEmail}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(parseMsg(tpl,inv))}`, '_blank'); }
+        function triggerWhatsAppFromPreview() { if(!currentInvoiceData || !currentInvoiceData.clientPhone) return showToast("Isi No. WA di Form Klien", 'warning'); const ph=getPhone(currentInvoiceData.clientPhone), l=currentInvoiceData.lang||'id'; const tpl=l==='en'?(companyProfile.waPending_en||defaultProfile.waPending_en):(companyProfile.waPending||defaultProfile.waPending); window.open(`https://wa.me/${ph}?text=${encodeURIComponent(parseMsg(tpl,currentInvoiceData))}`, '_blank'); }
+
+        const mktTemplates = {
+            promo: "Halo [NAMA_KLIEN],\n\nTerima kasih telah mempercayakan kebutuhan Anda di [NAMA_PERUSAHAAN]. Khusus untuk Anda, kami memberikan *Diskon Spesial 15%* untuk pemesanan berikutnya!\n\nBalas pesan ini jika Anda tertarik. Have a great day!",
+            thanks: "Halo [NAMA_KLIEN],\n\nBagaimana kabarnya? Kami dari [NAMA_PERUSAHAAN] ingin mengucapkan terima kasih atas kerja sama kita sebelumnya. Jika ada masukan atau butuh bantuan lebih lanjut terkait layanan kami, jangan ragu untuk menghubungi kami ya.\n\nSalam hangat,\nTim [NAMA_PERUSAHAAN]",
+            holiday: "Halo [NAMA_KLIEN],\n\nKeluarga besar [NAMA_PERUSAHAAN] mengucapkan Selamat Hari Raya. Semoga momen spesial ini membawa kebahagiaan dan kesuksesan untuk Anda dan keluarga.\n\nMohon maaf lahir dan batin!"
+        };
+        function populateMarketingClients() {
+            const sel = document.getElementById('mkt-client'); sel.innerHTML='<option value="">-- Pilih Klien --</option>';
+            clients.forEach(c => sel.add(new Option(`${c.name} (${c.phone||'No WA'})`, c.name)));
+        }
+        function applyMarketingTemplate(type) { document.getElementById('mkt-msg').value = mktTemplates[type] || ''; updateMktPreview(); showToast("Template diterapkan", "info"); }
+        function updateMktPreview() {
+            // Future validation logic if needed
+        }
+        function getMktData() {
+            const cName = document.getElementById('mkt-client').value; const text = document.getElementById('mkt-msg').value;
+            if(!cName) { showToast("Pilih klien target!", "warning"); return null; }
+            if(!text) { showToast("Pesan tidak boleh kosong!", "warning"); return null; }
+            const c = clients.find(x=>x.name===cName); if(!c) return null;
+            const msg = text.replace(/\[NAMA_KLIEN\]/g, c.name).replace(/\[NAMA_PERUSAHAAN\]/g, companyProfile.name||'Perusahaan Kami');
+            return { c, msg };
+        }
+        function sendMarketingWA() { const data=getMktData(); if(!data)return; const ph=getPhone(data.c.phone); if(!ph)return showToast("Klien tidak punya nomor WA valid", "error"); window.open(`https://wa.me/${ph}?text=${encodeURIComponent(data.msg)}`, '_blank'); }
+        function sendMarketingEmail() { const data=getMktData(); if(!data)return; const em=data.c.email; if(!em)return showToast("Klien tidak punya Email", "error"); window.open(`mailto:${em}?subject=${encodeURIComponent('Pesan Khusus dari '+(companyProfile.name||'Kami'))}&body=${encodeURIComponent(data.msg)}`, '_blank'); }
+
+        // --- Settings, Storage & APIs ---
+        function handleLogoUpload(e) { const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=ev=>{ const img=new Image(); img.onload=()=>{ const cvs=document.createElement('canvas'), ctx=cvs.getContext('2d'), s=Math.min(img.width,img.height); cvs.width=300; cvs.height=300; ctx.drawImage(img,(img.width-s)/2,(img.height-s)/2,s,s,0,0,300,300); tempLogoBase64=cvs.toDataURL('image/png',0.9); document.getElementById('comp-logo-preview').src=tempLogoBase64; document.getElementById('comp-logo-preview').classList.remove('hidden'); document.getElementById('comp-logo-placeholder').classList.add('hidden'); }; img.src=ev.target.result; }; r.readAsDataURL(f); }
+
+        function saveCompanyProfile() {
+            ['name','tagline','address','email','phone','notes','notes_en','waPending','waPaid','emailPending','emailPaid','waPending_en','waPaid_en','emailPending_en','emailPaid_en'].forEach(k=>{ const el=document.getElementById(k.includes('tpl')||k.includes('comp')?k:`comp-${k}`)||document.getElementById(`tpl-${k.replace(/_en/,'-en').replace(/([A-Z])/g,'-$1').toLowerCase()}`); if(el) companyProfile[k]=el.value; });
+            companyProfile.logoBase64 = tempLogoBase64 || companyProfile.logoBase64;
+            
+            // Webhook save
+            const wh = document.getElementById('setting-webhook');
+            webhookUrl = wh.value.trim() || defaultWebhook;
+            localStorage.setItem('martive_webhook', webhookUrl);
+            wh.readOnly = true; wh.classList.add('bg-gray-700','text-gray-400','border-0'); wh.classList.remove('bg-white','text-gray-900','border','border-purple-500','ring-2','ring-purple-200');
+
+            localStorage.setItem('martive_company', JSON.stringify(companyProfile)); updateBrandingUI(); showToast("Pengaturan Disimpan", 'success');
+        }
+
+        function exportData() { const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify({version:"1.0",date:new Date().toISOString(),companyProfile,clients,invoices,catalog})); a.download=`Backup_Invoice_${new Date().toISOString().slice(0,10)}.json`; a.click(); showToast("JSON Diunduh", 'success'); }
+
+        let tempImportEvent = null;
+        function confirmImportData(e) { if(!e.target.files[0])return; tempImportEvent = e; showConfirmModal("Import akan menimpa seluruh data saat ini. Yakin?", processImportData); }
+        function processImportData() {
+            const f=tempImportEvent.target.files[0]; if(!f)return; const r=new FileReader();
+            r.onload=ev=>{ try{ const d=JSON.parse(ev.target.result); if(d.companyProfile)localStorage.setItem('martive_company',JSON.stringify(d.companyProfile)); if(d.clients)localStorage.setItem('martive_clients',JSON.stringify(d.clients)); if(d.invoices)localStorage.setItem('martive_invoices',JSON.stringify(d.invoices)); if(d.catalog)localStorage.setItem('martive_catalog',JSON.stringify(d.catalog)); showToast("Data Dipulihkan! Reloading...", 'success'); setTimeout(()=>location.reload(),1000); }catch(er){showToast("Format JSON tidak valid", 'error');} }; r.readAsText(f); tempImportEvent = null;
+        }
+
+        function syncCatalog() {
+            if(!webhookUrl.includes('script.google.com')) return showToast("URL Webhook tidak valid", 'error');
+            showToast("Mengunduh Katalog...", 'info');
+            fetch(webhookUrl+"?action=getCatalog").then(r=>r.json()).then(d=>{ if(d.status==='success'){ catalog=d.data; localStorage.setItem('martive_catalog',JSON.stringify(catalog)); updateCatalogDatalist(); showToast(`Sinkron ${catalog.length} item berhasil`, 'success'); }else showToast("Gagal mengambil data", 'error'); }).catch(e=>showToast("Koneksi Katalog Gagal", 'error'));
+        }
+
+        function syncToGoogleSheets(data) {
+            if(data.docType === 'estimasi' || !webhookUrl.includes('script.google.com')) return;
+            fetch(webhookUrl, {method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify({invoiceNo:data.invoiceNo, date:data.date, clientName:data.clientName, clientEmail:data.clientEmail, clientPhone:data.clientPhone, totalRaw:data.calc.tot||data.calc.finalTotal})}).catch(e=>console.log("Sinkron Sheet Error"));
+        }
+    </script>
+</body>
+</html>
