@@ -14,7 +14,7 @@
     <!-- Chart.js for Graphic -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -32,12 +32,14 @@
         .invoice-paper { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
         .pdf-desc-cell { white-space: pre-wrap; word-break: break-word; }
         
-        #invoice-paper table { page-break-inside: auto !important; }
-        #invoice-paper tr { page-break-inside: avoid !important; page-break-after: auto !important; }
-        #invoice-paper thead { display: table-header-group !important; }
-        #invoice-paper tfoot { display: table-footer-group !important; }
+        /* Table Page Break Fixes for html2pdf */
+        #invoice-paper table, #hpp-paper table { page-break-inside: auto !important; }
+        #invoice-paper tr, #hpp-paper tr { page-break-inside: avoid !important; page-break-after: auto !important; }
+        #invoice-paper thead, #hpp-paper thead { display: table-header-group !important; }
+        #invoice-paper tfoot, #hpp-paper tfoot { display: table-footer-group !important; }
         .avoid-break { page-break-inside: avoid !important; }
         
+        /* Print rules */
         @media print {
             body * { visibility: hidden; }
             #view-preview, #view-preview * { visibility: visible; }
@@ -45,6 +47,7 @@
             #chart-container, button, aside, header, .md\:hidden { display: none !important; }
         }
 
+        /* Prevent auto zoom on iOS */
         input, select, textarea, button { font-size: 16px !important; } 
         .custom-checkbox { width: 1.25rem; height: 1.25rem; border-radius: 0.25rem; cursor: pointer; }
     </style>
@@ -97,11 +100,50 @@
         <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-sm text-center border-t-4 border-purple-600">
             <i class="fa-solid fa-user-shield text-purple-600 text-4xl mb-4 mt-2 block"></i>
             <h3 class="text-xl font-bold mb-2 text-gray-800">Verifikasi Admin</h3>
-            <p class="text-gray-500 text-sm mb-6">Masukkan PIN Master (909090) untuk mengubah konfigurasi API.</p>
+            <p class="text-gray-500 text-sm mb-6">Masukkan PIN Master (909090) untuk membuka konfigurasi sistem kritis.</p>
             <input type="password" id="admin-pin-input" class="w-full text-center text-3xl tracking-[0.5em] border-gray-300 rounded-xl px-4 py-3 mb-6 font-mono focus:ring-purple-500 focus:border-purple-500 border bg-gray-50" maxlength="6" inputmode="numeric">
             <div class="flex gap-3">
                 <button onclick="closeAdminModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-xl font-bold transition-colors">Batal</button>
                 <button onclick="verifyAdmin()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-xl font-bold transition-colors shadow-md">Verifikasi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXPENSE & PROFIT MODAL -->
+    <div id="expense-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[150] hidden flex flex-col items-center justify-center px-4 py-6 overflow-y-auto transition-opacity">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-lg relative border-t-4 border-emerald-500 my-auto">
+            <button onclick="closeExpenseModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold mb-1 text-gray-800"><i class="fa-solid fa-wallet text-emerald-500 mr-2"></i> Laba & Pengeluaran (HPP)</h3>
+            <div class="flex justify-between items-center mb-5">
+                <p class="text-sm text-gray-500">Dokumen: <span id="exp-inv-no" class="font-bold text-gray-800"></span> - <span id="exp-client-name"></span></p>
+                <button id="btn-download-hpp" onclick="downloadHppPDF()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors shadow-sm flex items-center"><i class="fa-solid fa-file-pdf mr-1 text-red-500"></i> PDF HPP</button>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                    <p class="text-xs text-blue-600 font-bold mb-1 uppercase tracking-wide">Nilai Project</p>
+                    <p id="exp-revenue" class="font-black text-blue-800 text-lg">Rp 0</p>
+                </div>
+                <div class="bg-red-50 p-4 rounded-xl border border-red-100">
+                    <p class="text-xs text-red-600 font-bold mb-1 uppercase tracking-wide">Total Modal</p>
+                    <p id="exp-total-cost" class="font-black text-red-800 text-lg">Rp 0</p>
+                </div>
+                <div class="col-span-2 bg-emerald-50 p-5 rounded-xl border border-emerald-200 flex justify-between items-center shadow-inner">
+                    <p class="text-sm text-emerald-700 font-bold uppercase tracking-wide">Laba Bersih</p>
+                    <p id="exp-net-profit" class="font-black text-emerald-700 text-2xl">Rp 0</p>
+                </div>
+            </div>
+
+            <p class="text-sm font-bold text-gray-700 mb-2">Rincian Pengeluaran</p>
+            <div class="mb-5 max-h-40 overflow-y-auto pr-2 space-y-2" id="exp-list">
+                <!-- Expense Items injected here -->
+            </div>
+
+            <div class="flex gap-2 bg-gray-50 p-3 rounded-xl border border-gray-200 items-center">
+                <input type="text" id="exp-desc" placeholder="Rincian (Beli domain...)" class="flex-[2] border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-emerald-500 border outline-none">
+                <input type="number" id="exp-qty" placeholder="Qty" value="1" min="1" class="w-16 border-gray-300 rounded-lg px-2 py-2.5 text-sm text-center focus:ring-emerald-500 border outline-none">
+                <input type="number" id="exp-cost" placeholder="Harga Satuan" class="flex-1 border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-emerald-500 border outline-none">
+                <button onclick="addExpenseItem()" class="bg-emerald-600 hover:bg-emerald-700 text-white h-full px-4 py-2.5 rounded-lg font-bold transition-colors shadow-sm"><i class="fa-solid fa-plus"></i></button>
             </div>
         </div>
     </div>
@@ -123,10 +165,10 @@
         <nav class="flex-1 py-6 px-3 space-y-1.5 overflow-y-auto">
             <button onclick="nav('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl bg-brand-800 text-white transition-all hover:pl-5"><i class="fa-solid fa-chart-pie w-6 text-center mr-2 text-brand-100"></i> Dashboard</button>
             <button onclick="openNewInvoice()" id="nav-create" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-all hover:pl-5"><i class="fa-solid fa-file-invoice w-6 text-center mr-2"></i> Buat Dokumen</button>
-            <button onclick="nav('recap')" id="nav-recap" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-all hover:pl-5"><i class="fa-solid fa-calendar-check w-6 text-center mr-2"></i> Rekap Bulanan</button>
+            <button onclick="nav('recap')" id="nav-recap" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-all hover:pl-5"><i class="fa-solid fa-calendar-check w-6 text-center mr-2"></i> Rekap Keuangan</button>
             <button onclick="nav('history')" id="nav-history" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-all hover:pl-5"><i class="fa-solid fa-clock-rotate-left w-6 text-center mr-2"></i> Riwayat & CRM</button>
             <button onclick="nav('marketing')" id="nav-marketing" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-all hover:pl-5"><i class="fa-solid fa-bullhorn w-6 text-center mr-2 text-yellow-400"></i> Marketing Promo</button>
-            <button onclick="nav('settings')" id="nav-settings" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-all hover:pl-5"><i class="fa-solid fa-gear w-6 text-center mr-2"></i> Pengaturan</button>
+            <button onclick="nav('settings')" id="nav-settings" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-all hover:pl-5"><i class="fa-solid fa-gear w-6 text-center mr-2"></i> Pengaturan Sistem</button>
         </nav>
     </aside>
 
@@ -141,10 +183,10 @@
         <nav class="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
             <button onclick="nav('dashboard')" id="nav-dashboard-mob" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl bg-brand-800 text-white transition-colors"><i class="fa-solid fa-chart-pie w-6 text-center mr-2 text-brand-100"></i> Dashboard</button>
             <button onclick="openNewInvoice()" id="nav-create-mob" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-colors"><i class="fa-solid fa-file-invoice w-6 text-center mr-2"></i> Buat Dokumen</button>
-            <button onclick="nav('recap')" id="nav-recap-mob" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-colors"><i class="fa-solid fa-calendar-check w-6 text-center mr-2"></i> Rekap Bulanan</button>
+            <button onclick="nav('recap')" id="nav-recap-mob" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-colors"><i class="fa-solid fa-calendar-check w-6 text-center mr-2"></i> Rekap Keuangan</button>
             <button onclick="nav('history')" id="nav-history-mob" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-colors"><i class="fa-solid fa-clock-rotate-left w-6 text-center mr-2"></i> Riwayat & CRM</button>
             <button onclick="nav('marketing')" id="nav-marketing-mob" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-colors"><i class="fa-solid fa-bullhorn w-6 text-center mr-2 text-yellow-400"></i> Marketing Promo</button>
-            <button onclick="nav('settings')" id="nav-settings-mob" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-colors"><i class="fa-solid fa-gear w-6 text-center mr-2"></i> Pengaturan</button>
+            <button onclick="nav('settings')" id="nav-settings-mob" class="nav-btn w-full flex items-center px-4 py-3.5 text-sm font-medium rounded-xl text-brand-100 hover:bg-brand-800 hover:text-white transition-colors"><i class="fa-solid fa-gear w-6 text-center mr-2"></i> Pengaturan Sistem</button>
         </nav>
     </aside>
 
@@ -156,13 +198,12 @@
         <button onclick="toggleMobileMenu()" class="text-white hover:text-brand-200 focus:outline-none p-2 active:scale-95"><i class="fa-solid fa-bars text-2xl"></i></button>
     </div>
 
-    <!-- Main Content Base -->
     <main class="flex-1 flex flex-col h-screen overflow-y-auto mt-16 md:mt-0 relative w-full" id="main-content">
         
         <header class="h-16 bg-white border-b flex items-center justify-between px-6 lg:px-8 hidden md:flex sticky top-0 z-10 shrink-0">
             <h1 class="text-xl font-bold text-gray-800 tracking-tight" id="page-title">Dashboard</h1>
             <div class="flex gap-3">
-                <button onclick="nav('marketing')" class="bg-amber-100 hover:bg-amber-200 text-amber-700 px-5 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center shadow-sm"><i class="fa-solid fa-bullhorn mr-2"></i>Broadcast</button>
+                <button onclick="nav('marketing')" class="bg-amber-100 hover:bg-amber-200 text-amber-700 px-5 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center shadow-sm"><i class="fa-solid fa-bullhorn mr-2"></i>Broadcast Promo</button>
                 <button onclick="openNewInvoice()" class="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 flex items-center"><i class="fa-solid fa-plus mr-2"></i>Buat Dokumen</button>
             </div>
         </header>
@@ -178,22 +219,28 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                     <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 flex items-center justify-between group hover:border-brand-200 transition-colors">
-                        <div><p class="text-sm text-gray-500 font-medium mb-1">Invoice Aktif</p><p class="text-3xl font-black text-gray-900" id="stat-total-count">0</p></div>
-                        <div class="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors"><i class="fa-solid fa-file-invoice text-2xl"></i></div>
+                        <div><p class="text-sm text-gray-500 font-medium mb-1">Total Nilai Project</p><p class="text-xl sm:text-2xl font-black text-gray-900" id="stat-total-amount">Rp 0</p></div>
+                        <div class="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors"><i class="fa-solid fa-money-bill-wave text-2xl"></i></div>
                     </div>
                     <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 flex items-center justify-between group hover:border-brand-200 transition-colors">
-                        <div><p class="text-sm text-gray-500 font-medium mb-1">Total Nilai Tagihan</p><p class="text-xl sm:text-2xl font-black text-gray-900" id="stat-total-amount">Rp 0</p></div>
-                        <div class="w-14 h-14 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 group-hover:bg-brand-600 group-hover:text-white transition-colors"><i class="fa-solid fa-money-bill-wave text-2xl"></i></div>
+                        <div><p class="text-sm text-gray-500 font-medium mb-1">Total Modal (HPP)</p><p class="text-xl sm:text-2xl font-black text-orange-600" id="stat-expense">Rp 0</p></div>
+                        <div class="w-14 h-14 rounded-full bg-orange-50 flex items-center justify-center text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-colors"><i class="fa-solid fa-basket-shopping text-2xl"></i></div>
                     </div>
                     <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 flex items-center justify-between group hover:border-brand-200 transition-colors">
-                        <div><p class="text-sm text-gray-500 font-medium mb-1">Total Piutang</p><p class="text-xl sm:text-2xl font-black text-red-600" id="stat-unpaid-amount">Rp 0</p></div>
+                        <div><p class="text-sm text-gray-500 font-medium mb-1">Sisa Piutang</p><p class="text-xl sm:text-2xl font-black text-red-600" id="stat-unpaid-amount">Rp 0</p></div>
                         <div class="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-colors"><i class="fa-solid fa-clock text-2xl"></i></div>
                     </div>
-                    <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 flex items-center justify-between group hover:border-brand-200 transition-colors">
-                        <div><p class="text-sm text-gray-500 font-medium mb-1">Estimasi Aktif</p><p class="text-3xl font-black text-indigo-600" id="stat-est-count">0</p></div>
-                        <div class="w-14 h-14 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors"><i class="fa-solid fa-file-contract text-2xl"></i></div>
+                    <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-2xl shadow-md p-6 flex items-center justify-between text-white transform hover:scale-105 transition-transform duration-300">
+                        <div><p class="text-sm text-emerald-100 font-medium mb-1">Laba Bersih Aktual</p><p class="text-xl sm:text-2xl font-black text-white" id="stat-profit">Rp 0</p></div>
+                        <div class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-white"><i class="fa-solid fa-wallet text-2xl"></i></div>
                     </div>
                 </div>
+                
+                <div class="flex gap-4 items-center">
+                    <p class="text-xs text-gray-500"><i class="fa-solid fa-file-invoice mr-1 text-gray-400"></i> <span class="font-bold text-gray-700" id="stat-total-count">0</span> Invoice Riil</p>
+                    <p class="text-xs text-gray-500"><i class="fa-solid fa-file-contract mr-1 text-blue-400"></i> <span class="font-bold text-blue-600" id="stat-est-count">0</span> Estimasi / Quo</p>
+                </div>
+
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="px-6 py-5 border-b flex justify-between items-center bg-gray-50/50">
                         <h2 class="text-lg font-bold text-gray-800">Dokumen Terakhir</h2>
@@ -226,7 +273,7 @@
                                     <div><label class="block text-sm font-bold mb-1.5 text-gray-700">Jenis Dokumen</label><select id="doc-type" onchange="toggleDocType()" class="w-full border-gray-300 rounded-xl px-4 py-3 bg-brand-50 font-bold text-brand-800 focus:ring-brand-500 border outline-none transition-colors"><option value="invoice">Invoice Tagihan</option><option value="estimasi">Quotation / Estimasi</option></select></div>
                                     <div><label class="block text-sm font-bold mb-1.5 text-gray-700">Bahasa</label><select id="inv-lang" class="w-full border-gray-300 rounded-xl px-4 py-3 bg-gray-50 focus:ring-brand-500 border outline-none transition-colors"><option value="id">🇮🇩 Indonesia</option><option value="en">🇬🇧 English</option></select></div>
                                 </div>
-                                <div><label class="block text-sm font-bold mb-1.5 text-gray-700" id="lbl-form-no">No. Invoice</label><input type="text" id="inv-no" required class="w-full border-gray-300 rounded-xl px-4 py-3 focus:ring-brand-500 border font-mono font-bold text-gray-800 outline-none"></div>
+                                <div><label class="block text-sm font-bold mb-1.5 text-gray-700" id="lbl-form-no">No. Dokumen</label><input type="text" id="inv-no" required class="w-full border-gray-300 rounded-xl px-4 py-3 focus:ring-brand-500 border font-mono font-bold text-gray-800 outline-none"></div>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div><label class="block text-sm font-bold mb-1.5 text-gray-700">Tanggal Buat</label><input type="date" id="inv-date" required class="w-full border-gray-300 rounded-xl px-4 py-3 focus:ring-brand-500 border outline-none"></div>
                                     <div><label class="block text-sm font-bold mb-1.5 text-gray-700" id="lbl-form-due">Jatuh Tempo</label><input type="date" id="inv-due" required class="w-full border-gray-300 rounded-xl px-4 py-3 focus:ring-brand-500 border outline-none"></div>
@@ -264,7 +311,7 @@
                                 <div class="flex justify-between text-sm font-bold"><span>Subtotal:</span><span id="form-subtotal" class="text-gray-800">Rp 0</span></div>
                                 <div class="flex justify-between text-sm font-bold items-center text-gray-600"><span>Diskon (%):</span><input type="number" id="form-discount" min="0" max="100" value="0" class="w-20 text-right border-gray-300 rounded-lg px-3 py-2 focus:ring-brand-500 border outline-none" oninput="calculateTotal()"></div>
                                 <div class="flex justify-between text-sm font-bold items-center text-gray-600"><span>Pajak (%):</span><input type="number" id="form-tax" min="0" max="100" value="0" class="w-20 text-right border-gray-300 rounded-lg px-3 py-2 focus:ring-brand-500 border outline-none" oninput="calculateTotal()"></div>
-                                <div class="flex justify-between font-black border-t border-gray-300 pt-3 mt-2 text-lg text-gray-900"><span>Total:</span><span id="form-total" class="text-brand-600">Rp 0</span></div>
+                                <div class="flex justify-between font-black border-t border-gray-300 pt-3 mt-2 text-lg text-gray-900"><span>Total Akhir:</span><span id="form-total" class="text-brand-600">Rp 0</span></div>
                                 <!-- DP SECTION -->
                                 <div class="flex justify-between text-sm font-bold items-center text-gray-700 bg-white p-3 rounded-xl border border-gray-200 shadow-sm mt-3">
                                     <span class="flex flex-col">Uang Muka (DP): <span class="text-[10px] text-gray-400 font-normal">Nominal Rp</span></span>
@@ -277,13 +324,13 @@
                     
                     <div class="bg-white p-5 sm:p-7 rounded-2xl shadow-sm border border-gray-100 mb-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-black mb-3 text-gray-800 flex items-center"><span class="bg-gray-100 text-gray-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">4</span> Catatan & Instruksi</label>
-                            <textarea id="inv-notes" rows="4" class="w-full border-gray-300 rounded-xl px-4 py-3 focus:ring-brand-500 border outline-none transition-colors text-sm" placeholder="Catatan pembayaran atau instruksi tambahan..."></textarea>
+                            <label class="block text-sm font-black mb-3 text-gray-800 flex items-center"><span class="bg-gray-100 text-gray-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">4</span> Catatan Tambahan</label>
+                            <textarea id="inv-notes" rows="4" class="w-full border-gray-300 rounded-xl px-4 py-3 focus:ring-brand-500 border outline-none transition-colors text-sm" placeholder="Catatan pembayaran atau instruksi..."></textarea>
                         </div>
                         <!-- T&C SECTION -->
                         <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                            <label class="block text-sm font-black mb-3 text-gray-800"><i class="fa-solid fa-list-check text-brand-500 mr-2"></i> Syarat & Ketentuan (T&C)</label>
-                            <p class="text-xs text-gray-500 mb-3">Centang poin yang berlaku untuk dokumen ini.</p>
+                            <label class="block text-sm font-black mb-3 text-gray-800"><i class="fa-solid fa-list-check text-brand-500 mr-2"></i> Syarat & Ketentuan</label>
+                            <p class="text-xs text-gray-500 mb-3">Centang poin T&C yang berlaku untuk dokumen ini.</p>
                             <div id="form-tnc-container" class="space-y-2 max-h-40 overflow-y-auto pr-2">
                                 <!-- T&C Checkboxes injected here -->
                             </div>
@@ -413,13 +460,67 @@
                 </div>
             </div>
 
+            <!-- 3.5 HPP / PROFIT PDF TEMPLATE (HIDDEN) -->
+            <div id="hpp-preview-container" style="position: absolute; left: -9999px; top: -9999px;" class="hidden">
+                <div class="bg-white invoice-paper p-10 mx-auto" id="hpp-paper" style="width: 210mm; min-width: 210mm; min-height: 297mm; position: relative;">
+                    <div class="border-b-4 border-gray-100 pb-6 mb-6 flex justify-between items-start">
+                        <div>
+                            <h1 class="text-3xl font-black text-emerald-600 tracking-tight mb-1">LAPORAN LABA & HPP</h1>
+                            <p class="text-gray-500 text-sm">Dokumen Referensi: <span id="hpp-pdf-inv-no" class="font-bold text-gray-800"></span></p>
+                        </div>
+                        <div class="text-right">
+                            <h2 class="text-xl font-bold text-gray-800" id="hpp-pdf-comp-name">Company</h2>
+                            <p class="text-xs text-gray-500" id="hpp-pdf-date"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between mb-8 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                        <div>
+                            <p class="text-xs font-black text-gray-400 mb-1 uppercase tracking-widest">Klien Project:</p>
+                            <p class="text-base font-bold text-gray-800" id="hpp-pdf-client">-</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs font-black text-gray-400 mb-1 uppercase tracking-widest">Nilai Tagihan (Omzet):</p>
+                            <p class="text-lg font-black text-blue-600" id="hpp-pdf-revenue">Rp 0</p>
+                        </div>
+                    </div>
+
+                    <p class="text-sm font-black text-gray-800 mb-3 border-b pb-2">Rincian Pengeluaran (Modal / HPP)</p>
+                    <table class="w-full text-left mb-8" style="border-collapse: collapse;">
+                        <thead>
+                            <tr class="border-y border-gray-200 text-xs bg-gray-50/50">
+                                <th class="py-3 px-3 font-bold text-gray-600 w-[50%]">Deskripsi Pengeluaran</th>
+                                <th class="py-3 px-3 font-bold text-gray-600 text-center w-[15%]">Qty</th>
+                                <th class="py-3 px-3 font-bold text-gray-600 text-right w-[15%]">Harga Satuan</th>
+                                <th class="py-3 px-3 font-bold text-gray-600 text-right w-[20%]">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hpp-pdf-items" class="text-sm text-gray-800"></tbody>
+                    </table>
+
+                    <div class="flex justify-end mb-8 avoid-break">
+                        <div class="w-[70%] p-5 bg-gray-50 rounded-xl border border-gray-200">
+                            <div class="flex justify-between py-2 text-sm text-gray-600 font-bold border-b border-gray-200">
+                                <span>Total Tagihan Project</span><span id="hpp-pdf-revenue-summary" class="text-gray-900">Rp 0</span>
+                            </div>
+                            <div class="flex justify-between py-2 text-sm text-red-600 font-bold border-b border-gray-200">
+                                <span>Total Modal Dikeluarkan</span><span id="hpp-pdf-total-cost">- Rp 0</span>
+                            </div>
+                            <div class="flex justify-between py-3 font-black text-xl mt-1 border-t-2 border-gray-300">
+                                <span class="text-gray-800">Laba Bersih</span><span id="hpp-pdf-net-profit" class="text-emerald-600">Rp 0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 4. RECAP VIEW -->
             <div id="view-recap" class="hidden space-y-4 sm:space-y-6">
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="px-5 sm:px-7 py-5 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-50/50">
                         <div>
-                            <h2 class="text-xl font-black text-gray-800">Rekapitulasi Keuangan</h2>
-                            <p class="text-sm text-gray-500 mt-1">Hanya menghitung Invoice (Estimasi diabaikan).</p>
+                            <h2 class="text-xl font-black text-gray-800">Laba & Rekapitulasi</h2>
+                            <p class="text-sm text-gray-500 mt-1">Hanya menghitung Invoice Aktual (Estimasi diabaikan).</p>
                         </div>
                         <div class="flex flex-wrap gap-3 w-full sm:w-auto">
                             <select id="recap-year-filter" onchange="renderRecap()" class="flex-1 sm:flex-none border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:ring-brand-500 font-bold bg-white outline-none"><option value="all">Semua Tahun</option></select>
@@ -432,15 +533,15 @@
                     </div>
                     
                     <div class="overflow-x-auto w-full">
-                        <table class="w-full text-sm text-left min-w-[750px]">
+                        <table class="w-full text-sm text-left min-w-[850px]">
                             <thead class="text-xs uppercase bg-gray-50 text-gray-500 border-b border-gray-200">
                                 <tr>
                                     <th class="px-5 py-4 w-12 text-center"></th>
                                     <th class="px-5 py-4 font-bold">Bulan</th>
                                     <th class="px-5 py-4 text-center font-bold">Jml (Inv)</th>
-                                    <th class="px-5 py-4 text-right font-bold">Tagihan Total</th>
-                                    <th class="px-5 py-4 text-right text-green-600 font-bold">Lunas / DP</th>
-                                    <th class="px-5 py-4 text-right text-red-600 font-bold">Piutang</th>
+                                    <th class="px-5 py-4 text-right font-bold">Tagihan (Omzet)</th>
+                                    <th class="px-5 py-4 text-right text-red-600 font-bold">Modal Keluar</th>
+                                    <th class="px-5 py-4 text-right text-emerald-600 font-bold">Laba Bersih</th>
                                 </tr>
                             </thead>
                             <tbody id="recap-body" class="text-gray-700"></tbody>
@@ -458,9 +559,9 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="px-5 sm:px-7 py-5 border-b bg-gray-50/50 flex justify-between items-center"><h2 class="text-xl font-black text-gray-800">Riwayat & CRM Dokumen</h2></div>
                     <div class="overflow-x-auto w-full">
-                        <table class="w-full text-sm text-left min-w-[1000px]">
+                        <table class="w-full text-sm text-left min-w-[1050px]">
                             <thead class="text-xs uppercase bg-gray-50 text-gray-500 border-b border-gray-200">
-                                <tr><th class="px-6 py-4 w-36 font-bold">No. Dokumen</th><th class="px-6 py-4 w-32 font-bold">Tanggal</th><th class="px-6 py-4 font-bold">Klien</th><th class="px-6 py-4 text-right font-bold">Nominal Akhir</th><th class="px-6 py-4 text-center font-bold w-32">Status Bayar</th><th class="px-6 py-4 text-center font-bold w-48">Aksi Cepat</th></tr>
+                                <tr><th class="px-6 py-4 w-36 font-bold">No. Dokumen</th><th class="px-6 py-4 w-32 font-bold">Tanggal</th><th class="px-6 py-4 font-bold">Klien</th><th class="px-6 py-4 text-right font-bold">Nominal Akhir</th><th class="px-6 py-4 text-center font-bold w-32">Status Bayar</th><th class="px-6 py-4 text-center font-bold w-56">Aksi Cepat</th></tr>
                             </thead>
                             <tbody id="history-body" class="text-gray-700"></tbody>
                         </table>
@@ -642,6 +743,7 @@
         let currentInvoiceData = null;
         let tempLogoBase64 = null; 
         let recapChartInstance = null;
+        let currentExpenseInvId = null; // Track which invoice modal is open
         
         const defaultProfile = {
             name: "martive.id", tagline: "Digital Agency & Software House",
@@ -732,7 +834,7 @@
             document.querySelectorAll('.nav-btn').forEach(btn => { btn.classList.remove('bg-brand-800', 'text-white'); btn.classList.add('text-brand-100'); });
             ['', '-mob'].forEach(suf => { let btn = document.getElementById(`nav-${viewId}${suf}`); if(btn) { btn.classList.add('bg-brand-800', 'text-white'); btn.classList.remove('text-brand-100'); } });
 
-            const titles = { 'dashboard': 'Dashboard', 'create': 'Buat Dokumen', 'recap': 'Rekap Bulanan', 'preview': 'Pratinjau Dokumen', 'history': 'Riwayat & CRM', 'settings': 'Pengaturan Sistem', 'marketing': 'Marketing Broadcast' };
+            const titles = { 'dashboard': 'Dashboard', 'create': 'Buat Dokumen', 'recap': 'Rekap & Keuangan', 'preview': 'Pratinjau Dokumen', 'history': 'Riwayat & CRM', 'settings': 'Pengaturan Sistem', 'marketing': 'Marketing Broadcast' };
             document.getElementById('page-title').innerText = titles[viewId];
 
             if(viewId === 'dashboard') updateDashboardStats();
@@ -839,7 +941,7 @@
 
         function toggleDocType() {
             const type = document.getElementById('doc-type').value;
-            document.getElementById('lbl-form-no').innerText = type === 'invoice' ? 'No. Invoice' : 'No. Estimasi / Quotation';
+            document.getElementById('lbl-form-no').innerText = type === 'invoice' ? 'No. Dokumen' : 'No. Estimasi / Quotation';
             document.getElementById('lbl-form-due').innerText = type === 'invoice' ? 'Jatuh Tempo' : 'Berlaku Hingga';
             if(!currentInvoiceData) document.getElementById('inv-no').value = generateAutoNo(type);
         }
@@ -882,7 +984,7 @@
                 r.querySelector('.item-subtotal').innerText = formatRupiah(pr*qt); sub += (pr*qt);
             });
             const dPct = Math.abs(parseFloat(document.getElementById('form-discount').value)||0), tPct = Math.abs(parseFloat(document.getElementById('form-tax').value)||0);
-            const disc = sub*(dPct/100), tax = (sub-disc)*(tPct/100), tot = sub-disc+tax;
+            const disc = sub*(dPct/100), tax = (sub-disc)*(tPct/100), tot = sub-disc-disc+tax;
             
             let dp = Math.abs(parseFloat(document.getElementById('form-dp').value)||0);
             if(dp > tot) { dp = tot; document.getElementById('form-dp').value = dp; }
@@ -917,13 +1019,16 @@
                 if (calc.balance <= 0 && calc.tot > 0) currentStatus = 'paid';
                 else if (calc.balance > 0 && calc.balance < calc.tot) currentStatus = 'partial';
             } else if (currentStatus === 'partial') {
-                currentStatus = 'unpaid'; // Reset if dp removed
+                currentStatus = 'unpaid'; 
             }
+
+            // Keep existing expenses if editing
+            const expenses = currentInvoiceData ? (currentInvoiceData.expenses || []) : [];
 
             currentInvoiceData = {
                 id: currentInvoiceData?currentInvoiceData.id:Date.now().toString(), docType: docType, invoiceNo: document.getElementById('inv-no').value,
                 lang: l, rawDate: dRaw, date: dStr, dueDate: dueStr, clientName: document.getElementById('client-name').value, clientEmail: document.getElementById('client-email').value, clientPhone: document.getElementById('client-phone').value, clientAddress: document.getElementById('client-address').value,
-                items, notes: note, selectedTnc, calc, status: currentStatus
+                items, notes: note, selectedTnc, calc, status: currentStatus, expenses: expenses
             };
 
             const dict = i18nDict[l];
@@ -1003,22 +1108,179 @@
         }
 
         function getInvoiceStatusBadge(inv) {
-            if(inv.docType === 'estimasi') return '<span class="text-blue-700 font-bold bg-blue-100 px-2 py-1.5 rounded-lg text-xs w-full block">Estimasi</span>';
-            if(inv.status === 'paid') return '<span class="text-green-700 font-bold bg-green-100 px-2 py-1.5 rounded-lg text-xs w-full block"><i class="fa-solid fa-check mr-1"></i> Lunas</span>';
-            if(inv.status === 'partial') return '<span class="text-orange-700 font-bold bg-orange-100 px-2 py-1.5 rounded-lg text-xs w-full block">Parsial (DP)</span>';
-            return '<span class="text-red-700 font-bold bg-red-100 px-2 py-1.5 rounded-lg text-xs w-full block">Pending</span>';
+            if(inv.docType === 'estimasi') return '<span class="text-blue-700 font-bold bg-blue-100 px-2 py-1.5 rounded-lg text-xs w-full block shadow-sm border border-blue-200">Estimasi</span>';
+            if(inv.status === 'paid') return '<span class="text-green-700 font-bold bg-green-100 px-2 py-1.5 rounded-lg text-xs w-full block shadow-sm border border-green-200"><i class="fa-solid fa-check mr-1"></i> Lunas</span>';
+            if(inv.status === 'partial') return '<span class="text-orange-700 font-bold bg-orange-100 px-2 py-1.5 rounded-lg text-xs w-full block shadow-sm border border-orange-200">Parsial (DP)</span>';
+            return '<span class="text-red-700 font-bold bg-red-100 px-2 py-1.5 rounded-lg text-xs w-full block shadow-sm border border-red-200">Pending</span>';
+        }
+
+        function openExpenseModal(id) {
+            const inv = invoices.find(i => i.id === id);
+            if(!inv) return;
+            currentExpenseInvId = id;
+            document.getElementById('exp-inv-no').innerText = inv.invoiceNo;
+            document.getElementById('exp-client-name').innerText = inv.clientName;
+            
+            if(!inv.expenses) inv.expenses = [];
+            
+            renderExpenseList(inv);
+            document.getElementById('expense-modal').classList.remove('hidden');
+        }
+
+        function closeExpenseModal() {
+            document.getElementById('expense-modal').classList.add('hidden');
+            currentExpenseInvId = null;
+        }
+
+        function renderExpenseList(inv) {
+            const revenue = inv.calc.tot || 0;
+            let totalCost = 0;
+            const list = document.getElementById('exp-list');
+            list.innerHTML = '';
+            
+            if(inv.expenses.length === 0) {
+                list.innerHTML = '<p class="text-center text-xs text-gray-400 italic py-3">Belum ada catatan modal/pengeluaran.</p>';
+            } else {
+                inv.expenses.forEach((e, idx) => {
+                    const qty = e.qty || 1;
+                    const unitPrice = e.unitPrice !== undefined ? e.unitPrice : e.cost;
+                    totalCost += e.cost;
+                    list.innerHTML += `<div class="flex justify-between items-center bg-white p-3 border border-gray-100 rounded-lg"><div class="flex-1 pr-3"><span class="text-sm font-medium text-gray-700 block">${e.desc}</span><span class="text-xs text-gray-400 font-mono">${qty} x ${formatRupiah(unitPrice)}</span></div><div class="flex items-center gap-4 shrink-0"><span class="text-sm font-bold text-red-600">${formatRupiah(e.cost)}</span><button onclick="removeExpenseItem(${idx})" class="text-gray-300 hover:text-red-500 transition-colors"><i class="fa-solid fa-trash text-xs"></i></button></div></div>`;
+                });
+            }
+            
+            const netProfit = revenue - totalCost;
+            
+            document.getElementById('exp-revenue').innerText = formatRupiah(revenue);
+            document.getElementById('exp-total-cost').innerText = formatRupiah(totalCost);
+            document.getElementById('exp-net-profit').innerText = formatRupiah(netProfit);
+            
+            const npEl = document.getElementById('exp-net-profit');
+            if(netProfit < 0) {
+                npEl.classList.remove('text-emerald-700'); npEl.classList.add('text-red-600');
+                npEl.parentElement.classList.replace('bg-emerald-50', 'bg-red-50');
+                npEl.parentElement.classList.replace('border-emerald-200', 'border-red-200');
+            } else {
+                npEl.classList.add('text-emerald-700'); npEl.classList.remove('text-red-600');
+                npEl.parentElement.classList.replace('bg-red-50', 'bg-emerald-50');
+                npEl.parentElement.classList.replace('border-red-200', 'border-emerald-200');
+            }
+        }
+
+        function addExpenseItem() {
+            const desc = document.getElementById('exp-desc').value.trim();
+            const qty = Math.abs(parseFloat(document.getElementById('exp-qty').value)) || 1;
+            const unitPrice = Math.abs(parseFloat(document.getElementById('exp-cost').value)) || 0;
+            const cost = qty * unitPrice;
+            
+            if(!desc || cost <= 0) return showToast("Isi rincian dan nominal dengan benar", "warning");
+            
+            const invIdx = invoices.findIndex(i => i.id === currentExpenseInvId);
+            if(invIdx === -1) return;
+            
+            if(!invoices[invIdx].expenses) invoices[invIdx].expenses = [];
+            invoices[invIdx].expenses.push({ desc, qty, unitPrice, cost });
+            
+            localStorage.setItem('martive_invoices', JSON.stringify(invoices));
+            
+            document.getElementById('exp-desc').value = ''; document.getElementById('exp-qty').value = '1'; document.getElementById('exp-cost').value = '';
+            
+            renderExpenseList(invoices[invIdx]);
+            updateDashboardStats();
+            showToast("Modal ditambahkan", "success");
+        }
+
+        function removeExpenseItem(idx) {
+            const invIdx = invoices.findIndex(i => i.id === currentExpenseInvId);
+            if(invIdx === -1) return;
+            
+            invoices[invIdx].expenses.splice(idx, 1);
+            localStorage.setItem('martive_invoices', JSON.stringify(invoices));
+            
+            renderExpenseList(invoices[invIdx]);
+            updateDashboardStats();
+        }
+
+        let isProcessingHpp = false;
+        function downloadHppPDF() {
+            if(!currentExpenseInvId || isProcessingHpp) return;
+            const inv = invoices.find(i => i.id === currentExpenseInvId);
+            if(!inv) return;
+            
+            isProcessingHpp = true;
+            const btn = document.getElementById('btn-download-hpp');
+            const orig = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i>...`;
+            
+            document.getElementById('hpp-pdf-inv-no').innerText = inv.invoiceNo;
+            document.getElementById('hpp-pdf-comp-name').innerText = companyProfile.name || 'martive.id';
+            document.getElementById('hpp-pdf-date').innerText = "Dicetak: " + new Date().toLocaleDateString('id-ID', {day:'2-digit',month:'short',year:'numeric'});
+            
+            document.getElementById('hpp-pdf-client').innerText = inv.clientName;
+            document.getElementById('hpp-pdf-revenue').innerText = formatRupiah(inv.calc.tot || 0);
+            document.getElementById('hpp-pdf-revenue-summary').innerText = formatRupiah(inv.calc.tot || 0);
+            
+            let totalCost = 0;
+            const itemsHtml = (inv.expenses || []).map((e, idx) => {
+                const qty = e.qty || 1;
+                const unitPrice = e.unitPrice !== undefined ? e.unitPrice : e.cost;
+                totalCost += e.cost;
+                return `<tr class="border-b border-gray-100"><td class="py-3 px-3 text-sm">${e.desc}</td><td class="py-3 px-3 text-center text-sm">${qty}</td><td class="py-3 px-3 text-right text-sm">${formatRupiah(unitPrice)}</td><td class="py-3 px-3 text-right font-bold text-sm">${formatRupiah(e.cost)}</td></tr>`;
+            }).join('');
+            
+            document.getElementById('hpp-pdf-items').innerHTML = itemsHtml || `<tr><td colspan="4" class="text-center py-6 text-gray-500 text-sm">Belum ada data pengeluaran</td></tr>`;
+            document.getElementById('hpp-pdf-total-cost').innerText = "- " + formatRupiah(totalCost);
+            
+            const netProfit = (inv.calc.tot || 0) - totalCost;
+            const npEl = document.getElementById('hpp-pdf-net-profit');
+            npEl.innerText = formatRupiah(netProfit);
+            if(netProfit < 0) { npEl.classList.remove('text-emerald-600'); npEl.classList.add('text-red-600'); } 
+            else { npEl.classList.add('text-emerald-600'); npEl.classList.remove('text-red-600'); }
+
+            const el = document.getElementById('hpp-paper');
+            const opt = { 
+                margin:0, filename:`Laporan_Laba_HPP_${inv.invoiceNo}.pdf`, image:{type:'jpeg',quality:0.98}, 
+                html2canvas:{scale:2,logging:false, useCORS:true}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}, 
+                pagebreak:{mode:['avoid-all','css','legacy']} 
+            };
+            
+            document.getElementById('hpp-preview-container').classList.remove('hidden');
+            
+            showToast("Menyusun PDF Laporan...", 'info');
+            html2pdf().set(opt).from(el).save().then(()=>{
+                showToast("Laporan HPP Diunduh!", 'success');
+                btn.innerHTML = orig; isProcessingHpp = false;
+                document.getElementById('hpp-preview-container').classList.add('hidden');
+            }).catch(e=>{ 
+                btn.innerHTML = orig; isProcessingHpp = false; 
+                document.getElementById('hpp-preview-container').classList.add('hidden');
+                showToast("Gagal proses PDF", 'error'); 
+            });
         }
 
         function updateDashboardStats() {
-            let t=0, u=0, estC=0; const realInvs = invoices.filter(i=>i.docType !== 'estimasi');
+            let revenue = 0, unpaid = 0, estC = 0, expense = 0; 
+            const realInvs = invoices.filter(i=>i.docType !== 'estimasi');
+            
             realInvs.forEach(i=>{ 
-                t+=(i.calc.tot); 
-                if(i.status==='partial' || i.calc.dp>0) { u+=(i.calc.balance!==undefined ? i.calc.balance : i.calc.tot - (i.calc.dp||0)); }
-                else if(i.status!=='paid') u+=(i.calc.tot); 
+                const tot = i.calc.tot || 0;
+                revenue += tot; 
+                if(i.status==='partial' || i.calc.dp>0) { unpaid+=(i.calc.balance!==undefined ? i.calc.balance : tot - (i.calc.dp||0)); }
+                else if(i.status!=='paid') unpaid+=tot; 
+                
+                if(i.expenses) {
+                    i.expenses.forEach(e => expense += (e.cost || 0));
+                }
             });
+            
             invoices.forEach(i=>{ if(i.docType==='estimasi') estC++; });
 
-            document.getElementById('stat-total-count').innerText=realInvs.length; document.getElementById('stat-total-amount').innerText=formatRupiah(t); document.getElementById('stat-unpaid-amount').innerText=formatRupiah(u); document.getElementById('stat-est-count').innerText=estC;
+            document.getElementById('stat-total-count').innerText=realInvs.length; 
+            document.getElementById('stat-total-amount').innerText=formatRupiah(revenue); 
+            document.getElementById('stat-unpaid-amount').innerText=formatRupiah(unpaid); 
+            document.getElementById('stat-est-count').innerText=estC;
+            document.getElementById('stat-expense').innerText=formatRupiah(expense);
+            document.getElementById('stat-profit').innerText=formatRupiah(revenue - expense);
             
             const b=document.getElementById('recent-invoices-body'), emp=document.getElementById('empty-dashboard'); b.innerHTML='';
             if(invoices.length===0) { emp.classList.remove('hidden'); b.closest('table').classList.add('hidden'); }
@@ -1037,9 +1299,15 @@
                 emp.classList.add('hidden'); b.closest('table').classList.remove('hidden');
                 b.innerHTML=invoices.map(i=>{
                     const isEst=i.docType==='estimasi';
-                    const actBtn=isEst?`<button onclick="convertToInvoice('${i.id}')" class="px-2 py-1.5 rounded-lg text-xs font-bold bg-indigo-100 text-indigo-700 hover:bg-indigo-600 hover:text-white transition-colors w-full mb-1 shadow-sm"><i class="fa-solid fa-file-export mr-1"></i> Jadikan Invoice</button>`:`<button onclick="togglePaymentStatus('${i.id}')" class="w-full mb-1 shadow-sm transition-colors cursor-pointer hover:opacity-80">${getInvoiceStatusBadge(i)}</button>`;
+                    const actBtn=isEst?`<button onclick="convertToInvoice('${i.id}')" class="px-2 py-1.5 rounded-lg text-xs font-bold bg-indigo-100 text-indigo-700 hover:bg-indigo-600 hover:text-white transition-colors w-full mb-1 shadow-sm"><i class="fa-solid fa-file-export mr-1"></i> Jadikan Invoice</button>`:`<button onclick="togglePaymentStatus('${i.id}')" class="w-full mb-1 transition-colors cursor-pointer hover:opacity-80">${getInvoiceStatusBadge(i)}</button>`;
                     const bge=isEst?'<span class="bg-blue-100 text-blue-700 text-[10px] px-1 rounded ml-1 font-bold">EST</span>':(i.lang==='en'?'<span class="bg-gray-200 text-gray-700 text-[10px] px-1 rounded ml-1 font-bold">EN</span>':'');
-                    return `<tr class="border-b hover:bg-gray-50/80 transition-colors"><td class="px-6 py-4 font-black text-gray-800 whitespace-nowrap">${i.invoiceNo}${bge}</td><td class="px-6 py-4 whitespace-nowrap font-medium text-gray-600">${i.date}</td><td class="px-6 py-4"><div class="font-bold text-gray-900">${i.clientName}</div><div class="text-xs text-gray-400 mt-1">${i.clientPhone||'-'}</div></td><td class="px-6 py-4 text-right font-black text-gray-900">${formatRupiah(i.calc.tot)}<div class="text-xs font-normal text-red-500 mt-0.5">${(i.calc.dp>0 && i.status!=='paid') ? 'Sisa: '+formatRupiah(i.calc.balance) : ''}</div></td><td class="px-6 py-4 text-center align-middle">${actBtn}</td><td class="px-6 py-4 text-center"><div class="flex justify-center gap-2"><button onclick="editInvoice('${i.id}')" class="bg-gray-100 text-gray-600 w-9 h-9 rounded-lg hover:bg-blue-500 hover:text-white transition-colors shadow-sm flex items-center justify-center"><i class="fa-solid fa-pen"></i></button><button onclick="triggerFollowupWA('${i.id}')" class="bg-emerald-50 text-emerald-600 w-9 h-9 rounded-lg hover:bg-emerald-500 hover:text-white transition-colors shadow-sm flex items-center justify-center"><i class="fa-brands fa-whatsapp"></i></button><button onclick="triggerFollowupEmail('${i.id}')" class="bg-gray-100 text-indigo-600 w-9 h-9 rounded-lg hover:bg-indigo-500 hover:text-white transition-colors shadow-sm flex items-center justify-center"><i class="fa-solid fa-envelope"></i></button><button onclick="confirmDeleteInvoice('${i.id}')" class="bg-red-50 text-red-500 w-9 h-9 rounded-lg hover:bg-red-500 hover:text-white transition-colors shadow-sm flex items-center justify-center"><i class="fa-solid fa-trash"></i></button></div></td></tr>`;
+                    return `<tr class="border-b hover:bg-gray-50/80 transition-colors"><td class="px-6 py-4 font-black text-gray-800 whitespace-nowrap">${i.invoiceNo}${bge}</td><td class="px-6 py-4 whitespace-nowrap font-medium text-gray-600">${i.date}</td><td class="px-6 py-4"><div class="font-bold text-gray-900">${i.clientName}</div><div class="text-xs text-gray-400 mt-1">${i.clientPhone||'-'}</div></td><td class="px-6 py-4 text-right font-black text-gray-900">${formatRupiah(i.calc.tot)}<div class="text-xs font-normal text-red-500 mt-0.5">${(i.calc.dp>0 && i.status!=='paid') ? 'Sisa: '+formatRupiah(i.calc.balance) : ''}</div></td><td class="px-6 py-4 text-center align-middle">${actBtn}</td><td class="px-6 py-4 text-center"><div class="flex justify-center gap-2">
+                        <button onclick="openExpenseModal('${i.id}')" class="bg-yellow-50 text-yellow-600 w-9 h-9 rounded-lg hover:bg-yellow-500 hover:text-white transition-colors shadow-sm flex items-center justify-center" title="HPP & Laba"><i class="fa-solid fa-wallet"></i></button>
+                        <button onclick="editInvoice('${i.id}')" class="bg-gray-100 text-gray-600 w-9 h-9 rounded-lg hover:bg-blue-500 hover:text-white transition-colors shadow-sm flex items-center justify-center"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="triggerFollowupWA('${i.id}')" class="bg-emerald-50 text-emerald-600 w-9 h-9 rounded-lg hover:bg-emerald-500 hover:text-white transition-colors shadow-sm flex items-center justify-center"><i class="fa-brands fa-whatsapp"></i></button>
+                        <button onclick="triggerFollowupEmail('${i.id}')" class="bg-gray-100 text-indigo-600 w-9 h-9 rounded-lg hover:bg-indigo-500 hover:text-white transition-colors shadow-sm flex items-center justify-center"><i class="fa-solid fa-envelope"></i></button>
+                        <button onclick="confirmDeleteInvoice('${i.id}')" class="bg-red-50 text-red-500 w-9 h-9 rounded-lg hover:bg-red-500 hover:text-white transition-colors shadow-sm flex items-center justify-center"><i class="fa-solid fa-trash"></i></button>
+                    </div></td></tr>`;
                 }).join('');
             }
         }
@@ -1047,10 +1315,10 @@
         function togglePaymentStatus(id) { 
             const idx=invoices.findIndex(i=>i.id===id); if(idx===-1)return; 
             if(invoices[idx].status === 'paid') invoices[idx].status = 'unpaid';
-            else invoices[idx].status = 'paid'; // Toggle override DP logic
-            localStorage.setItem('martive_invoices', JSON.stringify(invoices)); renderHistory(); showToast("Status diupdate", 'success'); 
+            else invoices[idx].status = 'paid'; 
+            localStorage.setItem('martive_invoices', JSON.stringify(invoices)); renderHistory(); updateDashboardStats(); showToast("Status diupdate", 'success'); 
         }
-        function confirmDeleteInvoice(id) { showConfirmModal("Hapus permanen dokumen ini?", () => { invoices=invoices.filter(i=>i.id!==id); localStorage.setItem('martive_invoices',JSON.stringify(invoices)); renderHistory(); showToast("Terhapus", 'success'); }); }
+        function confirmDeleteInvoice(id) { showConfirmModal("Hapus permanen dokumen ini?", () => { invoices=invoices.filter(i=>i.id!==id); localStorage.setItem('martive_invoices',JSON.stringify(invoices)); renderHistory(); updateDashboardStats(); showToast("Terhapus", 'success'); }); }
         
         function editInvoice(id) {
             const inv=invoices.find(i=>i.id===id); if(!inv)return;
@@ -1076,31 +1344,42 @@
             const grp={};
             fil.forEach(i=>{
                 let d=new Date(i.rawDate||parseInt(i.id.substring(0,13))||Date.now()); const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-                if(!grp[k]) grp[k]={l:d.toLocaleDateString('id-ID',{month:'short',year:'numeric'}), t:0, p:0, c:0, cli:{}, arr:[]};
+                if(!grp[k]) grp[k]={l:d.toLocaleDateString('id-ID',{month:'short',year:'numeric'}), t:0, p:0, e:0, c:0, cli:{}, arr:[]};
                 const amt=i.calc.tot||0; grp[k].t+=amt; grp[k].c++; 
                 if(i.status==='paid') { grp[k].p+=amt; } else if(i.calc.dp>0) { grp[k].p+=i.calc.dp; }
+                
+                let exp = 0; if(i.expenses) i.expenses.forEach(x => exp+=x.cost);
+                grp[k].e += exp;
+
                 const cn=i.clientName||'Unknown'; grp[k].cli[cn]=(grp[k].cli[cn]||0)+amt; grp[k].arr.push(i);
             });
 
-            let gT=0, gP=0, gC=0;
+            let gT=0, gP=0, gC=0, gE=0;
             Object.keys(grp).sort().reverse().forEach(k=>{
-                const g=grp[k]; gT+=g.t; gP+=g.p; gC+=g.c;
-                tb.innerHTML+=`<tr class="border-b hover:bg-brand-50 cursor-pointer transition-colors" onclick="document.getElementById('acc-${k}').classList.toggle('hidden')"><td class="px-5 py-4 text-center"><i class="fa-solid fa-chevron-down text-gray-400"></i></td><td class="px-5 py-4 font-black text-gray-900">${g.l}</td><td class="px-5 py-4 text-center font-bold text-gray-600">${g.c}</td><td class="px-5 py-4 text-right font-black text-gray-800">${formatRupiah(g.t)}</td><td class="px-5 py-4 text-right font-black text-green-600">${formatRupiah(g.p)}</td><td class="px-5 py-4 text-right font-black text-red-600">${formatRupiah(g.t-g.p)}</td></tr>
-                <tr id="acc-${k}" class="hidden bg-gray-50"><td colspan="6" class="px-5 py-6"><div class="overflow-x-auto bg-white rounded-xl border border-gray-200 shadow-sm"><table class="w-full text-xs text-left"><thead class="bg-gray-100 border-b"><tr><th class="p-3 font-bold">Invoice</th><th class="p-3 font-bold">Klien</th><th class="p-3 text-right font-bold">Nominal</th><th class="p-3 text-center font-bold">Status</th></tr></thead><tbody>${g.arr.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(i=>`<tr class="border-b last:border-0"><td class="p-3 font-bold text-gray-800">${i.invoiceNo}</td><td class="p-3 font-medium">${i.clientName}</td><td class="p-3 text-right font-bold text-gray-800">${formatRupiah(i.calc.tot)}</td><td class="p-3 text-center">${getInvoiceStatusBadge(i)}</td></tr>`).join('')}</tbody></table></div></td></tr>`;
+                const g=grp[k]; gT+=g.t; gP+=g.p; gC+=g.c; gE+=g.e;
+                tb.innerHTML+=`<tr class="border-b hover:bg-brand-50 cursor-pointer transition-colors" onclick="document.getElementById('acc-${k}').classList.toggle('hidden')"><td class="px-5 py-4 text-center"><i class="fa-solid fa-chevron-down text-gray-400"></i></td><td class="px-5 py-4 font-black text-gray-900">${g.l}</td><td class="px-5 py-4 text-center font-bold text-gray-600">${g.c}</td><td class="px-5 py-4 text-right font-black text-blue-600">${formatRupiah(g.t)}</td><td class="px-5 py-4 text-right font-black text-red-600">${formatRupiah(g.e)}</td><td class="px-5 py-4 text-right font-black text-emerald-600">${formatRupiah(g.t-g.e)}</td></tr>
+                <tr id="acc-${k}" class="hidden bg-gray-50"><td colspan="6" class="px-5 py-6"><div class="overflow-x-auto bg-white rounded-xl border border-gray-200 shadow-sm"><table class="w-full text-xs text-left"><thead class="bg-gray-100 border-b"><tr><th class="p-3 font-bold">Invoice</th><th class="p-3 font-bold">Klien</th><th class="p-3 text-right font-bold">Omzet</th><th class="p-3 text-right font-bold">Modal</th><th class="p-3 text-right font-bold">Laba</th><th class="p-3 text-center font-bold">Status</th></tr></thead><tbody>${g.arr.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(i=>{
+                    let e = 0; if(i.expenses) i.expenses.forEach(x=>e+=x.cost); const profit = (i.calc.tot||0)-e;
+                    return `<tr class="border-b last:border-0"><td class="p-3 font-bold text-gray-800">${i.invoiceNo}</td><td class="p-3 font-medium">${i.clientName}</td><td class="p-3 text-right font-bold text-blue-700">${formatRupiah(i.calc.tot)}</td><td class="p-3 text-right font-bold text-red-600">${formatRupiah(e)}</td><td class="p-3 text-right font-bold text-emerald-600">${formatRupiah(profit)}</td><td class="p-3 text-center">${getInvoiceStatusBadge(i)}</td></tr>`;
+                }).join('')}</tbody></table></div></td></tr>`;
             });
-            tb.innerHTML+=`<tr class="bg-gray-100 border-t-4 border-gray-200"><td colspan="2" class="px-5 py-5 font-black uppercase text-gray-800 tracking-wider">Total Tagihan Aktual</td><td class="px-5 py-5 text-center font-black text-brand-700 text-lg">${gC}</td><td class="px-5 py-5 text-right font-black text-lg">${formatRupiah(gT)}</td><td class="px-5 py-5 text-right font-black text-green-600 text-lg">${formatRupiah(gP)}</td><td class="px-5 py-5 text-right font-black text-red-600 text-lg">${formatRupiah(gT-gP)}</td></tr>`;
+            tb.innerHTML+=`<tr class="bg-gray-100 border-t-4 border-gray-200"><td colspan="2" class="px-5 py-5 font-black uppercase text-gray-800 tracking-wider">Total Keseluruhan</td><td class="px-5 py-5 text-center font-black text-brand-700 text-lg">${gC}</td><td class="px-5 py-5 text-right font-black text-blue-700 text-lg">${formatRupiah(gT)}</td><td class="px-5 py-5 text-right font-black text-red-600 text-lg">${formatRupiah(gE)}</td><td class="px-5 py-5 text-right font-black text-emerald-600 text-lg">${formatRupiah(gT-gE)}</td></tr>`;
             
             const cD = Object.keys(grp).sort().map(k=>grp[k]); 
             if(recapChartInstance) recapChartInstance.destroy();
-            const rootStyle = getComputedStyle(document.documentElement);
-            recapChartInstance = new Chart(document.getElementById('recapChart').getContext('2d'), { type: 'bar', data: { labels: cD.map(d=>d.l.split(' ')[0]), datasets: [{label:'Penerimaan (Lunas/DP)', data:cD.map(d=>d.p), backgroundColor: rootStyle.getPropertyValue('--color-brand-500').trim()||'#22c55e', borderRadius:6}, {label:'Sisa Piutang', data:cD.map(d=>d.t-d.p), backgroundColor:'#ef4444', borderRadius:6}] }, options: {responsive:true, maintainAspectRatio:false, scales:{x:{stacked:true},y:{stacked:true}}} });
+            recapChartInstance = new Chart(document.getElementById('recapChart').getContext('2d'), { type: 'bar', data: { labels: cD.map(d=>d.l.split(' ')[0]), datasets: [{label:'Omzet Tagihan', data:cD.map(d=>d.t), backgroundColor: '#3b82f6', borderRadius:4}, {label:'Modal (HPP)', data:cD.map(d=>d.e), backgroundColor:'#ef4444', borderRadius:4}, {label:'Laba Bersih', data:cD.map(d=>d.t-d.e), backgroundColor:'#10b981', borderRadius:4}] }, options: {responsive:true, maintainAspectRatio:false, scales:{x:{stacked:false},y:{stacked:false}}} });
         }
+
         function exportRecapCSV() {
             const realInvs = invoices.filter(i=>i.docType !== 'estimasi'); if(realInvs.length===0) return showToast("Kosong", "warning");
-            const selYr=document.getElementById('recap-year-filter').value; let csv="Bulan/Tahun,Invoice,Tanggal,Klien,Status,Subtotal,Diskon(%),Pajak(%),Uang Muka (DP),Total Bersih\n";
+            const selYr=document.getElementById('recap-year-filter').value; let csv="Bulan/Tahun,Invoice,Tanggal,Klien,Status,Subtotal,Diskon(%),Pajak(%),Uang Muka (DP),Omzet Bersih,Total Modal (HPP),Laba Bersih\n";
             let fil=selYr==='all'?realInvs:realInvs.filter(i=>new Date(i.rawDate||parseInt(i.id.substring(0,13))||Date.now()).getFullYear().toString()===selYr);
-            fil.sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(i=>{ const d=new Date(i.rawDate||parseInt(i.id.substring(0,13))||Date.now()).toLocaleDateString('id-ID',{month:'short',year:'numeric'}); csv+=`${d},${i.invoiceNo},${i.date},"${(i.clientName||'').replace(/"/g,'""')}",${i.status},${i.calc.sub},${i.calc.dPct},${i.calc.tPct},${i.calc.dp||0},${i.calc.tot}\n`; });
-            const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'})); a.download=`Rekap_Tagihan_${selYr}.csv`; a.click(); showToast("CSV Diunduh", "success");
+            fil.sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(i=>{ 
+                const d=new Date(i.rawDate||parseInt(i.id.substring(0,13))||Date.now()).toLocaleDateString('id-ID',{month:'short',year:'numeric'}); 
+                let e=0; if(i.expenses) i.expenses.forEach(x=>e+=x.cost); const profit = (i.calc.tot||0)-e;
+                csv+=`${d},${i.invoiceNo},${i.date},"${(i.clientName||'').replace(/"/g,'""')}",${i.status},${i.calc.sub},${i.calc.dPct},${i.calc.tPct},${i.calc.dp||0},${i.calc.tot},${e},${profit}\n`; 
+            });
+            const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'})); a.download=`Rekap_Laba_${selYr}.csv`; a.click(); showToast("CSV Diunduh", "success");
         }
 
         function parseMsg(tpl, inv) { return (tpl||'').replace(/\[NAMA_KLIEN\]/g, inv.clientName||'-').replace(/\[NO_INVOICE\]/g, inv.invoiceNo||'-').replace(/\[TOTAL\]/g, formatRupiah(inv.calc.tot)).replace(/\[JATUH_TEMPO\]/g, inv.dueDate||'-').replace(/\[NAMA_PERUSAHAAN\]/g, companyProfile.name||'Perusahaan Kami'); }
@@ -1161,7 +1440,7 @@
             if(!silent) { updateBrandingUI(); showToast("Pengaturan Disimpan", 'success'); }
         }
 
-        function exportData() { const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify({version:"4.0",date:new Date().toISOString(),companyProfile,clients,invoices,catalog})); a.download=`Backup_Invoice_${new Date().toISOString().slice(0,10)}.json`; a.click(); showToast("JSON Diunduh", 'success'); }
+        function exportData() { const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify({version:"5.0",date:new Date().toISOString(),companyProfile,clients,invoices,catalog})); a.download=`Backup_Invoice_${new Date().toISOString().slice(0,10)}.json`; a.click(); showToast("JSON Diunduh", 'success'); }
 
         let tempImportEvent = null;
         function confirmImportData(e) { if(!e.target.files[0])return; tempImportEvent = e; showConfirmModal("Import akan menimpa seluruh data saat ini. Yakin?", processImportData); }
