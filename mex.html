@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Martive.id - Exhibition</title>
+    <title>MEX:Beyond of Photos</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -14,20 +14,20 @@
                 extend: {
                     colors: {
                         scandi: {
-                            base: '#EBE6DF',    /* Latar coklat pastel/beige */
-                            surface: '#F8F6F1', /* Permukaan off-white hangat */
-                            border: '#CFC3B4',  /* Border coklat muda pudar */
-                            text: '#2D241E',    /* Teks hitam kecoklatan */
-                            muted: '#85786C',   /* Teks abu/coklat redup */
-                            accent: '#4A3320',  /* Highlight coklat tua (Espresso) */
-                            hover: '#312114',   /* Coklat gelap untuk hover */
-                            viewer: '#17120F'   /* Latar super gelap untuk presentasi */
+                            base: '#EBE6DF',    /* Pastel beige background */
+                            surface: '#F8F6F1', /* Warm off-white surface */
+                            border: '#CFC3B4',  /* Faded light brown border */
+                            text: '#2D241E',    /* Brownish black text */
+                            muted: '#85786C',   /* Dim grey/brown text */
+                            accent: '#4A3320',  /* Dark espresso highlight */
+                            hover: '#312114',   /* Darker brown for hover */
+                            viewer: '#17120F'   /* Super dark background for presentation */
                         }
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                         serif: ['Playfair Display', 'serif'],
-                        mono: ['Courier Prime', 'monospace'], /* Aura 80s Camera/Typewriter */
+                        mono: ['Courier Prime', 'monospace'], /* 80s Camera/Typewriter vibe */
                     }
                 }
             }
@@ -44,7 +44,7 @@
             min-height: 100vh; 
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
-            /* Efek tekstur film grain tipis khas 80s */
+            /* Subtle 80s film grain texture */
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
         }
         
@@ -77,7 +77,7 @@
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Custom Scrollbar Classic */
+        /* Classic Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: theme('colors.scandi.border'); border-radius: 0px; }
@@ -91,32 +91,32 @@
         
         <header class="flex flex-col items-center justify-center gap-6 mb-12 fade-in p-6 md:p-10 border-b border-scandi-border relative">
             <div class="text-center">
-                <h1 class="text-4xl md:text-5xl font-serif tracking-widest text-scandi-accent mb-2 uppercase" id="brand-name">Martive.id</h1>
-                <p class="font-mono text-[10px] text-scandi-muted tracking-[0.2em] uppercase"> Beyond from Photos</p>
+                <h1 class="text-4xl md:text-5xl font-serif tracking-widest text-scandi-accent mb-2 uppercase" id="brand-name">MEX</h1>
+                <p class="font-mono text-[10px] text-scandi-muted tracking-[0.2em] uppercase">Martive.EXhibition</p>
             </div>
 
-            <!-- Tab Navigasi Classic -->
+            <!-- Navigation Tabs -->
             <div class="flex flex-wrap justify-center gap-2 md:gap-6 w-full">
                 <button onclick="App.switchMode('gallery')" id="tab-gallery" class="tab-btn font-mono text-xs uppercase tracking-widest transition border-b-2 border-scandi-accent text-scandi-accent pb-1 font-bold">
-                    [ Pameran ]
+                    [ Exhibition ]
                 </button>
                 <button onclick="App.switchMode('publication')" id="tab-publication" class="tab-btn font-mono text-xs uppercase tracking-widest transition border-b-2 border-transparent text-scandi-muted hover:text-scandi-text pb-1">
-                    [ Publikasi ]
+                    [ Publication ]
                 </button>
                 <button onclick="App.switchMode('presentation')" id="tab-presentation" class="tab-btn font-mono text-xs uppercase tracking-widest transition border-b-2 border-transparent text-scandi-muted hover:text-scandi-text pb-1">
-                    [ Presentasi ]
+                    [ Presentation ]
                 </button>
                 <button onclick="App.switchMode('manage')" id="tab-manage" class="tab-btn font-mono text-xs uppercase tracking-widest transition border-b-2 border-transparent text-scandi-muted hover:text-scandi-text pb-1">
-                    [ Manajemen ]
+                    [ Management ]
                 </button>
             </div>
 
-            <!-- Aksi Kanan -->
+            <!-- Top Right Actions -->
             <div class="absolute top-6 right-6 md:top-10 md:right-10 flex gap-2">
-                <button onclick="App.toggleFullscreen()" class="p-2 text-scandi-muted hover:text-scandi-accent transition border border-transparent hover:border-scandi-border" title="Layar Penuh">
+                <button onclick="App.toggleFullscreen()" class="p-2 text-scandi-muted hover:text-scandi-accent transition border border-transparent hover:border-scandi-border" title="Fullscreen">
                     <i data-lucide="maximize" id="icon-fs" class="w-5 h-5"></i>
                 </button>
-                <button onclick="App.Modals.open('settings')" class="p-2 text-scandi-muted hover:text-scandi-accent transition border border-transparent hover:border-scandi-border" title="Pengaturan">
+                <button onclick="App.Modals.open('settings')" class="p-2 text-scandi-muted hover:text-scandi-accent transition border border-transparent hover:border-scandi-border" title="Settings">
                     <i data-lucide="settings" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -131,10 +131,10 @@
 
             <div id="gallery-empty" class="hidden-el text-center py-24 bg-scandi-surface mt-4 border border-scandi-border rounded-sm">
                 <i data-lucide="camera" class="w-12 h-12 text-scandi-border mx-auto mb-4 stroke-1"></i>
-                <h3 class="text-xl font-serif text-scandi-text mb-2">Arsip Kosong</h3>
-                <p class="font-mono text-scandi-muted text-xs mb-6 max-w-sm mx-auto tracking-widest uppercase">Silakan masukkan rol film baru (Manajemen).</p>
+                <h3 class="text-xl font-serif text-scandi-text mb-2">Empty Archive</h3>
+                <p class="font-mono text-scandi-muted text-xs mb-6 max-w-sm mx-auto tracking-widest uppercase">Please load a new film roll (Management).</p>
                 <button onclick="App.switchMode('manage')" class="bg-scandi-accent text-white px-8 py-3 font-mono text-xs tracking-widest uppercase hover:bg-scandi-hover transition">
-                    + Tambah Arsip
+                    + Add Archive
                 </button>
             </div>
 
@@ -150,15 +150,15 @@
 
             <div id="pub-empty" class="hidden-el text-center py-24 bg-scandi-surface mt-4 border border-scandi-border rounded-sm">
                 <i data-lucide="book-open" class="w-12 h-12 text-scandi-border mx-auto mb-4 stroke-1"></i>
-                <h3 class="text-xl font-serif text-scandi-text mb-2">Perpustakaan Kosong</h3>
-                <p class="font-mono text-scandi-muted text-xs mb-6 max-w-sm mx-auto tracking-widest uppercase">Unggah katalog format PDF di Manajemen.</p>
+                <h3 class="text-xl font-serif text-scandi-text mb-2">Empty Library</h3>
+                <p class="font-mono text-scandi-muted text-xs mb-6 max-w-sm mx-auto tracking-widest uppercase">Upload PDF catalogs in Management.</p>
             </div>
         </main>
 
         <main id="view-manage" class="hidden-el fade-in">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 bg-scandi-surface p-6 border border-scandi-border">
                 <div>
-                    <h2 class="text-2xl font-serif text-scandi-text mb-1">Manajemen Arsip</h2>
+                    <h2 class="text-2xl font-serif text-scandi-text mb-1">Archive Management</h2>
                     <p class="font-mono text-scandi-muted text-[10px] uppercase tracking-widest">Database Editor & Backup</p>
                 </div>
                 <div class="flex flex-wrap gap-2 w-full md:w-auto">
@@ -166,33 +166,33 @@
                         <i data-lucide="download-cloud" class="w-4 h-4"></i> Backup (.json)
                     </button>
                     <label class="flex-1 md:flex-none bg-scandi-accent text-white px-4 py-2 font-mono text-xs uppercase tracking-wider hover:bg-scandi-hover transition flex items-center justify-center gap-2 border border-scandi-accent cursor-pointer">
-                        <i data-lucide="upload-cloud" class="w-4 h-4"></i> Pulihkan
+                        <i data-lucide="upload-cloud" class="w-4 h-4"></i> Restore
                         <input type="file" accept=".json" class="hidden" onchange="App.Manage.importData(event)">
                     </label>
                 </div>
             </div>
 
-            <!-- Toggles CMS -->
+            <!-- CMS Toggles -->
             <div class="flex gap-4 mb-6 border-b border-scandi-border pb-4">
                 <button onclick="App.Manage.switchTab('photo')" id="m-tab-photo" class="font-mono text-xs uppercase tracking-widest text-scandi-accent font-bold border-b-2 border-scandi-accent pb-1">
-                    Foto (Pameran)
+                    Photos (Exhibition)
                 </button>
                 <button onclick="App.Manage.switchTab('pdf')" id="m-tab-pdf" class="font-mono text-xs uppercase tracking-widest text-scandi-muted hover:text-scandi-text border-b-2 border-transparent pb-1">
-                    Buku (Publikasi)
+                    Books (Publication)
                 </button>
             </div>
 
             <div id="m-header-photo" class="flex justify-between items-center mb-4">
-                <h3 class="font-serif text-scandi-text text-lg italic">Daftar Karya</h3>
+                <h3 class="font-serif text-scandi-text text-lg italic">List of Works</h3>
                 <button onclick="App.Manage.openPhotoForm()" class="bg-scandi-base text-scandi-accent border border-scandi-border px-4 py-2 text-xs font-mono tracking-widest uppercase hover:bg-scandi-surface transition">
-                    + Karya Baru
+                    + New Work
                 </button>
             </div>
 
             <div id="m-header-pdf" class="hidden-el flex justify-between items-center mb-4">
-                <h3 class="font-serif text-scandi-text text-lg italic">Daftar Buku PDF</h3>
+                <h3 class="font-serif text-scandi-text text-lg italic">PDF Book List</h3>
                 <button onclick="App.Manage.openPdfForm()" class="bg-scandi-base text-scandi-accent border border-scandi-border px-4 py-2 text-xs font-mono tracking-widest uppercase hover:bg-scandi-surface transition">
-                    + Buku Baru
+                    + New Book
                 </button>
             </div>
 
@@ -202,13 +202,13 @@
 
         <main id="view-presentation" class="hidden-el fade-in">
             <div class="max-w-3xl mx-auto text-center mb-8">
-                <h2 class="text-3xl font-serif text-scandi-text mb-2">Proyeksi Diskusi</h2>
-                <p class="font-mono text-scandi-muted text-[10px] uppercase tracking-widest leading-relaxed">Letakkan folder ke area di bawah untuk memulai proyeksi offline (tanpa upload).</p>
+                <h2 class="text-3xl font-serif text-scandi-text mb-2">Discussion Projection</h2>
+                <p class="font-mono text-scandi-muted text-[10px] uppercase tracking-widest leading-relaxed">Drop folders into the area below to start an offline projection (no upload required).</p>
             </div>
 
             <label id="dropzone" class="bg-scandi-surface border-2 border-dashed border-scandi-border p-12 md:p-16 flex flex-col items-center justify-center cursor-pointer hover:border-scandi-accent transition-all duration-300 max-w-4xl mx-auto group">
                 <i data-lucide="film" class="w-12 h-12 text-scandi-muted group-hover:text-scandi-accent mb-4 transition stroke-1"></i>
-                <h3 class="text-lg font-serif text-scandi-text mb-2 text-center">Pilih atau Tarik Folder Kemari</h3>
+                <h3 class="text-lg font-serif text-scandi-text mb-2 text-center">Select or Drop Folders Here</h3>
                 <input type="file" id="input-pres-files" webkitdirectory directory multiple accept="image/*" class="hidden">
             </label>
 
@@ -217,7 +217,6 @@
     </div>
 
     <div id="smart-viewer" class="fixed inset-0 z-[100] hidden-el bg-scandi-viewer flex flex-col transition-opacity duration-300 opacity-0">
-        <!-- Toolbar Atas -->
         <div id="viewer-toolbar" class="absolute top-0 w-full p-4 md:p-6 flex justify-between items-center z-50 transition-opacity duration-500">
             <div class="flex items-center gap-4 text-scandi-border text-sm font-mono tracking-widest">
                 <span id="viewer-counter">001 / 001</span>
@@ -226,10 +225,10 @@
                 </span>
             </div>
             <div class="flex gap-4">
-                <button id="v-btn-ui" onclick="App.Viewer.toggleUI()" class="text-scandi-muted hover:text-white transition" title="Sembunyikan Info">
+                <button id="v-btn-ui" onclick="App.Viewer.toggleUI()" class="text-scandi-muted hover:text-white transition" title="Hide Info">
                     <i data-lucide="eye" id="v-icon-ui" class="w-5 h-5"></i>
                 </button>
-                <button id="v-btn-play" onclick="App.Viewer.toggleSlideshow()" class="text-scandi-muted hover:text-white transition" title="Putar Otomatis">
+                <button id="v-btn-play" onclick="App.Viewer.toggleSlideshow()" class="text-scandi-muted hover:text-white transition" title="Auto Play">
                     <i data-lucide="play" id="v-icon-play" class="w-5 h-5"></i>
                 </button>
                 <button onclick="App.Viewer.close()" class="text-scandi-muted hover:text-red-400 transition ml-2">
@@ -239,7 +238,7 @@
         </div>
 
         <div class="flex-1 min-h-0 min-w-0 flex items-center justify-center relative p-4 md:p-12 w-full h-full" id="viewer-img-container">
-            <button onclick="App.Viewer.prev()" class="absolute left-4 md:left-6 z-50 p-2 text-scandi-muted hover:text-white transition viewer-nav">
+            <button onclick="App.Viewer.prev(true)" class="absolute left-4 md:left-6 z-50 p-2 text-scandi-muted hover:text-white transition viewer-nav">
                 <i data-lucide="chevron-left" class="w-8 h-8 md:w-10 md:h-10 stroke-1"></i>
             </button>
             
@@ -247,24 +246,24 @@
                 <img id="viewer-img" src="" class="max-h-full max-w-full object-scale-down transition-opacity duration-300 opacity-0">
             </div>
 
-            <button onclick="App.Viewer.next()" class="absolute right-4 md:right-6 z-50 p-2 text-scandi-muted hover:text-white transition viewer-nav">
+            <button onclick="App.Viewer.next(true)" class="absolute right-4 md:right-6 z-50 p-2 text-scandi-muted hover:text-white transition viewer-nav">
                 <i data-lucide="chevron-right" class="w-8 h-8 md:w-10 md:h-10 stroke-1"></i>
             </button>
 
-            <!-- Nama File Presentasi -->
+            <!-- Presentation Filename -->
             <div id="viewer-filename" class="hidden-el absolute bottom-6 left-6 text-scandi-border text-left z-40 transition-opacity duration-500 viewer-nav"></div>
         </div>
 
-        <!-- Panel Info Bawah Classic -->
+        <!-- Classic Info Panel -->
         <div id="viewer-info" class="hidden-el w-full bg-scandi-surface border-t border-scandi-border p-6 md:p-8 flex-shrink-0 transition-all duration-500 transform">
             <div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-8 items-start md:items-center">
                 <div class="flex-1 min-w-0 w-full">
                     <div class="flex items-center gap-3 mb-2 font-mono">
-                        <span id="v-cat" class="text-scandi-accent text-[10px] font-bold uppercase tracking-widest border-b border-scandi-accent">KATEGORI</span>
+                        <span id="v-cat" class="text-scandi-accent text-[10px] font-bold uppercase tracking-widest border-b border-scandi-accent">CATEGORY</span>
                         <span id="v-year" class="text-scandi-muted text-[10px] tracking-widest border border-scandi-border px-1">2024</span>
                     </div>
-                    <h3 id="v-title" class="text-3xl md:text-4xl font-serif text-scandi-text mb-2 truncate">Judul Karya</h3>
-                    <p class="text-sm font-mono text-scandi-muted truncate tracking-wider uppercase">Artist / <span id="v-artist" class="text-scandi-text font-bold">Nama Seniman</span></p>
+                    <h3 id="v-title" class="text-3xl md:text-4xl font-serif text-scandi-text mb-2 truncate">Artwork Title</h3>
+                    <p class="text-sm font-mono text-scandi-muted truncate tracking-wider uppercase">Artist / <span id="v-artist" class="text-scandi-text font-bold">Artist Name</span></p>
                 </div>
                 <div class="flex-1 w-full border-t md:border-t-0 md:border-l border-scandi-border pt-4 md:pt-0 md:pl-8 space-y-4">
                     <div>
@@ -297,7 +296,7 @@
             <canvas id="pdf-canvas" class="bg-white border border-scandi-border shadow-md transition-transform origin-top"></canvas>
             <div id="pdf-loading" class="absolute inset-0 bg-scandi-base/80 flex flex-col items-center justify-center z-20">
                 <i data-lucide="loader-2" class="w-8 h-8 text-scandi-accent animate-spin mb-3 stroke-1"></i>
-                <p class="font-mono text-scandi-muted text-xs tracking-widest uppercase">Memuat Plat...</p>
+                <p class="font-mono text-scandi-muted text-xs tracking-widest uppercase">Loading Plate...</p>
             </div>
         </div>
 
@@ -314,76 +313,74 @@
         </div>
     </div>
 
-    <!-- Form Tambah/Edit Foto -->
     <div id="modal-admin-photo" class="fixed inset-0 z-[120] hidden-el bg-black/50 backdrop-blur-sm flex justify-center items-end md:items-center p-0 md:p-4 transition-opacity duration-300">
         <div class="surface-card w-full max-w-lg p-6 relative max-h-[90vh] overflow-y-auto transform transition-transform duration-300 translate-y-full md:translate-y-0" id="modal-admin-photo-content">
             <button onclick="App.Modals.close('admin-photo')" class="absolute top-6 right-6 text-scandi-muted hover:text-scandi-accent"><i data-lucide="x" class="w-5 h-5"></i></button>
-            <h3 id="modal-photo-title" class="text-2xl font-serif text-scandi-text mb-6 italic">Data Karya</h3>
+            <h3 id="modal-photo-title" class="text-2xl font-serif text-scandi-text mb-6 italic">Artwork Data</h3>
             
             <form class="space-y-4" onsubmit="event.preventDefault(); App.Manage.savePhoto();">
                 <div class="relative">
-                    <label class="block font-mono text-[10px] uppercase tracking-widest text-scandi-muted mb-1">FILE GAMBAR (NEGATIF)</label>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-scandi-muted mb-1">IMAGE FILE (NEGATIVE)</label>
                     <div class="border border-dashed border-scandi-border bg-scandi-base hover:bg-scandi-border transition p-6 text-center cursor-pointer" onclick="document.getElementById('admin-file').click()">
                         <i data-lucide="camera" class="w-6 h-6 mx-auto text-scandi-muted mb-2 stroke-1"></i>
-                        <span class="font-mono text-xs text-scandi-text" id="admin-file-name">Pilih File...</span>
-                        <p id="admin-file-help" class="text-[10px] text-scandi-muted mt-1 font-mono hidden-el">*Abaikan jika tidak ingin mengganti file lama.</p>
+                        <span class="font-mono text-xs text-scandi-text" id="admin-file-name">Select File...</span>
+                        <p id="admin-file-help" class="text-[10px] text-scandi-muted mt-1 font-mono hidden-el">*Ignore if you don't want to change the existing file.</p>
                     </div>
                     <input type="file" id="admin-file" accept="image/*" class="hidden">
                 </div>
                 <div class="flex gap-2">
-                    <div class="flex-[2]"><label class="block font-mono text-[10px] uppercase tracking-widest text-scandi-muted mb-1">Judul *</label><input type="text" id="admin-title" class="input-clean" required placeholder="Judul"></div>
-                    <div class="flex-1"><label class="block font-mono text-[10px] uppercase tracking-widest text-scandi-muted mb-1">Kategori *</label><input type="text" id="admin-cat" class="input-clean" required placeholder="Kategori"></div>
+                    <div class="flex-[2]"><label class="block font-mono text-[10px] uppercase tracking-widest text-scandi-muted mb-1">Title *</label><input type="text" id="admin-title" class="input-clean" required placeholder="Title"></div>
+                    <div class="flex-1"><label class="block font-mono text-[10px] uppercase tracking-widest text-scandi-muted mb-1">Category *</label><input type="text" id="admin-cat" class="input-clean" required placeholder="Category"></div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block font-mono text-[10px] uppercase tracking-widest text-scandi-muted mb-1">Seniman *</label><input type="text" id="admin-artist" class="input-clean" required placeholder="Nama"></div>
-                    <div><label class="block font-mono text-[10px] uppercase tracking-widest text-scandi-muted mb-1">Tahun</label><input type="text" id="admin-year" class="input-clean" placeholder="YYYY"></div>
+                    <div><label class="block font-mono text-[10px] uppercase tracking-widest text-scandi-muted mb-1">Artist *</label><input type="text" id="admin-artist" class="input-clean" required placeholder="Name"></div>
+                    <div><label class="block font-mono text-[10px] uppercase tracking-widest text-scandi-muted mb-1">Year</label><input type="text" id="admin-year" class="input-clean" placeholder="YYYY"></div>
                 </div>
-                <div><label class="block font-mono text-[10px] uppercase tracking-widest text-scandi-muted mb-1">Deskripsi Konsep</label><textarea id="admin-desc" class="input-clean h-24 resize-none" placeholder="Teks analog..."></textarea></div>
+                <div><label class="block font-mono text-[10px] uppercase tracking-widest text-scandi-muted mb-1">Concept Description</label><textarea id="admin-desc" class="input-clean h-24 resize-none" placeholder="Analog text..."></textarea></div>
                 
-                <button type="submit" id="btn-save-photo" class="w-full bg-scandi-accent text-white font-mono text-xs uppercase tracking-widest py-3 hover:bg-scandi-hover transition">Simpan Arsip</button>
+                <button type="submit" id="btn-save-photo" class="w-full bg-scandi-accent text-white font-mono text-xs uppercase tracking-widest py-3 hover:bg-scandi-hover transition">Save Archive</button>
             </form>
         </div>
     </div>
 
-    <!-- Form Tambah/Edit PDF -->
     <div id="modal-admin-pdf" class="fixed inset-0 z-[120] hidden-el bg-black/50 backdrop-blur-sm flex justify-center items-end md:items-center p-0 md:p-4 transition-opacity duration-300">
         <div class="surface-card w-full max-w-lg p-6 relative max-h-[90vh] overflow-y-auto transform transition-transform duration-300 translate-y-full md:translate-y-0" id="modal-admin-pdf-content">
             <button onclick="App.Modals.close('admin-pdf')" class="absolute top-6 right-6 text-scandi-muted hover:text-scandi-accent"><i data-lucide="x" class="w-5 h-5"></i></button>
-            <h3 id="modal-pdf-title" class="text-2xl font-serif text-scandi-text mb-6 italic">Data Publikasi</h3>
+            <h3 id="modal-pdf-title" class="text-2xl font-serif text-scandi-text mb-6 italic">Publication Data</h3>
             
             <form class="space-y-4" onsubmit="event.preventDefault(); App.Manage.savePdf();">
                 <div class="relative">
-                    <label class="block font-mono text-[10px] uppercase tracking-widest text-scandi-muted mb-1">DOKUMEN PDF</label>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-scandi-muted mb-1">PDF DOCUMENT</label>
                     <div class="border border-dashed border-scandi-border bg-scandi-base hover:bg-scandi-border transition p-6 text-center cursor-pointer" onclick="document.getElementById('admin-pdf-file').click()">
                         <i data-lucide="file-text" class="w-6 h-6 mx-auto text-scandi-muted mb-2 stroke-1"></i>
-                        <span class="font-mono text-xs text-scandi-text block" id="admin-pdf-name">Pilih File PDF...</span>
-                        <p id="admin-pdf-help" class="text-[10px] text-scandi-muted mt-1 font-mono hidden-el">*Abaikan untuk mempertahankan file lama.</p>
+                        <span class="font-mono text-xs text-scandi-text block" id="admin-pdf-name">Select PDF File...</span>
+                        <p id="admin-pdf-help" class="text-[10px] text-scandi-muted mt-1 font-mono hidden-el">*Ignore to keep the existing file.</p>
                     </div>
                     <input type="file" id="admin-pdf-file" accept="application/pdf" class="hidden">
                 </div>
-                <div><label class="block font-mono text-[10px] uppercase tracking-widest text-scandi-muted mb-1">Judul Buku *</label><input type="text" id="admin-pdf-title" class="input-clean" required placeholder="Judul Buku"></div>
-                <div><label class="block font-mono text-[10px] uppercase tracking-widest text-scandi-muted mb-1">Penulis *</label><input type="text" id="admin-pdf-author" class="input-clean" required placeholder="Penulis"></div>
-                <button type="submit" id="btn-save-pdf" class="w-full bg-scandi-text text-white font-mono text-xs uppercase tracking-widest py-3 hover:bg-black transition">Simpan Buku</button>
+                <div><label class="block font-mono text-[10px] uppercase tracking-widest text-scandi-muted mb-1">Book Title *</label><input type="text" id="admin-pdf-title" class="input-clean" required placeholder="Book Title"></div>
+                <div><label class="block font-mono text-[10px] uppercase tracking-widest text-scandi-muted mb-1">Author *</label><input type="text" id="admin-pdf-author" class="input-clean" required placeholder="Author"></div>
+                <button type="submit" id="btn-save-pdf" class="w-full bg-scandi-text text-white font-mono text-xs uppercase tracking-widest py-3 hover:bg-black transition">Save Book</button>
             </form>
         </div>
     </div>
 
-    <!-- Modal Pengaturan -->
+    <!-- Settings Modal -->
     <div id="modal-settings" class="fixed inset-0 z-[120] hidden-el bg-black/50 backdrop-blur-sm flex justify-center items-center p-4 transition-opacity duration-300">
         <div class="surface-card w-full max-w-sm p-6 relative transform scale-95 transition-transform duration-300" id="modal-settings-content">
             <button onclick="App.Modals.close('settings')" class="absolute top-4 right-4 text-scandi-muted hover:text-scandi-accent transition"><i data-lucide="x" class="w-5 h-5"></i></button>
-            <h3 class="text-xl font-serif text-scandi-text mb-6 italic">Konfigurasi Panel</h3>
+            <h3 class="text-xl font-serif text-scandi-text mb-6 italic">Panel Configuration</h3>
             
             <div class="space-y-5">
                 <div>
-                    <h4 class="font-mono text-[10px] uppercase tracking-widest text-scandi-muted mb-2">Nama Instalasi</h4>
+                    <h4 class="font-mono text-[10px] uppercase tracking-widest text-scandi-muted mb-2">Installation Name</h4>
                     <input type="text" id="set-brand" class="input-clean" onchange="App.Settings.save()">
                 </div>
                 
                 <div class="flex justify-between items-center bg-scandi-base p-4 border border-scandi-border">
                     <div>
-                        <h4 class="font-mono text-[10px] uppercase tracking-widest text-scandi-text">Gunakan Passepartout</h4>
-                        <p class="font-mono text-[8px] uppercase tracking-widest text-scandi-muted mt-1">Bingkai putih klasik foto</p>
+                        <h4 class="font-mono text-[10px] uppercase tracking-widest text-scandi-text">Use Passepartout</h4>
+                        <p class="font-mono text-[8px] uppercase tracking-widest text-scandi-muted mt-1">Classic white photo frame</p>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="set-frame" class="sr-only peer" onchange="App.Settings.save()">
@@ -392,12 +389,12 @@
                 </div>
 
                 <div>
-                    <h4 class="font-mono text-[10px] uppercase tracking-widest text-scandi-muted mb-2">Interval Pemutar (Ms)</h4>
+                    <h4 class="font-mono text-[10px] uppercase tracking-widest text-scandi-muted mb-2">Player Interval (Ms)</h4>
                     <select id="set-interval" class="input-clean cursor-pointer" onchange="App.Settings.save()">
                         <option value="0">Manual</option>
-                        <option value="3000">3000 (Cepat)</option>
+                        <option value="3000">3000 (Fast)</option>
                         <option value="5000">5000 (Normal)</option>
-                        <option value="8000">8000 (Klasik)</option>
+                        <option value="8000">8000 (Classic)</option>
                     </select>
                 </div>
             </div>
@@ -408,11 +405,11 @@
     <div id="modal-dialog" class="fixed inset-0 z-[150] hidden-el bg-black/60 backdrop-blur-sm flex justify-center items-center p-4">
         <div class="surface-card w-full max-w-sm p-6 text-center transform scale-95 transition-transform" id="modal-dialog-content">
             <i data-lucide="info" class="w-8 h-8 text-scandi-accent mx-auto mb-4 stroke-1" id="dialog-icon"></i>
-            <h4 class="text-lg font-serif text-scandi-text mb-2 italic" id="dialog-title">Informasi</h4>
+            <h4 class="text-lg font-serif text-scandi-text mb-2 italic" id="dialog-title">Information</h4>
             <p id="dialog-msg" class="text-sm font-mono tracking-wide mb-6 text-scandi-muted leading-relaxed"></p>
             <div class="flex justify-center gap-3 font-mono text-xs uppercase tracking-widest">
-                <button id="dialog-cancel" class="px-5 py-2 border border-scandi-border text-scandi-text hover:bg-scandi-base transition w-full hidden">Batal</button>
-                <button id="dialog-ok" class="px-5 py-2 bg-scandi-accent text-white hover:bg-scandi-hover transition w-full">Konfirmasi</button>
+                <button id="dialog-cancel" class="px-5 py-2 border border-scandi-border text-scandi-text hover:bg-scandi-base transition w-full hidden">Cancel</button>
+                <button id="dialog-ok" class="px-5 py-2 bg-scandi-accent text-white hover:bg-scandi-hover transition w-full">Confirm</button>
             </div>
         </div>
     </div>
@@ -432,7 +429,7 @@
                         if(!db.objectStoreNames.contains('settings')) db.createObjectStore('settings');
                     };
                     req.onsuccess = () => resolve(req.result);
-                    req.onerror = () => reject("Gagal membuka database.");
+                    req.onerror = () => reject("Failed to open database.");
                 });
             },
             save: async (storeName, data) => {
@@ -470,8 +467,8 @@
                 presData: [], 
                 editData: null, 
                 editType: null,
-                viewer: { isOpen: false, context: null, currentIndex: 0, category: 'Semua', isPlaying: false, timer: null, uiVisible: true, hideTimeout: null },
-                settings: { exhibitionName: 'martive.id', useFrame: false, interval: 5000 }
+                viewer: { isOpen: false, context: null, currentIndex: 0, category: 'All', isPlaying: false, timer: null, uiVisible: true, hideTimeout: null },
+                settings: { exhibitionName: 'MEX', useFrame: false, interval: 5000 }
             },
 
             init: () => {
@@ -491,11 +488,9 @@
                 App.state.mode = newMode;
                 ['gallery', 'publication', 'presentation', 'manage'].forEach(v => {
                     document.getElementById(`view-${v}`).classList.add('hidden-el');
-                    // Style tab inactive
                     document.getElementById(`tab-${v}`).className = "tab-btn font-mono text-xs uppercase tracking-widest transition border-b-2 border-transparent text-scandi-muted hover:text-scandi-text pb-1";
                 });
                 document.getElementById(`view-${newMode}`).classList.remove('hidden-el');
-                // Style tab active
                 document.getElementById(`tab-${newMode}`).className = "tab-btn font-mono text-xs uppercase tracking-widest transition border-b-2 border-scandi-accent text-scandi-accent pb-1 font-bold";
 
                 if (newMode === 'manage') { App.Manage.render(); }
@@ -525,7 +520,7 @@
                     lPhoto.innerHTML = ''; lPdf.innerHTML = '';
 
                     if(App.state.galleryData.length === 0) {
-                        lPhoto.innerHTML = `<div class="p-8 text-center font-mono text-xs uppercase tracking-widest text-scandi-muted bg-scandi-base border border-dashed border-scandi-border">-- Belum ada rekaman karya --</div>`;
+                        lPhoto.innerHTML = `<div class="p-8 text-center font-mono text-xs uppercase tracking-widest text-scandi-muted bg-scandi-base border border-dashed border-scandi-border">-- No artwork records yet --</div>`;
                     } else {
                         const fragPhoto = document.createDocumentFragment();
                         App.state.galleryData.forEach(item => {
@@ -552,7 +547,7 @@
                     }
 
                     if(App.state.pubData.length === 0) {
-                        lPdf.innerHTML = `<div class="p-8 text-center font-mono text-xs uppercase tracking-widest text-scandi-muted bg-scandi-base border border-dashed border-scandi-border">-- Belum ada dokumen --</div>`;
+                        lPdf.innerHTML = `<div class="p-8 text-center font-mono text-xs uppercase tracking-widest text-scandi-muted bg-scandi-base border border-dashed border-scandi-border">-- No documents yet --</div>`;
                     } else {
                         const fragPdf = document.createDocumentFragment();
                         App.state.pubData.forEach(item => {
@@ -590,25 +585,25 @@
                     const btnSave = document.getElementById('btn-save-photo');
 
                     if(data) {
-                        titleEl.innerText = "Edit Arsip";
+                        titleEl.innerText = "Edit Archive";
                         document.getElementById('admin-title').value = data.title;
                         document.getElementById('admin-cat').value = data.category;
                         document.getElementById('admin-artist').value = data.artist;
                         document.getElementById('admin-year').value = data.year;
                         document.getElementById('admin-desc').value = data.desc;
-                        document.getElementById('admin-file-name').innerText = "TIMPA GAMBAR (OPSIONAL)";
+                        document.getElementById('admin-file-name').innerText = "OVERWRITE IMAGE (OPTIONAL)";
                         helpEl.classList.remove('hidden-el');
                         btnSave.innerText = "UPDATE DATA";
                     } else {
-                        titleEl.innerText = "Karya Baru";
+                        titleEl.innerText = "New Work";
                         document.getElementById('admin-title').value = '';
                         document.getElementById('admin-cat').value = '';
                         document.getElementById('admin-artist').value = '';
                         document.getElementById('admin-year').value = '';
                         document.getElementById('admin-desc').value = '';
-                        document.getElementById('admin-file-name').innerText = "PILIH FILE BARU";
+                        document.getElementById('admin-file-name').innerText = "SELECT NEW FILE";
                         helpEl.classList.add('hidden-el');
-                        btnSave.innerText = "SIMPAN ARSIP";
+                        btnSave.innerText = "SAVE ARCHIVE";
                     }
                     document.getElementById('admin-file').value = ''; 
                     lucide.createIcons(); App.Modals.open('admin-photo');
@@ -623,17 +618,17 @@
                     const btnSave = document.getElementById('btn-save-pdf');
 
                     if(data) {
-                        titleEl.innerText = "Edit Publikasi";
+                        titleEl.innerText = "Edit Publication";
                         document.getElementById('admin-pdf-title').value = data.title;
                         document.getElementById('admin-pdf-author').value = data.author;
-                        document.getElementById('admin-pdf-name').innerText = "TIMPA DOKUMEN (OPSIONAL)";
-                        helpEl.classList.remove('hidden-el'); btnSave.innerText = "UPDATE BUKU";
+                        document.getElementById('admin-pdf-name').innerText = "OVERWRITE DOCUMENT (OPTIONAL)";
+                        helpEl.classList.remove('hidden-el'); btnSave.innerText = "UPDATE BOOK";
                     } else {
-                        titleEl.innerText = "Buku Baru";
+                        titleEl.innerText = "New Book";
                         document.getElementById('admin-pdf-title').value = '';
                         document.getElementById('admin-pdf-author').value = '';
-                        document.getElementById('admin-pdf-name').innerText = "PILIH PDF BARU";
-                        helpEl.classList.add('hidden-el'); btnSave.innerText = "SIMPAN BUKU";
+                        document.getElementById('admin-pdf-name').innerText = "SELECT NEW PDF";
+                        helpEl.classList.add('hidden-el'); btnSave.innerText = "SAVE BOOK";
                     }
                     document.getElementById('admin-pdf-file').value = '';
                     lucide.createIcons(); App.Modals.open('admin-pdf');
@@ -643,10 +638,10 @@
                     const fileInput = document.getElementById('admin-file');
                     const isEdit = !!App.state.editData && App.state.editType === 'photo';
                     
-                    if (!isEdit && (!fileInput.files || fileInput.files.length === 0)) { App.Dialog.show("Alert", "File gambar wajib diisi."); return; }
+                    if (!isEdit && (!fileInput.files || fileInput.files.length === 0)) { App.Dialog.show("Alert", "Image file is required."); return; }
                     
                     const btn = document.getElementById('btn-save-photo');
-                    btn.innerText = "MEMPROSES..."; btn.disabled = true;
+                    btn.innerText = "PROCESSING..."; btn.disabled = true;
 
                     const finalizeSave = async (base64Url) => {
                         const newItem = {
@@ -663,8 +658,8 @@
                             await App.Gallery.loadDB();
                             if (App.state.mode === 'manage') App.Manage.render();
                             App.Modals.close('admin-photo');
-                            App.Dialog.show("Sukses", "Arsip gambar diperbarui.");
-                        } catch(err) { App.Dialog.show("Error", "Gagal menyimpan. DB penuh."); }
+                            App.Dialog.show("Success", "Image archive updated.");
+                        } catch(err) { App.Dialog.show("Error", "Failed to save. DB is full."); }
                         btn.disabled = false;
                     };
 
@@ -676,24 +671,24 @@
                     const fileInput = document.getElementById('admin-pdf-file');
                     const isEdit = !!App.state.editData && App.state.editType === 'pdf';
 
-                    if (!isEdit && (!fileInput.files || fileInput.files.length === 0 || fileInput.files[0].type !== 'application/pdf')) { App.Dialog.show("Alert", "File PDF valid wajib dipilih."); return; }
+                    if (!isEdit && (!fileInput.files || fileInput.files.length === 0 || fileInput.files[0].type !== 'application/pdf')) { App.Dialog.show("Alert", "A valid PDF file is required."); return; }
 
                     const btn = document.getElementById('btn-save-pdf');
-                    btn.innerText = "MEMBACA..."; btn.disabled = true;
+                    btn.innerText = "READING..."; btn.disabled = true;
 
                     const finalizeSave = async (urlData, thumbData) => {
                         const newItem = { id: isEdit ? App.state.editData.id : Date.now(), title: document.getElementById('admin-pdf-title').value, author: document.getElementById('admin-pdf-author').value, url: urlData, thumbnail: thumbData };
                         try {
                             await DB.save('publications', newItem); await App.Publication.loadDB();
                             if (App.state.mode === 'manage') App.Manage.render();
-                            App.Modals.close('admin-pdf'); App.Dialog.show("Sukses", "Dokumen PDF tersimpan.");
-                        } catch (err) { App.Dialog.show("Error", "Gagal menyimpan."); } finally { btn.disabled = false; }
+                            App.Modals.close('admin-pdf'); App.Dialog.show("Success", "PDF document saved.");
+                        } catch (err) { App.Dialog.show("Error", "Failed to save."); } finally { btn.disabled = false; }
                     }
 
                     if (fileInput.files && fileInput.files.length > 0) {
                         const reader = new FileReader();
                         reader.onload = async (e) => {
-                            btn.innerText = "MEMBUAT SAMPUL...";
+                            btn.innerText = "CREATING COVER...";
                             const thumbnail = await App.Publication.generateThumbnail(e.target.result);
                             finalizeSave(e.target.result, thumbnail);
                         };
@@ -702,7 +697,7 @@
                 },
 
                 deleteItem: (storeName, id) => {
-                    App.Dialog.confirm("Penghapusan", "Hapus permanen dari arsip?", async () => {
+                    App.Dialog.confirm("Deletion", "Permanently delete from archive?", async () => {
                         await DB.delete(storeName, id);
                         if(storeName === 'gallery') await App.Gallery.loadDB();
                         else await App.Publication.loadDB();
@@ -714,15 +709,15 @@
                     try {
                         const blob = new Blob([JSON.stringify({ gallery: await DB.getAll('gallery'), publications: await DB.getAll('publications') })], {type: "application/json"});
                         const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a'); a.href = url; a.download = `martive_scandi_${Date.now()}.json`;
+                        const a = document.createElement('a'); a.href = url; a.download = `MEX_${Date.now()}.json`;
                         document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                        App.Dialog.show("Backup", "File JSON berhasil diekspor.");
-                    } catch(err) { App.Dialog.show("Error", "Gagal backup."); }
+                        App.Dialog.show("Backup", "JSON file exported successfully.");
+                    } catch(err) { App.Dialog.show("Error", "Failed to backup."); }
                 },
 
                 importData: (event) => {
                     const file = event.target.files[0]; if(!file) return;
-                    App.Dialog.confirm("Pemulihan", "Timpa data dengan file JSON ini?", () => {
+                    App.Dialog.confirm("Restore", "Overwrite data with this JSON file?", () => {
                         const reader = new FileReader();
                         reader.onload = async (e) => {
                             try {
@@ -730,8 +725,8 @@
                                 if(data.gallery) for(const item of data.gallery) await DB.save('gallery', item); 
                                 if(data.publications) for(const item of data.publications) await DB.save('publications', item); 
                                 await App.Gallery.loadDB(); await App.Publication.loadDB(); App.Manage.render();
-                                App.Dialog.show("Sukses", `Data arsip pulih.`);
-                            } catch(err) { App.Dialog.show("Error", "File JSON rusak."); }
+                                App.Dialog.show("Success", `Archive data restored.`);
+                            } catch(err) { App.Dialog.show("Error", "Corrupt JSON file."); }
                         };
                         reader.readAsText(file); event.target.value = '';
                     });
@@ -744,7 +739,7 @@
                     App.state.galleryData = data ? data.sort((a,b) => b.id - a.id) : [];
                     App.Gallery.render();
                 },
-                getFiltered: () => App.state.viewer.category === 'Semua' ? App.state.galleryData : App.state.galleryData.filter(i => i.category === App.state.viewer.category),
+                getFiltered: () => App.state.viewer.category === 'All' ? App.state.galleryData : App.state.galleryData.filter(i => i.category === App.state.viewer.category),
                 
                 render: () => {
                     const grid = document.getElementById('gallery-grid'); const empty = document.getElementById('gallery-empty'); const filters = document.getElementById('category-filters');
@@ -754,7 +749,7 @@
                     if (data.length === 0) { grid.classList.add('hidden-el'); empty.classList.remove('hidden-el'); return; }
                     grid.classList.remove('hidden-el'); empty.classList.add('hidden-el');
 
-                    const cats = ['Semua', ...new Set(data.map(i => i.category))];
+                    const cats = ['All', ...new Set(data.map(i => i.category))];
                     cats.forEach(c => {
                         const btn = document.createElement('button');
                         btn.className = `px-4 py-1 text-[10px] font-mono tracking-widest uppercase transition border ${App.state.viewer.category === c ? 'bg-scandi-accent text-white border-scandi-accent font-bold' : 'bg-transparent text-scandi-muted border-scandi-border hover:text-scandi-text'}`;
@@ -891,7 +886,7 @@
                     dash.innerHTML = ''; if (data.length === 0) return;
                     
                     const groups = {}; data.forEach(item => { if (!groups[item.folder]) groups[item.folder] = []; groups[item.folder].push(item); });
-                    dash.innerHTML = `<div class="flex justify-between items-center mb-4 border-b border-scandi-border pb-2"><p class="font-mono text-xs text-scandi-text">[ ${data.length} ARSIP TERMUAT ]</p><button onclick="App.Presentation.clearAll()" class="font-mono text-[10px] text-scandi-muted hover:text-red-700 uppercase tracking-widest border border-scandi-border px-2 py-1">Kosongkan Meja</button></div>`;
+                    dash.innerHTML = `<div class="flex justify-between items-center mb-4 border-b border-scandi-border pb-2"><p class="font-mono text-xs text-scandi-text">[ ${data.length} ARCHIVES LOADED ]</p><button onclick="App.Presentation.clearAll()" class="font-mono text-[10px] text-scandi-muted hover:text-red-700 uppercase tracking-widest border border-scandi-border px-2 py-1">Clear Desk</button></div>`;
 
                     for (const folder in groups) {
                         const items = groups[folder];
@@ -900,8 +895,8 @@
                             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 pb-3 border-b border-scandi-border gap-3">
                                 <h4 class="font-serif text-scandi-text text-lg flex items-center gap-2 italic"><i data-lucide="folder-open" class="text-scandi-muted w-5 h-5 stroke-1"></i> ${folder}</h4>
                                 <div class="flex gap-2 font-mono text-[10px] uppercase tracking-widest">
-                                    <button class="text-scandi-muted hover:text-red-700 border border-scandi-border px-3 py-1.5 transition" onclick="App.Presentation.removeFolder('${folder}')">Hapus</button>
-                                    <button class="bg-scandi-accent text-white px-4 py-1.5 hover:bg-scandi-hover transition" onclick="App.Viewer.openFolder('${folder}')">Mulai Proyeksi</button>
+                                    <button class="text-scandi-muted hover:text-red-700 border border-scandi-border px-3 py-1.5 transition" onclick="App.Presentation.removeFolder('${folder}')">Remove</button>
+                                    <button class="bg-scandi-accent text-white px-4 py-1.5 hover:bg-scandi-hover transition" onclick="App.Viewer.openFolder('${folder}')">Start Projection</button>
                                 </div>
                             </div>
                         `;
@@ -971,7 +966,6 @@
 
                     document.getElementById('viewer-counter').innerText = `${String(v.currentIndex + 1).padStart(3, '0')} / ${String(dataArr.length).padStart(3, '0')}`;
 
-                    // Styling Passepartout untuk tema Scandi/Analog
                     if (App.state.settings.useFrame && v.context === 'gallery') {
                         img.className = "max-h-full max-w-full object-scale-down transition-opacity duration-300 opacity-0 bg-[#F8F6F1] p-6 md:p-12 border border-[#CFC3B4] shadow-sm";
                     } else {
@@ -1027,7 +1021,7 @@
 
                 toggleSlideshow: () => { App.state.viewer.isPlaying ? App.Viewer.stopSlideshow() : App.Viewer.startSlideshow(); App.Viewer.wakeUI(); },
                 startSlideshow: (forceContext = null) => {
-                    if (App.state.settings.interval == 0) { App.Dialog.show("Info", "Putar otomatis dimatikan dari Konfigurasi."); return; }
+                    if (App.state.settings.interval == 0) { App.Dialog.show("Info", "Autoplay is disabled in Configuration."); return; }
                     if (forceContext) { if (App.Viewer.getDataArray().length === 0) return; if (!App.state.viewer.isOpen) App.Viewer.open(0, forceContext); }
                     App.state.viewer.isPlaying = true; document.getElementById('viewer-play-badge').classList.remove('hidden-el');
                     document.getElementById('v-icon-play').setAttribute('data-lucide', 'pause'); lucide.createIcons();
@@ -1091,7 +1085,7 @@
                 },
                 initDragDropUI: () => {
                     const updateName = (idIn, idOut, defaultTxt) => document.getElementById(idIn).addEventListener('change', e => document.getElementById(idOut).innerText = e.target.files[0] ? e.target.files[0].name : defaultTxt);
-                    updateName('admin-file', 'admin-file-name', 'PILIH FILE BARU'); updateName('admin-pdf-file', 'admin-pdf-name', 'PILIH PDF BARU');
+                    updateName('admin-file', 'admin-file-name', 'SELECT NEW FILE'); updateName('admin-pdf-file', 'admin-pdf-name', 'SELECT NEW PDF');
                 }
             }
         };
