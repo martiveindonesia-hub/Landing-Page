@@ -1,0 +1,2583 @@
+<!DOCTYPE html>
+<html class="">
+    <head>
+        <meta charset="utf-8">
+        <style>
+            .error-boundary {
+                border: 2px dashed rgba(255, 0, 0, 0.3);
+                position: relative;
+            }
+            .error-boundary::after {
+                content: "⚠️";
+                position: absolute;
+                top: 0;
+                right: 0;
+                background: rgba(255, 0, 0, 0.1);
+                color: red;
+                font-size: 14px;
+                padding: 2px 6px;
+                border-radius: 0 0 0 4px;
+                pointer-events: none;
+            }
+            .loading-spinner {
+                @apply flex items-center justify-center;
+                @apply min-h-[200px];
+                @apply bg-gradient-to-br from-white/5 to-white/10;
+                @apply rounded-xl;
+                @apply backdrop-blur-sm;
+            }
+            .loading-spinner::after {
+                content: '';
+                @apply w-12 h-12;
+                @apply border-4 border-primary/20;
+                @apply border-t-primary;
+                @apply rounded-full;
+                @apply animate-spin;
+                @apply shadow-lg;
+            }
+
+            /* Base text and background colors for all elements */
+            body {
+                @apply bg-background text-foreground;
+            }
+
+            /* Form elements styling */
+            input, textarea, select {
+                @apply bg-background text-foreground border-input;
+                @apply placeholder:text-muted-foreground;
+                @apply focus:outline-none focus:ring-2 focus:ring-ring;
+            }
+
+            /* Handle filled state */
+            input:not(:placeholder-shown),
+            textarea:not(:placeholder-shown),
+            select:not(:placeholder-shown) {
+                @apply bg-background;
+            }
+
+            /* Ensure proper contrast in both modes */
+            .dark input, .dark textarea, .dark select {
+                @apply bg-background/95;
+            }
+
+            input, textarea, select {
+                @apply bg-background/95;
+            }
+
+            /* Handle disabled state */
+            input:disabled,
+            textarea:disabled,
+            select:disabled {
+                @apply opacity-50 cursor-not-allowed;
+            }
+
+            /* Button styling */
+            button {
+                @apply bg-primary text-primary-foreground hover:bg-primary/90;
+                @apply disabled:opacity-50 disabled:cursor-not-allowed;
+                @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+            }
+
+            /* Secondary button variant */
+            button.secondary {
+                @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
+            }
+
+            /* Card styling */
+            .card {
+                @apply bg-card text-card-foreground;
+                @apply border border-border;
+                @apply rounded-lg shadow-sm;
+            }
+
+            /* Popover and dropdown styling */
+            .popover {
+                @apply bg-popover text-popover-foreground;
+                @apply border border-border;
+                @apply shadow-md rounded-md;
+            }
+
+            /* Link styling */
+            a {
+                @apply text-primary hover:text-primary/80;
+                @apply focus:outline-none focus:ring-2 focus:ring-ring;
+            }
+
+            /* Muted text */
+            .text-muted {
+                @apply text-muted-foreground;
+            }
+
+            /* Accent backgrounds */
+            .bg-accent {
+                @apply bg-accent text-accent-foreground;
+            }
+
+            /* Destructive elements */
+            .destructive {
+                @apply bg-destructive text-destructive-foreground hover:bg-destructive/90;
+            }
+
+            /* Code blocks and pre elements */
+            pre, code {
+                @apply bg-muted text-muted-foreground;
+                @apply rounded px-[0.3em] py-[0.2em];
+            }
+
+            /* Table styling */
+            table {
+                @apply border-collapse w-full;
+            }
+
+            th, td {
+                @apply border border-border;
+                @apply p-2 text-left;
+            }
+
+            th {
+                @apply bg-muted font-semibold;
+            }
+
+            /* Badge/tag styling */
+            .badge {
+                @apply inline-flex items-center rounded-full;
+                @apply px-2.5 py-0.5 text-xs font-semibold;
+                @apply bg-primary/10 text-primary-foreground;
+            }
+
+            /* Focus outline for accessibility */
+            :focus-visible {
+                @apply outline-none ring-2 ring-ring ring-offset-2;
+            }
+
+            /* Selection styling */
+            ::selection {
+                @apply bg-primary/20 text-foreground;
+            }
+        </style>
+
+        <!-- Styles -->
+        <style>
+            :root {
+                --background: 0 0% 100%;
+                --foreground: 222.2 84% 4.9%;
+                --card: 0 0% 100%;
+                --card-foreground: 222.2 84% 4.9%;
+                --popover: 0 0% 100%;
+                --popover-foreground: 222.2 84% 4.9%;
+                --primary: 222.2 47.4% 11.2%;
+                --primary-foreground: 210 40% 98%;
+                --secondary: 210 40% 96.1%;
+                --secondary-foreground: 222.2 47.4% 11.2%;
+                --muted: 210 40% 96.1%;
+                --muted-foreground: 215.4 16.3% 46.9%;
+                --accent: 210 40% 96.1%;
+                --accent-foreground: 222.2 47.4% 11.2%;
+                --destructive: 0 84.2% 60.2%;
+                --destructive-foreground: 210 40% 98%;
+                --border: 214.3 31.8% 91.4%;
+                --input: 214.3 31.8% 91.4%;
+                --ring: 222.2 84% 4.9%;
+                --radius: 0.5rem;
+            }
+            .dark {
+                --background: 222.2 84% 4.9%;
+                --foreground: 210 40% 98%;
+                --card: 222.2 84% 4.9%;
+                --card-foreground: 210 40% 98%;
+                --popover: 222.2 84% 4.9%;
+                --popover-foreground: 210 40% 98%;
+                --primary: 210 40% 98%;
+                --primary-foreground: 222.2 47.4% 11.2%;
+                --secondary: 217.2 32.6% 17.5%;
+                --secondary-foreground: 210 40% 98%;
+                --muted: 217.2 32.6% 17.5%;
+                --muted-foreground: 215 20.2% 65.1%;
+                --accent: 217.2 32.6% 17.5%;
+                --accent-foreground: 210 40% 98%;
+                --destructive: 0 62.8% 30.6%;
+                --destructive-foreground: 210 40% 98%;
+                --border: 217.2 32.6% 17.5%;
+                --input: 217.2 32.6% 17.5%;
+                --ring: 212.7 26.8% 83.9%;
+            }
+        </style>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                darkMode: ["class"],
+                theme: {
+                    container: {
+                        center: true,
+                        padding: "2rem",
+                        screens: {
+                            "2xl": "1400px",
+                        },
+                    },
+                    extend: {
+                        colors: {
+                            border: "hsl(var(--border))",
+                            input: "hsl(var(--input))",
+                            ring: "hsl(var(--ring))",
+                            background: "hsl(var(--background))",
+                            foreground: "hsl(var(--foreground))",
+                            primary: {
+                                DEFAULT: "hsl(var(--primary))",
+                                foreground: "hsl(var(--primary-foreground))",
+                            },
+                            secondary: {
+                                DEFAULT: "hsl(var(--secondary))",
+                                foreground: "hsl(var(--secondary-foreground))",
+                            },
+                            destructive: {
+                                DEFAULT: "hsl(var(--destructive))",
+                                foreground: "hsl(var(--destructive-foreground))",
+                            },
+                            muted: {
+                                DEFAULT: "hsl(var(--muted))",
+                                foreground: "hsl(var(--muted-foreground))",
+                            },
+                            accent: {
+                                DEFAULT: "hsl(var(--accent))",
+                                foreground: "hsl(var(--accent-foreground))",
+                            },
+                            popover: {
+                                DEFAULT: "hsl(var(--popover))",
+                                foreground: "hsl(var(--popover-foreground))",
+                            },
+                            card: {
+                                DEFAULT: "hsl(var(--card))",
+                                foreground: "hsl(var(--card-foreground))",
+                            },
+                        },
+                        borderRadius: {
+                            lg: "var(--radius)",
+                            md: "calc(var(--radius) - 2px)",
+                            sm: "calc(var(--radius) - 4px)",
+                        },
+                    },
+                },
+            }
+        </script>
+
+        <!-- Load React only -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+        <script>
+            // Ensure React and ReactDOM are globally available
+            if (!window.React || !window.ReactDOM) {
+               throw new Error('React or ReactDOM not loaded');
+            }
+
+            window.React = React;
+            window.ReactDOM = ReactDOM;
+            window.createPortal = ReactDOM.createPortal;
+        </script>
+    </head>
+    <body class="bg-background text-foreground">
+        <div id="root"></div>
+        <script>
+            var App = (() => {
+  var __create = Object.create;
+  var __defProp = Object.defineProperty;
+  var __defProps = Object.defineProperties;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __getOwnPropSymbols = Object.getOwnPropertySymbols;
+  var __getProtoOf = Object.getPrototypeOf;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __propIsEnum = Object.prototype.propertyIsEnumerable;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+  var __spreadValues = (a, b) => {
+    for (var prop in b || (b = {}))
+      if (__hasOwnProp.call(b, prop))
+        __defNormalProp(a, prop, b[prop]);
+    if (__getOwnPropSymbols)
+      for (var prop of __getOwnPropSymbols(b)) {
+        if (__propIsEnum.call(b, prop))
+          __defNormalProp(a, prop, b[prop]);
+      }
+    return a;
+  };
+  var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
+  var __objRest = (source, exclude) => {
+    var target = {};
+    for (var prop in source)
+      if (__hasOwnProp.call(source, prop) && exclude.indexOf(prop) < 0)
+        target[prop] = source[prop];
+    if (source != null && __getOwnPropSymbols)
+      for (var prop of __getOwnPropSymbols(source)) {
+        if (exclude.indexOf(prop) < 0 && __propIsEnum.call(source, prop))
+          target[prop] = source[prop];
+      }
+    return target;
+  };
+  var __commonJS = (cb, mod) => function __require() {
+    return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+  };
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+    // If the importer is in node compatibility mode or this is not an ESM
+    // file that has been converted to a CommonJS file using a Babel-
+    // compatible transform (i.e. "__esModule" has not been set), then set
+    // "default" to the CommonJS "module.exports" for node compatibility.
+    isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+    mod
+  ));
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+  var __async = (__this, __arguments, generator) => {
+    return new Promise((resolve, reject) => {
+      var fulfilled = (value) => {
+        try {
+          step(generator.next(value));
+        } catch (e) {
+          reject(e);
+        }
+      };
+      var rejected = (value) => {
+        try {
+          step(generator.throw(value));
+        } catch (e) {
+          reject(e);
+        }
+      };
+      var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
+      step((generator = generator.apply(__this, __arguments)).next());
+    });
+  };
+
+  // react-globals:react
+  var require_react = __commonJS({
+    "react-globals:react"(exports, module) {
+      module.exports = window.React;
+    }
+  });
+
+  // <stdin>
+  var stdin_exports = {};
+  __export(stdin_exports, {
+    default: () => App
+  });
+  var import_react3 = __toESM(require_react());
+
+  // node_modules/lucide-react/dist/esm/createLucideIcon.js
+  var import_react2 = __toESM(require_react());
+
+  // node_modules/lucide-react/dist/esm/shared/src/utils.js
+  var toKebabCase = (string) => string.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+  var toCamelCase = (string) => string.replace(
+    /^([A-Z])|[\s-_]+(\w)/g,
+    (match, p1, p2) => p2 ? p2.toUpperCase() : p1.toLowerCase()
+  );
+  var toPascalCase = (string) => {
+    const camelCase = toCamelCase(string);
+    return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
+  };
+  var mergeClasses = (...classes) => classes.filter((className, index, array) => {
+    return Boolean(className) && className.trim() !== "" && array.indexOf(className) === index;
+  }).join(" ").trim();
+  var hasA11yProp = (props) => {
+    for (const prop in props) {
+      if (prop.startsWith("aria-") || prop === "role" || prop === "title") {
+        return true;
+      }
+    }
+  };
+
+  // node_modules/lucide-react/dist/esm/Icon.js
+  var import_react = __toESM(require_react());
+
+  // node_modules/lucide-react/dist/esm/defaultAttributes.js
+  var defaultAttributes = {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: 24,
+    height: 24,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  };
+
+  // node_modules/lucide-react/dist/esm/Icon.js
+  var Icon = (0, import_react.forwardRef)(
+    (_a, ref) => {
+      var _b = _a, {
+        color = "currentColor",
+        size = 24,
+        strokeWidth = 2,
+        absoluteStrokeWidth,
+        className = "",
+        children,
+        iconNode
+      } = _b, rest = __objRest(_b, [
+        "color",
+        "size",
+        "strokeWidth",
+        "absoluteStrokeWidth",
+        "className",
+        "children",
+        "iconNode"
+      ]);
+      return (0, import_react.createElement)(
+        "svg",
+        __spreadValues(__spreadValues(__spreadProps(__spreadValues({
+          ref
+        }, defaultAttributes), {
+          width: size,
+          height: size,
+          stroke: color,
+          strokeWidth: absoluteStrokeWidth ? Number(strokeWidth) * 24 / Number(size) : strokeWidth,
+          className: mergeClasses("lucide", className)
+        }), !children && !hasA11yProp(rest) && { "aria-hidden": "true" }), rest),
+        [
+          ...iconNode.map(([tag, attrs]) => (0, import_react.createElement)(tag, attrs)),
+          ...Array.isArray(children) ? children : [children]
+        ]
+      );
+    }
+  );
+
+  // node_modules/lucide-react/dist/esm/createLucideIcon.js
+  var createLucideIcon = (iconName, iconNode) => {
+    const Component = (0, import_react2.forwardRef)(
+      (_a, ref) => {
+        var _b = _a, { className } = _b, props = __objRest(_b, ["className"]);
+        return (0, import_react2.createElement)(Icon, __spreadValues({
+          ref,
+          iconNode,
+          className: mergeClasses(
+            `lucide-${toKebabCase(toPascalCase(iconName))}`,
+            `lucide-${iconName}`,
+            className
+          )
+        }, props));
+      }
+    );
+    Component.displayName = toPascalCase(iconName);
+    return Component;
+  };
+
+  // node_modules/lucide-react/dist/esm/icons/aperture.js
+  var __iconNode = [
+    ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
+    ["path", { d: "m14.31 8 5.74 9.94", key: "1y6ab4" }],
+    ["path", { d: "M9.69 8h11.48", key: "1wxppr" }],
+    ["path", { d: "m7.38 12 5.74-9.94", key: "1grp0k" }],
+    ["path", { d: "M9.69 16 3.95 6.06", key: "libnyf" }],
+    ["path", { d: "M14.31 16H2.83", key: "x5fava" }],
+    ["path", { d: "m16.62 12-5.74 9.94", key: "1vwawt" }]
+  ];
+  var Aperture = createLucideIcon("aperture", __iconNode);
+
+  // node_modules/lucide-react/dist/esm/icons/camera.js
+  var __iconNode2 = [
+    [
+      "path",
+      {
+        d: "M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z",
+        key: "1tc9qg"
+      }
+    ],
+    ["circle", { cx: "12", cy: "13", r: "3", key: "1vg3eu" }]
+  ];
+  var Camera = createLucideIcon("camera", __iconNode2);
+
+  // node_modules/lucide-react/dist/esm/icons/circle-alert.js
+  var __iconNode3 = [
+    ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
+    ["line", { x1: "12", x2: "12", y1: "8", y2: "12", key: "1pkeuh" }],
+    ["line", { x1: "12", x2: "12.01", y1: "16", y2: "16", key: "4dfq90" }]
+  ];
+  var CircleAlert = createLucideIcon("circle-alert", __iconNode3);
+
+  // node_modules/lucide-react/dist/esm/icons/download.js
+  var __iconNode4 = [
+    ["path", { d: "M12 15V3", key: "m9g1x1" }],
+    ["path", { d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4", key: "ih7n3h" }],
+    ["path", { d: "m7 10 5 5 5-5", key: "brsn70" }]
+  ];
+  var Download = createLucideIcon("download", __iconNode4);
+
+  // node_modules/lucide-react/dist/esm/icons/film.js
+  var __iconNode5 = [
+    ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2", key: "afitv7" }],
+    ["path", { d: "M7 3v18", key: "bbkbws" }],
+    ["path", { d: "M3 7.5h4", key: "zfgn84" }],
+    ["path", { d: "M3 12h18", key: "1i2n21" }],
+    ["path", { d: "M3 16.5h4", key: "1230mu" }],
+    ["path", { d: "M17 3v18", key: "in4fa5" }],
+    ["path", { d: "M17 7.5h4", key: "myr1c1" }],
+    ["path", { d: "M17 16.5h4", key: "go4c1d" }]
+  ];
+  var Film = createLucideIcon("film", __iconNode5);
+
+  // node_modules/lucide-react/dist/esm/icons/image.js
+  var __iconNode6 = [
+    ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2", ry: "2", key: "1m3agn" }],
+    ["circle", { cx: "9", cy: "9", r: "2", key: "af1f0g" }],
+    ["path", { d: "m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21", key: "1xmnt7" }]
+  ];
+  var Image = createLucideIcon("image", __iconNode6);
+
+  // node_modules/lucide-react/dist/esm/icons/refresh-cw.js
+  var __iconNode7 = [
+    ["path", { d: "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8", key: "v9h5vc" }],
+    ["path", { d: "M21 3v5h-5", key: "1q7to0" }],
+    ["path", { d: "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16", key: "3uifl3" }],
+    ["path", { d: "M8 16H3v5", key: "1cv678" }]
+  ];
+  var RefreshCw = createLucideIcon("refresh-cw", __iconNode7);
+
+  // node_modules/lucide-react/dist/esm/icons/sparkles.js
+  var __iconNode8 = [
+    [
+      "path",
+      {
+        d: "M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z",
+        key: "4pj2yx"
+      }
+    ],
+    ["path", { d: "M20 3v4", key: "1olli1" }],
+    ["path", { d: "M22 5h-4", key: "1gvqau" }],
+    ["path", { d: "M4 17v2", key: "vumght" }],
+    ["path", { d: "M5 18H3", key: "zchphs" }]
+  ];
+  var Sparkles = createLucideIcon("sparkles", __iconNode8);
+
+  // node_modules/lucide-react/dist/esm/icons/switch-camera.js
+  var __iconNode9 = [
+    ["path", { d: "M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5", key: "mtk2lu" }],
+    ["path", { d: "M13 5h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5", key: "120jsl" }],
+    ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }],
+    ["path", { d: "m18 22-3-3 3-3", key: "kgdoj7" }],
+    ["path", { d: "m6 2 3 3-3 3", key: "1fnbkv" }]
+  ];
+  var SwitchCamera = createLucideIcon("switch-camera", __iconNode9);
+
+  // node_modules/lucide-react/dist/esm/icons/trash-2.js
+  var __iconNode10 = [
+    ["path", { d: "M3 6h18", key: "d0wm0j" }],
+    ["path", { d: "M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6", key: "4alrt4" }],
+    ["path", { d: "M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2", key: "v07s0e" }],
+    ["line", { x1: "10", x2: "10", y1: "11", y2: "17", key: "1uufr5" }],
+    ["line", { x1: "14", x2: "14", y1: "11", y2: "17", key: "xtxkd" }]
+  ];
+  var Trash2 = createLucideIcon("trash-2", __iconNode10);
+
+  // node_modules/lucide-react/dist/esm/icons/x.js
+  var __iconNode11 = [
+    ["path", { d: "M18 6 6 18", key: "1bl5f8" }],
+    ["path", { d: "m6 6 12 12", key: "d8bk6v" }]
+  ];
+  var X = createLucideIcon("x", __iconNode11);
+
+  // node_modules/lucide-react/dist/esm/icons/zap-off.js
+  var __iconNode12 = [
+    ["path", { d: "M10.513 4.856 13.12 2.17a.5.5 0 0 1 .86.46l-1.377 4.317", key: "193nxd" }],
+    ["path", { d: "M15.656 10H20a1 1 0 0 1 .78 1.63l-1.72 1.773", key: "27a7lr" }],
+    [
+      "path",
+      {
+        d: "M16.273 16.273 10.88 21.83a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14H4a1 1 0 0 1-.78-1.63l4.507-4.643",
+        key: "1e0qe9"
+      }
+    ],
+    ["path", { d: "m2 2 20 20", key: "1ooewy" }]
+  ];
+  var ZapOff = createLucideIcon("zap-off", __iconNode12);
+
+  // node_modules/lucide-react/dist/esm/icons/zap.js
+  var __iconNode13 = [
+    [
+      "path",
+      {
+        d: "M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z",
+        key: "1xq2db"
+      }
+    ]
+  ];
+  var Zap = createLucideIcon("zap", __iconNode13);
+
+  // <stdin>
+  var MAX_EXPOSURES = 36;
+  var playAudioEffect = (type) => {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx)
+        return;
+      const ctx = new AudioCtx();
+      if (type === "shutter") {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "square";
+        osc.frequency.setValueAtTime(150, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(20, ctx.currentTime + 0.09);
+        gain.gain.setValueAtTime(0.4, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.09);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.09);
+      } else if (type === "winder") {
+        for (let i = 0; i < 5; i++) {
+          setTimeout(() => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = "triangle";
+            osc.frequency.setValueAtTime(600 + i % 2 * 150, ctx.currentTime);
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(1e-3, ctx.currentTime + 0.025);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.025);
+          }, i * 45);
+        }
+      } else if (type === "flash") {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(2e3, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(4500, ctx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.05, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(1e-3, ctx.currentTime + 0.3);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.3);
+      }
+    } catch (e) {
+    }
+  };
+  function App() {
+    const [view, setView] = (0, import_react3.useState)("camera");
+    const [photos, setPhotos] = (0, import_react3.useState)([]);
+    const [exposuresLeft, setExposuresLeft] = (0, import_react3.useState)(MAX_EXPOSURES);
+    const [modalMessage, setModalMessage] = (0, import_react3.useState)(null);
+    (0, import_react3.useEffect)(() => {
+      const link = document.createElement("link");
+      link.href = "https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap";
+      link.rel = "stylesheet";
+      document.head.appendChild(link);
+      return () => {
+        if (document.head.contains(link)) {
+          document.head.removeChild(link);
+        }
+      };
+    }, []);
+    const showNotification = (msg) => {
+      setModalMessage(msg);
+    };
+    return /* @__PURE__ */ import_react3.default.createElement("div", { className: "w-screen h-screen h-[100dvh] bg-zinc-950 flex justify-center items-center overflow-hidden font-sans select-none touch-manipulation" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "w-full h-full max-w-md mx-auto relative flex flex-col overflow-hidden bg-black shadow-2xl" }, view === "camera" ? /* @__PURE__ */ import_react3.default.createElement(
+      CameraView,
+      {
+        exposuresLeft,
+        setExposuresLeft,
+        onPhotoTaken: (newPhoto) => setPhotos((prev) => [newPhoto, ...prev]),
+        onDevelop: () => setView("darkroom"),
+        showNotification
+      }
+    ) : /* @__PURE__ */ import_react3.default.createElement(
+      DarkroomView,
+      {
+        photos,
+        setPhotos,
+        onBack: () => setView("camera"),
+        showNotification,
+        exposuresLeft,
+        setExposuresLeft
+      }
+    ), modalMessage && /* @__PURE__ */ import_react3.default.createElement(
+      RetroNotificationModal,
+      {
+        message: modalMessage,
+        onClose: () => setModalMessage(null)
+      }
+    )));
+  }
+  function CameraView({ exposuresLeft, setExposuresLeft, onPhotoTaken, onDevelop, showNotification }) {
+    const videoRef = (0, import_react3.useRef)(null);
+    const canvasRef = (0, import_react3.useRef)(null);
+    const [isFlashing, setIsFlashing] = (0, import_react3.useState)(false);
+    const [flashMode, setFlashMode] = (0, import_react3.useState)(false);
+    const [facingMode, setFacingMode] = (0, import_react3.useState)("environment");
+    const [filmType, setFilmType] = (0, import_react3.useState)("superia");
+    const [cameraError, setCameraError] = (0, import_react3.useState)(null);
+    const [isCameraReady, setIsCameraReady] = (0, import_react3.useState)(false);
+    const [isWinding, setIsWinding] = (0, import_react3.useState)(false);
+    const [isCapturing, setIsCapturing] = (0, import_react3.useState)(false);
+    (0, import_react3.useEffect)(() => {
+      let stream = null;
+      let isMounted = true;
+      const startCamera = () => __async(this, null, function* () {
+        setIsCameraReady(false);
+        setCameraError(null);
+        if (videoRef.current && videoRef.current.srcObject) {
+          const tracks = videoRef.current.srcObject.getTracks();
+          tracks.forEach((track) => track.stop());
+        }
+        try {
+          stream = yield navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode,
+              width: { ideal: 1280 },
+              height: { ideal: 960 }
+            },
+            audio: false
+          });
+          if (isMounted && videoRef.current) {
+            videoRef.current.srcObject = stream;
+            videoRef.current.onloadedmetadata = () => {
+              videoRef.current.play().then(() => {
+                if (isMounted)
+                  setIsCameraReady(true);
+              }).catch(() => {
+                if (isMounted)
+                  setIsCameraReady(true);
+              });
+            };
+          }
+        } catch (err) {
+          console.error("Camera access error:", err);
+          if (isMounted) {
+            setCameraError("Camera access denied or unavailable. Please check permissions.");
+          }
+        }
+      });
+      startCamera();
+      return () => {
+        isMounted = false;
+        if (stream) {
+          stream.getTracks().forEach((track) => track.stop());
+        }
+      };
+    }, [facingMode]);
+    const toggleCameraFacing = () => {
+      playAudioEffect("winder");
+      setFacingMode((prev) => prev === "environment" ? "user" : "environment");
+    };
+    const toggleFlash = () => {
+      const nextState = !flashMode;
+      setFlashMode(nextState);
+      if (nextState) {
+        playAudioEffect("flash");
+      } else {
+        playAudioEffect("winder");
+      }
+    };
+    const getCssFilter = (type) => {
+      switch (type) {
+        case "superia":
+          return "contrast(1.2) saturate(1.3) hue-rotate(-12deg) sepia(0.12)";
+        case "gold":
+          return "sepia(0.42) contrast(1.15) brightness(1.05) saturate(1.35) hue-rotate(-8deg)";
+        case "ilford":
+          return "grayscale(100%) contrast(1.45) brightness(0.92)";
+        default:
+          return "none";
+      }
+    };
+    const handleShutter = (0, import_react3.useCallback)(() => {
+      if (exposuresLeft <= 0 || !isCameraReady || isCapturing || !videoRef.current)
+        return;
+      setIsCapturing(true);
+      playAudioEffect("shutter");
+      if (flashMode) {
+        setIsFlashing(true);
+        setTimeout(() => setIsFlashing(false), 220);
+      } else {
+        setIsFlashing(true);
+        setTimeout(() => setIsFlashing(false), 80);
+      }
+      setIsWinding(true);
+      setTimeout(() => {
+        playAudioEffect("winder");
+        setIsWinding(false);
+      }, 300);
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+      const targetWidth = 1200;
+      const targetHeight = 900;
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      const vidWidth = video.videoWidth || 640;
+      const vidHeight = video.videoHeight || 480;
+      const vidAspect = vidWidth / vidHeight;
+      const targetAspect = 4 / 3;
+      let sx, sy, sWidth, sHeight;
+      if (vidAspect > targetAspect) {
+        sHeight = vidHeight;
+        sWidth = vidHeight * targetAspect;
+        sx = (vidWidth - sWidth) / 2;
+        sy = 0;
+      } else {
+        sWidth = vidWidth;
+        sHeight = vidWidth / targetAspect;
+        sx = 0;
+        sy = (vidHeight - sHeight) / 2;
+      }
+      ctx.filter = getCssFilter(filmType);
+      if (facingMode === "user") {
+        ctx.save();
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, sx, sy, sWidth, sHeight, -targetWidth, 0, targetWidth, targetHeight);
+        ctx.restore();
+      } else {
+        ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, targetWidth, targetHeight);
+      }
+      ctx.filter = "none";
+      const gradient = ctx.createRadialGradient(
+        targetWidth / 2,
+        targetHeight / 2,
+        targetWidth * 0.35,
+        targetWidth / 2,
+        targetHeight / 2,
+        targetWidth * 0.7
+      );
+      gradient.addColorStop(0, "rgba(0, 0, 0, 0)");
+      gradient.addColorStop(1, "rgba(0, 0, 0, 0.45)");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, targetWidth, targetHeight);
+      const dateObj = /* @__PURE__ */ new Date();
+      const yearStr = "'98";
+      const monthStr = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const dayStr = String(dateObj.getDate()).padStart(2, "0");
+      const timeStr = `${String(dateObj.getHours()).padStart(2, "0")}:${String(dateObj.getMinutes()).padStart(2, "0")}`;
+      ctx.font = 'bold 36px "Share Tech Mono", "Courier New", monospace';
+      ctx.fillStyle = filmType === "ilford" ? "#EAEAEA" : "#FF9300";
+      ctx.shadowColor = "rgba(0,0,0,0.8)";
+      ctx.shadowBlur = 6;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
+      ctx.fillText(`${yearStr} ${monthStr} ${dayStr} ${timeStr}`, targetWidth - 360, targetHeight - 40);
+      const photoDataUrl = canvas.toDataURL("image/jpeg", 0.88);
+      setTimeout(() => {
+        onPhotoTaken({
+          id: Date.now(),
+          url: photoDataUrl,
+          film: filmType,
+          timestamp: `${yearStr} ${monthStr} ${dayStr}`
+        });
+        const newLeft = exposuresLeft - 1;
+        setExposuresLeft(newLeft);
+        setIsCapturing(false);
+        if (newLeft === 0) {
+          showNotification("Film Roll Complete! 36 Exposures taken. Developing your photos now...");
+          setTimeout(() => onDevelop(), 1200);
+        }
+      }, 350);
+    }, [exposuresLeft, isCameraReady, isCapturing, flashMode, facingMode, filmType, onPhotoTaken, setExposuresLeft, onDevelop, showNotification]);
+    return /* @__PURE__ */ import_react3.default.createElement("div", { className: "w-full h-full flex flex-col justify-between bg-[#008542] relative overflow-hidden select-none touch-manipulation" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "absolute top-0 bottom-0 left-0 w-3 bg-[#006A34] border-r border-[#005027] z-20 flex flex-col justify-between py-10 opacity-60" }, [...Array(16)].map((_, i) => /* @__PURE__ */ import_react3.default.createElement("div", { key: i, className: "w-full h-1 bg-black/20 my-1" }))), /* @__PURE__ */ import_react3.default.createElement("div", { className: "absolute top-0 bottom-0 right-0 w-3 bg-[#006A34] border-l border-[#005027] z-20 flex flex-col justify-between py-10 opacity-60" }, [...Array(16)].map((_, i) => /* @__PURE__ */ import_react3.default.createElement("div", { key: i, className: "w-full h-1 bg-black/20 my-1" }))), /* @__PURE__ */ import_react3.default.createElement("div", { className: `absolute inset-0 bg-white z-50 pointer-events-none transition-opacity duration-100 ${isFlashing ? "opacity-100" : "opacity-0"}` }), /* @__PURE__ */ import_react3.default.createElement("canvas", { ref: canvasRef, className: "hidden" }), /* @__PURE__ */ import_react3.default.createElement("div", { className: "relative z-30 pt-6 px-6 pb-2 flex justify-between items-center bg-[#00763A] border-b-4 border-[#005c2d] shadow-lg" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ import_react3.default.createElement(Aperture, { className: "text-[#FFD100] animate-spin-slow", size: 22 }), /* @__PURE__ */ import_react3.default.createElement("span", { className: "font-black italic text-2xl tracking-tighter text-white drop-shadow-[1px_2px_0px_#000]" }, "MARTIVE", /* @__PURE__ */ import_react3.default.createElement("span", { className: "text-[#FFD100]" }, ".SNAP"))), /* @__PURE__ */ import_react3.default.createElement("span", { className: "text-[10px] font-mono tracking-widest text-emerald-200 uppercase -mt-1 font-bold" }, "35mm Disposable \u2022 ISO 400")), /* @__PURE__ */ import_react3.default.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "flex flex-col items-center" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: `w-8 h-8 rounded-full bg-zinc-900 border-2 border-zinc-700 shadow-inner flex items-center justify-center transition-transform duration-300 ${isWinding ? "rotate-180" : ""}` }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "w-6 h-1 bg-zinc-600 rounded-full" })), /* @__PURE__ */ import_react3.default.createElement("span", { className: "text-[9px] font-mono text-emerald-200 uppercase mt-0.5 font-bold" }, "WIND")), /* @__PURE__ */ import_react3.default.createElement("div", { className: "flex flex-col items-center" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "w-16 h-11 bg-[#7E9665] border-2 border-zinc-900 shadow-[inset_0_2px_6px_rgba(0,0,0,0.7)] rounded p-1 flex items-center justify-center relative overflow-hidden" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/10 pointer-events-none" }), /* @__PURE__ */ import_react3.default.createElement("span", { className: "text-3xl font-bold text-[#1F2B14] leading-none", style: { fontFamily: "'VT323', monospace" } }, exposuresLeft.toString().padStart(2, "0"))), /* @__PURE__ */ import_react3.default.createElement("span", { className: "text-[9px] font-mono text-[#FFD100] uppercase mt-0.5 font-bold" }, "EXPOSURES")))), /* @__PURE__ */ import_react3.default.createElement("div", { className: "relative z-10 flex-grow flex flex-col justify-center px-6 py-2" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "absolute left-0 right-0 top-1/2 -translate-y-1/2 h-64 bg-[#FFD100] border-y-4 border-[#005027] shadow-inner -rotate-1 z-0 flex items-between py-1 opacity-95 pointer-events-none" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "w-full h-full border-y border-black/10 flex justify-between items-center px-4" }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "text-xs font-black text-black/20 tracking-widest uppercase" }, "QUICKSNAP 400"), /* @__PURE__ */ import_react3.default.createElement("span", { className: "text-xs font-black text-black/20 tracking-widest uppercase" }, "SUPERIA FILM"))), /* @__PURE__ */ import_react3.default.createElement("div", { className: "relative z-10 w-full max-w-[340px] mx-auto aspect-[4/3] bg-zinc-950 rounded-xl border-[6px] border-zinc-900 shadow-[0_10px_25px_rgba(0,0,0,0.6)] overflow-hidden ring-4 ring-black/40 flex items-center justify-center" }, cameraError ? /* @__PURE__ */ import_react3.default.createElement("div", { className: "p-4 text-center text-zinc-400 flex flex-col items-center gap-2" }, /* @__PURE__ */ import_react3.default.createElement(CircleAlert, { className: "text-red-500", size: 32 }), /* @__PURE__ */ import_react3.default.createElement("p", { className: "text-xs font-mono" }, cameraError)) : /* @__PURE__ */ import_react3.default.createElement(import_react3.default.Fragment, null, /* @__PURE__ */ import_react3.default.createElement(
+      "video",
+      {
+        ref: videoRef,
+        className: `w-full h-full object-cover transition-all duration-200 ${facingMode === "user" ? "scale-x-[-1]" : ""}`,
+        style: { filter: getCssFilter(filmType) },
+        playsInline: true,
+        muted: true
+      }
+    ), /* @__PURE__ */ import_react3.default.createElement("div", { className: "absolute inset-0 border border-white/20 m-6 pointer-events-none flex items-center justify-center" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "w-8 h-8 border border-white/40 rounded-full flex items-center justify-center" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "w-1 h-1 bg-red-500 rounded-full" })), /* @__PURE__ */ import_react3.default.createElement("div", { className: "absolute top-2 left-2 text-[9px] font-mono text-white/50" }, "35MM"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "absolute bottom-2 right-2 text-[9px] font-mono text-white/50" }, "ISO 400")), /* @__PURE__ */ import_react3.default.createElement("div", { className: "absolute -top-12 -left-12 w-32 h-32 bg-white/10 rounded-full blur-md pointer-events-none" }), flashMode && /* @__PURE__ */ import_react3.default.createElement("div", { className: "absolute top-3 right-3 flex items-center gap-1 bg-black/60 backdrop-blur px-2 py-0.5 rounded-full border border-yellow-400/40" }, /* @__PURE__ */ import_react3.default.createElement(Zap, { size: 10, className: "text-yellow-400 fill-yellow-400 animate-pulse" }), /* @__PURE__ */ import_react3.default.createElement("span", { className: "text-[9px] font-mono text-yellow-300 font-bold" }, "READY")))), /* @__PURE__ */ import_react3.default.createElement("div", { className: "relative z-10 mt-4 flex justify-center" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "bg-zinc-900/90 backdrop-blur p-1 rounded-xl border border-zinc-700 shadow-xl flex gap-1" }, /* @__PURE__ */ import_react3.default.createElement(
+      "button",
+      {
+        onClick: () => {
+          setFilmType("superia");
+          playAudioEffect("winder");
+        },
+        className: `px-3 py-1.5 rounded-lg text-[10px] font-black tracking-wider transition-all ${filmType === "superia" ? "bg-[#008542] text-white shadow-md scale-105 border border-emerald-400" : "text-zinc-400 hover:text-white"}`
+      },
+      "SUPERIA 400"
+    ), /* @__PURE__ */ import_react3.default.createElement(
+      "button",
+      {
+        onClick: () => {
+          setFilmType("gold");
+          playAudioEffect("winder");
+        },
+        className: `px-3 py-1.5 rounded-lg text-[10px] font-black tracking-wider transition-all ${filmType === "gold" ? "bg-[#FFD100] text-black shadow-md scale-105 border border-yellow-300" : "text-zinc-400 hover:text-white"}`
+      },
+      "GOLD 200"
+    ), /* @__PURE__ */ import_react3.default.createElement(
+      "button",
+      {
+        onClick: () => {
+          setFilmType("ilford");
+          playAudioEffect("winder");
+        },
+        className: `px-3 py-1.5 rounded-lg text-[10px] font-black tracking-wider transition-all ${filmType === "ilford" ? "bg-zinc-200 text-black shadow-md scale-105 border border-white" : "text-zinc-400 hover:text-white"}`
+      },
+      "ILFORD HP5"
+    )))), /* @__PURE__ */ import_react3.default.createElement("div", { className: "relative z-30 px-6 pb-6 pt-2 bg-[#006A34] border-t-4 border-[#005027] flex justify-between items-center gap-4" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ import_react3.default.createElement(
+      "button",
+      {
+        onClick: toggleFlash,
+        className: `w-12 h-12 rounded-full border-2 border-zinc-900 shadow-md flex items-center justify-center transition-transform active:scale-95 ${flashMode ? "bg-[#FFD100] text-black shadow-[0_3px_0_#b39300]" : "bg-zinc-800 text-zinc-400 shadow-[0_3px_0_#18181b]"}`,
+        title: "Toggle Flash Mode"
+      },
+      flashMode ? /* @__PURE__ */ import_react3.default.createElement(Zap, { size: 20, className: "fill-black" }) : /* @__PURE__ */ import_react3.default.createElement(ZapOff, { size: 20 })
+    ), /* @__PURE__ */ import_react3.default.createElement(
+      "button",
+      {
+        onClick: toggleCameraFacing,
+        className: "w-12 h-12 rounded-full bg-zinc-800 text-white border-2 border-zinc-900 shadow-[0_3px_0_#18181b] flex items-center justify-center transition-transform active:scale-95 active:translate-y-1 hover:bg-zinc-700",
+        title: "Switch Camera (Front / Rear)"
+      },
+      /* @__PURE__ */ import_react3.default.createElement(SwitchCamera, { size: 20 })
+    )), /* @__PURE__ */ import_react3.default.createElement(
+      "button",
+      {
+        onClick: handleShutter,
+        disabled: exposuresLeft === 0 || !isCameraReady || isCapturing,
+        className: `
+                        relative w-20 h-20 rounded-full bg-[#E52421] 
+                        border-4 border-zinc-950 shadow-[0_8px_0_#8b0000,0_12px_20px_rgba(0,0,0,0.5)]
+                        active:translate-y-2 active:shadow-[0_0px_0_#8b0000,0_2px_5px_rgba(0,0,0,0.5)]
+                        transition-all duration-75 flex items-center justify-center
+                        ${exposuresLeft === 0 || !isCameraReady || isCapturing ? "opacity-50 grayscale cursor-not-allowed" : ""}
+                    `
+      },
+      /* @__PURE__ */ import_react3.default.createElement("div", { className: "w-14 h-14 rounded-full border-2 border-white/20 bg-gradient-to-br from-white/30 to-transparent shadow-inner pointer-events-none" })
+    ), /* @__PURE__ */ import_react3.default.createElement(
+      "button",
+      {
+        onClick: () => {
+          playAudioEffect("winder");
+          onDevelop();
+        },
+        className: "flex flex-col items-center justify-center w-14 h-14 rounded-2xl bg-zinc-900 text-white border-2 border-zinc-950 shadow-[0_4px_0_#000] active:translate-y-1 active:shadow-none transition-all hover:bg-zinc-800"
+      },
+      /* @__PURE__ */ import_react3.default.createElement(Film, { size: 20, className: "text-[#FFD100]" }),
+      /* @__PURE__ */ import_react3.default.createElement("span", { className: "text-[9px] font-black tracking-tighter text-zinc-300 uppercase mt-0.5" }, "LAB")
+    )));
+  }
+  function DarkroomView({ photos, setPhotos, onBack, showNotification, exposuresLeft, setExposuresLeft }) {
+    const [selectedPhoto, setSelectedPhoto] = (0, import_react3.useState)(null);
+    const [deleteConfirmId, setDeleteConfirmId] = (0, import_react3.useState)(null);
+    const handleDownloadSingle = (photoUrl, id) => {
+      const link = document.createElement("a");
+      link.href = photoUrl;
+      link.download = `martivesnap_photo_${id}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+    const handleDownloadAll = () => {
+      if (photos.length === 0) {
+        showNotification("No developed photos in this film roll to export.");
+        return;
+      }
+      showNotification(`Exporting ${photos.length} photo prints to your device...`);
+      photos.forEach((photo, index) => {
+        setTimeout(() => {
+          handleDownloadSingle(photo.url, photo.id);
+        }, index * 300);
+      });
+    };
+    const handleDeletePhoto = (id) => {
+      setPhotos((prev) => prev.filter((p) => p.id !== id));
+      setDeleteConfirmId(null);
+      if (selectedPhoto && selectedPhoto.id === id) {
+        setSelectedPhoto(null);
+      }
+    };
+    const handleReloadFilm = () => {
+      setExposuresLeft(MAX_EXPOSURES);
+      showNotification("Fresh 36 Exposure 35mm Film Roll loaded!");
+      onBack();
+    };
+    return /* @__PURE__ */ import_react3.default.createElement("div", { className: "w-full h-full flex flex-col bg-[#F4EFE3] relative overflow-hidden select-none text-zinc-800" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "pt-6 pb-3 px-5 bg-[#E8DFCA] border-b-4 border-[#C8BFA7] shadow-sm flex justify-between items-center z-10" }, /* @__PURE__ */ import_react3.default.createElement("div", null, /* @__PURE__ */ import_react3.default.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ import_react3.default.createElement("h2", { className: "text-2xl font-black italic tracking-tighter text-[#005027]" }, "MARTIVE", /* @__PURE__ */ import_react3.default.createElement("span", { className: "text-[#E52421]" }, ".SNAP"), " LAB")), /* @__PURE__ */ import_react3.default.createElement("p", { className: "text-[11px] font-mono font-bold text-zinc-600 uppercase" }, "DEVELOPED ROLL \u2022 ", photos.length, " / ", MAX_EXPOSURES, " PRINTS")), /* @__PURE__ */ import_react3.default.createElement("div", { className: "flex gap-2" }, exposuresLeft === 0 && /* @__PURE__ */ import_react3.default.createElement(
+      "button",
+      {
+        onClick: handleReloadFilm,
+        className: "p-2 bg-[#FFD100] text-black border-2 border-black rounded-lg shadow-[0_2px_0_#000] active:translate-y-0.5 text-xs font-black flex items-center gap-1"
+      },
+      /* @__PURE__ */ import_react3.default.createElement(RefreshCw, { size: 14 }),
+      " RELOAD"
+    ), /* @__PURE__ */ import_react3.default.createElement(
+      "button",
+      {
+        onClick: onBack,
+        className: "p-2.5 bg-zinc-900 text-white rounded-full shadow-[0_3px_0_#000] active:translate-y-1 transition-all"
+      },
+      /* @__PURE__ */ import_react3.default.createElement(Camera, { size: 18 })
+    ))), /* @__PURE__ */ import_react3.default.createElement("div", { className: "flex-grow overflow-y-auto p-4 space-y-6" }, photos.length === 0 ? /* @__PURE__ */ import_react3.default.createElement("div", { className: "h-full flex flex-col items-center justify-center text-zinc-400 py-16 px-6 text-center" }, /* @__PURE__ */ import_react3.default.createElement(Image, { size: 56, className: "opacity-20 mb-3" }), /* @__PURE__ */ import_react3.default.createElement("p", { className: "text-sm font-mono font-bold text-zinc-600 uppercase border-2 border-zinc-300 border-dashed p-4 rounded-xl" }, "No negatives developed yet. Snap 36 exposures to complete roll!")) : /* @__PURE__ */ import_react3.default.createElement("div", { className: "grid grid-cols-2 gap-4 pb-28" }, photos.map((photo, idx) => /* @__PURE__ */ import_react3.default.createElement(
+      "div",
+      {
+        key: photo.id,
+        className: "bg-white p-2 pb-6 shadow-md border border-zinc-300 rounded-sm relative group cursor-pointer transition-transform active:scale-95",
+        onClick: () => setSelectedPhoto(photo)
+      },
+      /* @__PURE__ */ import_react3.default.createElement("div", { className: "aspect-[4/3] bg-black overflow-hidden relative" }, /* @__PURE__ */ import_react3.default.createElement(
+        "img",
+        {
+          src: photo.url,
+          alt: `Exposure ${idx + 1}`,
+          className: "w-full h-full object-cover"
+        }
+      )),
+      /* @__PURE__ */ import_react3.default.createElement("div", { className: "mt-2 flex justify-between items-center px-1" }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "text-[10px] font-mono text-zinc-400 font-bold" }, "#", String(photos.length - idx).padStart(2, "0")), /* @__PURE__ */ import_react3.default.createElement("span", { className: "text-[9px] font-mono text-orange-600 font-bold" }, photo.film.toUpperCase()))
+    )))), /* @__PURE__ */ import_react3.default.createElement("div", { className: "absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#E8DFCA] via-[#E8DFCA]/90 to-transparent z-20" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ import_react3.default.createElement(
+      "button",
+      {
+        onClick: handleDownloadAll,
+        className: "flex-1 py-3 px-3 bg-[#FFD100] text-black border-2 border-black rounded-xl font-black uppercase text-xs tracking-wider flex items-center justify-center gap-1.5 shadow-[0_4px_0_#000] active:translate-y-1 active:shadow-none transition-all"
+      },
+      /* @__PURE__ */ import_react3.default.createElement(Download, { size: 16 }),
+      " Save All Prints"
+    ))), selectedPhoto && /* @__PURE__ */ import_react3.default.createElement("div", { className: "absolute inset-0 bg-black/95 z-50 flex flex-col p-4 backdrop-blur-sm animate-fade-in" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "flex justify-between items-center text-white mb-2" }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "font-mono text-xs text-yellow-400 font-bold uppercase" }, "PRINT VIEW \u2022 ", selectedPhoto.film.toUpperCase()), /* @__PURE__ */ import_react3.default.createElement(
+      "button",
+      {
+        onClick: () => setSelectedPhoto(null),
+        className: "p-1.5 bg-zinc-800 rounded-full text-white"
+      },
+      /* @__PURE__ */ import_react3.default.createElement(X, { size: 20 })
+    )), /* @__PURE__ */ import_react3.default.createElement("div", { className: "flex-grow flex items-center justify-center my-auto p-2" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "bg-white p-3 pb-10 shadow-2xl rounded-sm max-w-full" }, /* @__PURE__ */ import_react3.default.createElement(
+      "img",
+      {
+        src: selectedPhoto.url,
+        alt: "Selected Print",
+        className: "w-full max-h-[60vh] object-contain bg-black"
+      }
+    ), /* @__PURE__ */ import_react3.default.createElement("div", { className: "mt-2 text-right" }, /* @__PURE__ */ import_react3.default.createElement("span", { className: "font-mono text-xs text-orange-600 font-bold" }, selectedPhoto.timestamp)))), /* @__PURE__ */ import_react3.default.createElement("div", { className: "flex gap-3 pt-2" }, /* @__PURE__ */ import_react3.default.createElement(
+      "button",
+      {
+        onClick: () => setDeleteConfirmId(selectedPhoto.id),
+        className: "p-3 bg-red-950 text-red-400 border border-red-800 rounded-xl font-bold flex items-center justify-center gap-1 flex-1 text-xs uppercase"
+      },
+      /* @__PURE__ */ import_react3.default.createElement(Trash2, { size: 16 }),
+      " Discard"
+    ), /* @__PURE__ */ import_react3.default.createElement(
+      "button",
+      {
+        onClick: () => handleDownloadSingle(selectedPhoto.url, selectedPhoto.id),
+        className: "p-3 bg-yellow-400 text-black font-black rounded-xl flex items-center justify-center gap-1 flex-2 text-xs uppercase flex-grow"
+      },
+      /* @__PURE__ */ import_react3.default.createElement(Download, { size: 16 }),
+      " Save Print"
+    )), deleteConfirmId && /* @__PURE__ */ import_react3.default.createElement("div", { className: "absolute inset-0 bg-black/80 flex items-center justify-center p-6 z-50" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "bg-zinc-900 border-2 border-zinc-700 p-5 rounded-2xl max-w-xs text-center space-y-4" }, /* @__PURE__ */ import_react3.default.createElement("p", { className: "text-sm font-mono text-white" }, "Discard this photo print permanently?"), /* @__PURE__ */ import_react3.default.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ import_react3.default.createElement(
+      "button",
+      {
+        onClick: () => setDeleteConfirmId(null),
+        className: "flex-1 py-2 bg-zinc-800 text-zinc-300 rounded-lg text-xs font-bold"
+      },
+      "Cancel"
+    ), /* @__PURE__ */ import_react3.default.createElement(
+      "button",
+      {
+        onClick: () => handleDeletePhoto(deleteConfirmId),
+        className: "flex-1 py-2 bg-red-600 text-white rounded-lg text-xs font-bold"
+      },
+      "Delete"
+    ))))));
+  }
+  function RetroNotificationModal({ message, onClose }) {
+    return /* @__PURE__ */ import_react3.default.createElement("div", { className: "absolute inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-6 animate-fade-in" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "bg-[#FFD100] border-4 border-black p-5 rounded-2xl shadow-[0_10px_0_#000] max-w-xs text-center space-y-4" }, /* @__PURE__ */ import_react3.default.createElement("div", { className: "flex justify-center" }, /* @__PURE__ */ import_react3.default.createElement(Sparkles, { size: 32, className: "text-black" })), /* @__PURE__ */ import_react3.default.createElement("p", { className: "text-xs font-mono font-black text-black uppercase leading-relaxed" }, message), /* @__PURE__ */ import_react3.default.createElement(
+      "button",
+      {
+        onClick: onClose,
+        className: "w-full py-2.5 bg-black text-white rounded-xl font-mono text-xs font-bold tracking-widest uppercase active:scale-95 transition-transform"
+      },
+      "OK"
+    )));
+  }
+  return __toCommonJS(stdin_exports);
+})();
+/*! Bundled license information:
+
+lucide-react/dist/esm/shared/src/utils.js:
+  (**
+   * @license lucide-react v0.511.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/defaultAttributes.js:
+  (**
+   * @license lucide-react v0.511.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/Icon.js:
+  (**
+   * @license lucide-react v0.511.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/createLucideIcon.js:
+  (**
+   * @license lucide-react v0.511.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/aperture.js:
+  (**
+   * @license lucide-react v0.511.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/camera.js:
+  (**
+   * @license lucide-react v0.511.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/circle-alert.js:
+  (**
+   * @license lucide-react v0.511.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/download.js:
+  (**
+   * @license lucide-react v0.511.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/film.js:
+  (**
+   * @license lucide-react v0.511.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/image.js:
+  (**
+   * @license lucide-react v0.511.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/refresh-cw.js:
+  (**
+   * @license lucide-react v0.511.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/sparkles.js:
+  (**
+   * @license lucide-react v0.511.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/switch-camera.js:
+  (**
+   * @license lucide-react v0.511.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/trash-2.js:
+  (**
+   * @license lucide-react v0.511.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/x.js:
+  (**
+   * @license lucide-react v0.511.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/zap-off.js:
+  (**
+   * @license lucide-react v0.511.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/zap.js:
+  (**
+   * @license lucide-react v0.511.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/lucide-react.js:
+  (**
+   * @license lucide-react v0.511.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+*/
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const root = ReactDOM.createRoot(document.getElementById('root'));
+
+                // Include the compiled error boundary code
+                var ErrorBoundaryModule = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __getOwnPropSymbols = Object.getOwnPropertySymbols;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __propIsEnum = Object.prototype.propertyIsEnumerable;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+  var __spreadValues = (a, b) => {
+    for (var prop in b || (b = {}))
+      if (__hasOwnProp.call(b, prop))
+        __defNormalProp(a, prop, b[prop]);
+    if (__getOwnPropSymbols)
+      for (var prop of __getOwnPropSymbols(b)) {
+        if (__propIsEnum.call(b, prop))
+          __defNormalProp(a, prop, b[prop]);
+      }
+    return a;
+  };
+  var __objRest = (source, exclude) => {
+    var target = {};
+    for (var prop in source)
+      if (__hasOwnProp.call(source, prop) && exclude.indexOf(prop) < 0)
+        target[prop] = source[prop];
+    if (source != null && __getOwnPropSymbols)
+      for (var prop of __getOwnPropSymbols(source)) {
+        if (exclude.indexOf(prop) < 0 && __propIsEnum.call(source, prop))
+          target[prop] = source[prop];
+      }
+    return target;
+  };
+  var __commonJS = (cb, mod) => function __require() {
+    return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+  };
+
+  // node_modules/react/cjs/react.development.js
+  var require_react_development = __commonJS({
+    "node_modules/react/cjs/react.development.js"(exports, module) {
+      "use strict";
+      (function() {
+        function defineDeprecationWarning(methodName, info) {
+          Object.defineProperty(Component.prototype, methodName, {
+            get: function() {
+              console.warn(
+                "%s(...) is deprecated in plain JavaScript React classes. %s",
+                info[0],
+                info[1]
+              );
+            }
+          });
+        }
+        function getIteratorFn(maybeIterable) {
+          if (null === maybeIterable || "object" !== typeof maybeIterable)
+            return null;
+          maybeIterable = MAYBE_ITERATOR_SYMBOL && maybeIterable[MAYBE_ITERATOR_SYMBOL] || maybeIterable["@@iterator"];
+          return "function" === typeof maybeIterable ? maybeIterable : null;
+        }
+        function warnNoop(publicInstance, callerName) {
+          publicInstance = (publicInstance = publicInstance.constructor) && (publicInstance.displayName || publicInstance.name) || "ReactClass";
+          var warningKey = publicInstance + "." + callerName;
+          didWarnStateUpdateForUnmountedComponent[warningKey] || (console.error(
+            "Can't call %s on a component that is not yet mounted. This is a no-op, but it might indicate a bug in your application. Instead, assign to `this.state` directly or define a `state = {};` class property with the desired state in the %s component.",
+            callerName,
+            publicInstance
+          ), didWarnStateUpdateForUnmountedComponent[warningKey] = true);
+        }
+        function Component(props, context, updater) {
+          this.props = props;
+          this.context = context;
+          this.refs = emptyObject;
+          this.updater = updater || ReactNoopUpdateQueue;
+        }
+        function ComponentDummy() {
+        }
+        function PureComponent(props, context, updater) {
+          this.props = props;
+          this.context = context;
+          this.refs = emptyObject;
+          this.updater = updater || ReactNoopUpdateQueue;
+        }
+        function testStringCoercion(value) {
+          return "" + value;
+        }
+        function checkKeyStringCoercion(value) {
+          try {
+            testStringCoercion(value);
+            var JSCompiler_inline_result = false;
+          } catch (e) {
+            JSCompiler_inline_result = true;
+          }
+          if (JSCompiler_inline_result) {
+            JSCompiler_inline_result = console;
+            var JSCompiler_temp_const = JSCompiler_inline_result.error;
+            var JSCompiler_inline_result$jscomp$0 = "function" === typeof Symbol && Symbol.toStringTag && value[Symbol.toStringTag] || value.constructor.name || "Object";
+            JSCompiler_temp_const.call(
+              JSCompiler_inline_result,
+              "The provided key is an unsupported type %s. This value must be coerced to a string before using it here.",
+              JSCompiler_inline_result$jscomp$0
+            );
+            return testStringCoercion(value);
+          }
+        }
+        function getComponentNameFromType(type) {
+          if (null == type)
+            return null;
+          if ("function" === typeof type)
+            return type.$$typeof === REACT_CLIENT_REFERENCE ? null : type.displayName || type.name || null;
+          if ("string" === typeof type)
+            return type;
+          switch (type) {
+            case REACT_FRAGMENT_TYPE:
+              return "Fragment";
+            case REACT_PROFILER_TYPE:
+              return "Profiler";
+            case REACT_STRICT_MODE_TYPE:
+              return "StrictMode";
+            case REACT_SUSPENSE_TYPE:
+              return "Suspense";
+            case REACT_SUSPENSE_LIST_TYPE:
+              return "SuspenseList";
+            case REACT_ACTIVITY_TYPE:
+              return "Activity";
+          }
+          if ("object" === typeof type)
+            switch ("number" === typeof type.tag && console.error(
+              "Received an unexpected object in getComponentNameFromType(). This is likely a bug in React. Please file an issue."
+            ), type.$$typeof) {
+              case REACT_PORTAL_TYPE:
+                return "Portal";
+              case REACT_CONTEXT_TYPE:
+                return (type.displayName || "Context") + ".Provider";
+              case REACT_CONSUMER_TYPE:
+                return (type._context.displayName || "Context") + ".Consumer";
+              case REACT_FORWARD_REF_TYPE:
+                var innerType = type.render;
+                type = type.displayName;
+                type || (type = innerType.displayName || innerType.name || "", type = "" !== type ? "ForwardRef(" + type + ")" : "ForwardRef");
+                return type;
+              case REACT_MEMO_TYPE:
+                return innerType = type.displayName || null, null !== innerType ? innerType : getComponentNameFromType(type.type) || "Memo";
+              case REACT_LAZY_TYPE:
+                innerType = type._payload;
+                type = type._init;
+                try {
+                  return getComponentNameFromType(type(innerType));
+                } catch (x) {
+                }
+            }
+          return null;
+        }
+        function getTaskName(type) {
+          if (type === REACT_FRAGMENT_TYPE)
+            return "<>";
+          if ("object" === typeof type && null !== type && type.$$typeof === REACT_LAZY_TYPE)
+            return "<...>";
+          try {
+            var name = getComponentNameFromType(type);
+            return name ? "<" + name + ">" : "<...>";
+          } catch (x) {
+            return "<...>";
+          }
+        }
+        function getOwner() {
+          var dispatcher = ReactSharedInternals.A;
+          return null === dispatcher ? null : dispatcher.getOwner();
+        }
+        function UnknownOwner() {
+          return Error("react-stack-top-frame");
+        }
+        function hasValidKey(config) {
+          if (hasOwnProperty.call(config, "key")) {
+            var getter = Object.getOwnPropertyDescriptor(config, "key").get;
+            if (getter && getter.isReactWarning)
+              return false;
+          }
+          return void 0 !== config.key;
+        }
+        function defineKeyPropWarningGetter(props, displayName) {
+          function warnAboutAccessingKey() {
+            specialPropKeyWarningShown || (specialPropKeyWarningShown = true, console.error(
+              "%s: `key` is not a prop. Trying to access it will result in `undefined` being returned. If you need to access the same value within the child component, you should pass it as a different prop. (https://react.dev/link/special-props)",
+              displayName
+            ));
+          }
+          warnAboutAccessingKey.isReactWarning = true;
+          Object.defineProperty(props, "key", {
+            get: warnAboutAccessingKey,
+            configurable: true
+          });
+        }
+        function elementRefGetterWithDeprecationWarning() {
+          var componentName = getComponentNameFromType(this.type);
+          didWarnAboutElementRef[componentName] || (didWarnAboutElementRef[componentName] = true, console.error(
+            "Accessing element.ref was removed in React 19. ref is now a regular prop. It will be removed from the JSX Element type in a future release."
+          ));
+          componentName = this.props.ref;
+          return void 0 !== componentName ? componentName : null;
+        }
+        function ReactElement(type, key, self, source, owner, props, debugStack, debugTask) {
+          self = props.ref;
+          type = {
+            $$typeof: REACT_ELEMENT_TYPE,
+            type,
+            key,
+            props,
+            _owner: owner
+          };
+          null !== (void 0 !== self ? self : null) ? Object.defineProperty(type, "ref", {
+            enumerable: false,
+            get: elementRefGetterWithDeprecationWarning
+          }) : Object.defineProperty(type, "ref", { enumerable: false, value: null });
+          type._store = {};
+          Object.defineProperty(type._store, "validated", {
+            configurable: false,
+            enumerable: false,
+            writable: true,
+            value: 0
+          });
+          Object.defineProperty(type, "_debugInfo", {
+            configurable: false,
+            enumerable: false,
+            writable: true,
+            value: null
+          });
+          Object.defineProperty(type, "_debugStack", {
+            configurable: false,
+            enumerable: false,
+            writable: true,
+            value: debugStack
+          });
+          Object.defineProperty(type, "_debugTask", {
+            configurable: false,
+            enumerable: false,
+            writable: true,
+            value: debugTask
+          });
+          Object.freeze && (Object.freeze(type.props), Object.freeze(type));
+          return type;
+        }
+        function cloneAndReplaceKey(oldElement, newKey) {
+          newKey = ReactElement(
+            oldElement.type,
+            newKey,
+            void 0,
+            void 0,
+            oldElement._owner,
+            oldElement.props,
+            oldElement._debugStack,
+            oldElement._debugTask
+          );
+          oldElement._store && (newKey._store.validated = oldElement._store.validated);
+          return newKey;
+        }
+        function isValidElement(object) {
+          return "object" === typeof object && null !== object && object.$$typeof === REACT_ELEMENT_TYPE;
+        }
+        function escape(key) {
+          var escaperLookup = { "=": "=0", ":": "=2" };
+          return "$" + key.replace(/[=:]/g, function(match) {
+            return escaperLookup[match];
+          });
+        }
+        function getElementKey(element, index) {
+          return "object" === typeof element && null !== element && null != element.key ? (checkKeyStringCoercion(element.key), escape("" + element.key)) : index.toString(36);
+        }
+        function noop$1() {
+        }
+        function resolveThenable(thenable) {
+          switch (thenable.status) {
+            case "fulfilled":
+              return thenable.value;
+            case "rejected":
+              throw thenable.reason;
+            default:
+              switch ("string" === typeof thenable.status ? thenable.then(noop$1, noop$1) : (thenable.status = "pending", thenable.then(
+                function(fulfilledValue) {
+                  "pending" === thenable.status && (thenable.status = "fulfilled", thenable.value = fulfilledValue);
+                },
+                function(error) {
+                  "pending" === thenable.status && (thenable.status = "rejected", thenable.reason = error);
+                }
+              )), thenable.status) {
+                case "fulfilled":
+                  return thenable.value;
+                case "rejected":
+                  throw thenable.reason;
+              }
+          }
+          throw thenable;
+        }
+        function mapIntoArray(children, array, escapedPrefix, nameSoFar, callback) {
+          var type = typeof children;
+          if ("undefined" === type || "boolean" === type)
+            children = null;
+          var invokeCallback = false;
+          if (null === children)
+            invokeCallback = true;
+          else
+            switch (type) {
+              case "bigint":
+              case "string":
+              case "number":
+                invokeCallback = true;
+                break;
+              case "object":
+                switch (children.$$typeof) {
+                  case REACT_ELEMENT_TYPE:
+                  case REACT_PORTAL_TYPE:
+                    invokeCallback = true;
+                    break;
+                  case REACT_LAZY_TYPE:
+                    return invokeCallback = children._init, mapIntoArray(
+                      invokeCallback(children._payload),
+                      array,
+                      escapedPrefix,
+                      nameSoFar,
+                      callback
+                    );
+                }
+            }
+          if (invokeCallback) {
+            invokeCallback = children;
+            callback = callback(invokeCallback);
+            var childKey = "" === nameSoFar ? "." + getElementKey(invokeCallback, 0) : nameSoFar;
+            isArrayImpl(callback) ? (escapedPrefix = "", null != childKey && (escapedPrefix = childKey.replace(userProvidedKeyEscapeRegex, "$&/") + "/"), mapIntoArray(callback, array, escapedPrefix, "", function(c) {
+              return c;
+            })) : null != callback && (isValidElement(callback) && (null != callback.key && (invokeCallback && invokeCallback.key === callback.key || checkKeyStringCoercion(callback.key)), escapedPrefix = cloneAndReplaceKey(
+              callback,
+              escapedPrefix + (null == callback.key || invokeCallback && invokeCallback.key === callback.key ? "" : ("" + callback.key).replace(
+                userProvidedKeyEscapeRegex,
+                "$&/"
+              ) + "/") + childKey
+            ), "" !== nameSoFar && null != invokeCallback && isValidElement(invokeCallback) && null == invokeCallback.key && invokeCallback._store && !invokeCallback._store.validated && (escapedPrefix._store.validated = 2), callback = escapedPrefix), array.push(callback));
+            return 1;
+          }
+          invokeCallback = 0;
+          childKey = "" === nameSoFar ? "." : nameSoFar + ":";
+          if (isArrayImpl(children))
+            for (var i = 0; i < children.length; i++)
+              nameSoFar = children[i], type = childKey + getElementKey(nameSoFar, i), invokeCallback += mapIntoArray(
+                nameSoFar,
+                array,
+                escapedPrefix,
+                type,
+                callback
+              );
+          else if (i = getIteratorFn(children), "function" === typeof i)
+            for (i === children.entries && (didWarnAboutMaps || console.warn(
+              "Using Maps as children is not supported. Use an array of keyed ReactElements instead."
+            ), didWarnAboutMaps = true), children = i.call(children), i = 0; !(nameSoFar = children.next()).done; )
+              nameSoFar = nameSoFar.value, type = childKey + getElementKey(nameSoFar, i++), invokeCallback += mapIntoArray(
+                nameSoFar,
+                array,
+                escapedPrefix,
+                type,
+                callback
+              );
+          else if ("object" === type) {
+            if ("function" === typeof children.then)
+              return mapIntoArray(
+                resolveThenable(children),
+                array,
+                escapedPrefix,
+                nameSoFar,
+                callback
+              );
+            array = String(children);
+            throw Error(
+              "Objects are not valid as a React child (found: " + ("[object Object]" === array ? "object with keys {" + Object.keys(children).join(", ") + "}" : array) + "). If you meant to render a collection of children, use an array instead."
+            );
+          }
+          return invokeCallback;
+        }
+        function mapChildren(children, func, context) {
+          if (null == children)
+            return children;
+          var result = [], count = 0;
+          mapIntoArray(children, result, "", "", function(child) {
+            return func.call(context, child, count++);
+          });
+          return result;
+        }
+        function lazyInitializer(payload) {
+          if (-1 === payload._status) {
+            var ctor = payload._result;
+            ctor = ctor();
+            ctor.then(
+              function(moduleObject) {
+                if (0 === payload._status || -1 === payload._status)
+                  payload._status = 1, payload._result = moduleObject;
+              },
+              function(error) {
+                if (0 === payload._status || -1 === payload._status)
+                  payload._status = 2, payload._result = error;
+              }
+            );
+            -1 === payload._status && (payload._status = 0, payload._result = ctor);
+          }
+          if (1 === payload._status)
+            return ctor = payload._result, void 0 === ctor && console.error(
+              "lazy: Expected the result of a dynamic import() call. Instead received: %s\n\nYour code should look like: \n  const MyComponent = lazy(() => import('./MyComponent'))\n\nDid you accidentally put curly braces around the import?",
+              ctor
+            ), "default" in ctor || console.error(
+              "lazy: Expected the result of a dynamic import() call. Instead received: %s\n\nYour code should look like: \n  const MyComponent = lazy(() => import('./MyComponent'))",
+              ctor
+            ), ctor.default;
+          throw payload._result;
+        }
+        function resolveDispatcher() {
+          var dispatcher = ReactSharedInternals.H;
+          null === dispatcher && console.error(
+            "Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:\n1. You might have mismatching versions of React and the renderer (such as React DOM)\n2. You might be breaking the Rules of Hooks\n3. You might have more than one copy of React in the same app\nSee https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem."
+          );
+          return dispatcher;
+        }
+        function noop() {
+        }
+        function enqueueTask(task) {
+          if (null === enqueueTaskImpl)
+            try {
+              var requireString = ("require" + Math.random()).slice(0, 7);
+              enqueueTaskImpl = (module && module[requireString]).call(
+                module,
+                "timers"
+              ).setImmediate;
+            } catch (_err) {
+              enqueueTaskImpl = function(callback) {
+                false === didWarnAboutMessageChannel && (didWarnAboutMessageChannel = true, "undefined" === typeof MessageChannel && console.error(
+                  "This browser does not have a MessageChannel implementation, so enqueuing tasks via await act(async () => ...) will fail. Please file an issue at https://github.com/facebook/react/issues if you encounter this warning."
+                ));
+                var channel = new MessageChannel();
+                channel.port1.onmessage = callback;
+                channel.port2.postMessage(void 0);
+              };
+            }
+          return enqueueTaskImpl(task);
+        }
+        function aggregateErrors(errors) {
+          return 1 < errors.length && "function" === typeof AggregateError ? new AggregateError(errors) : errors[0];
+        }
+        function popActScope(prevActQueue, prevActScopeDepth) {
+          prevActScopeDepth !== actScopeDepth - 1 && console.error(
+            "You seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one. "
+          );
+          actScopeDepth = prevActScopeDepth;
+        }
+        function recursivelyFlushAsyncActWork(returnValue, resolve, reject) {
+          var queue = ReactSharedInternals.actQueue;
+          if (null !== queue)
+            if (0 !== queue.length)
+              try {
+                flushActQueue(queue);
+                enqueueTask(function() {
+                  return recursivelyFlushAsyncActWork(returnValue, resolve, reject);
+                });
+                return;
+              } catch (error) {
+                ReactSharedInternals.thrownErrors.push(error);
+              }
+            else
+              ReactSharedInternals.actQueue = null;
+          0 < ReactSharedInternals.thrownErrors.length ? (queue = aggregateErrors(ReactSharedInternals.thrownErrors), ReactSharedInternals.thrownErrors.length = 0, reject(queue)) : resolve(returnValue);
+        }
+        function flushActQueue(queue) {
+          if (!isFlushing) {
+            isFlushing = true;
+            var i = 0;
+            try {
+              for (; i < queue.length; i++) {
+                var callback = queue[i];
+                do {
+                  ReactSharedInternals.didUsePromise = false;
+                  var continuation = callback(false);
+                  if (null !== continuation) {
+                    if (ReactSharedInternals.didUsePromise) {
+                      queue[i] = callback;
+                      queue.splice(0, i);
+                      return;
+                    }
+                    callback = continuation;
+                  } else
+                    break;
+                } while (1);
+              }
+              queue.length = 0;
+            } catch (error) {
+              queue.splice(0, i + 1), ReactSharedInternals.thrownErrors.push(error);
+            } finally {
+              isFlushing = false;
+            }
+          }
+        }
+        "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
+        var REACT_ELEMENT_TYPE = Symbol.for("react.transitional.element"), REACT_PORTAL_TYPE = Symbol.for("react.portal"), REACT_FRAGMENT_TYPE = Symbol.for("react.fragment"), REACT_STRICT_MODE_TYPE = Symbol.for("react.strict_mode"), REACT_PROFILER_TYPE = Symbol.for("react.profiler");
+        Symbol.for("react.provider");
+        var REACT_CONSUMER_TYPE = Symbol.for("react.consumer"), REACT_CONTEXT_TYPE = Symbol.for("react.context"), REACT_FORWARD_REF_TYPE = Symbol.for("react.forward_ref"), REACT_SUSPENSE_TYPE = Symbol.for("react.suspense"), REACT_SUSPENSE_LIST_TYPE = Symbol.for("react.suspense_list"), REACT_MEMO_TYPE = Symbol.for("react.memo"), REACT_LAZY_TYPE = Symbol.for("react.lazy"), REACT_ACTIVITY_TYPE = Symbol.for("react.activity"), MAYBE_ITERATOR_SYMBOL = Symbol.iterator, didWarnStateUpdateForUnmountedComponent = {}, ReactNoopUpdateQueue = {
+          isMounted: function() {
+            return false;
+          },
+          enqueueForceUpdate: function(publicInstance) {
+            warnNoop(publicInstance, "forceUpdate");
+          },
+          enqueueReplaceState: function(publicInstance) {
+            warnNoop(publicInstance, "replaceState");
+          },
+          enqueueSetState: function(publicInstance) {
+            warnNoop(publicInstance, "setState");
+          }
+        }, assign = Object.assign, emptyObject = {};
+        Object.freeze(emptyObject);
+        Component.prototype.isReactComponent = {};
+        Component.prototype.setState = function(partialState, callback) {
+          if ("object" !== typeof partialState && "function" !== typeof partialState && null != partialState)
+            throw Error(
+              "takes an object of state variables to update or a function which returns an object of state variables."
+            );
+          this.updater.enqueueSetState(this, partialState, callback, "setState");
+        };
+        Component.prototype.forceUpdate = function(callback) {
+          this.updater.enqueueForceUpdate(this, callback, "forceUpdate");
+        };
+        var deprecatedAPIs = {
+          isMounted: [
+            "isMounted",
+            "Instead, make sure to clean up subscriptions and pending requests in componentWillUnmount to prevent memory leaks."
+          ],
+          replaceState: [
+            "replaceState",
+            "Refactor your code to use setState instead (see https://github.com/facebook/react/issues/3236)."
+          ]
+        }, fnName;
+        for (fnName in deprecatedAPIs)
+          deprecatedAPIs.hasOwnProperty(fnName) && defineDeprecationWarning(fnName, deprecatedAPIs[fnName]);
+        ComponentDummy.prototype = Component.prototype;
+        deprecatedAPIs = PureComponent.prototype = new ComponentDummy();
+        deprecatedAPIs.constructor = PureComponent;
+        assign(deprecatedAPIs, Component.prototype);
+        deprecatedAPIs.isPureReactComponent = true;
+        var isArrayImpl = Array.isArray, REACT_CLIENT_REFERENCE = Symbol.for("react.client.reference"), ReactSharedInternals = {
+          H: null,
+          A: null,
+          T: null,
+          S: null,
+          V: null,
+          actQueue: null,
+          isBatchingLegacy: false,
+          didScheduleLegacyUpdate: false,
+          didUsePromise: false,
+          thrownErrors: [],
+          getCurrentStack: null,
+          recentlyCreatedOwnerStacks: 0
+        }, hasOwnProperty = Object.prototype.hasOwnProperty, createTask = console.createTask ? console.createTask : function() {
+          return null;
+        };
+        deprecatedAPIs = {
+          "react-stack-bottom-frame": function(callStackForError) {
+            return callStackForError();
+          }
+        };
+        var specialPropKeyWarningShown, didWarnAboutOldJSXRuntime;
+        var didWarnAboutElementRef = {};
+        var unknownOwnerDebugStack = deprecatedAPIs["react-stack-bottom-frame"].bind(deprecatedAPIs, UnknownOwner)();
+        var unknownOwnerDebugTask = createTask(getTaskName(UnknownOwner));
+        var didWarnAboutMaps = false, userProvidedKeyEscapeRegex = /\/+/g, reportGlobalError = "function" === typeof reportError ? reportError : function(error) {
+          if ("object" === typeof window && "function" === typeof window.ErrorEvent) {
+            var event = new window.ErrorEvent("error", {
+              bubbles: true,
+              cancelable: true,
+              message: "object" === typeof error && null !== error && "string" === typeof error.message ? String(error.message) : String(error),
+              error
+            });
+            if (!window.dispatchEvent(event))
+              return;
+          } else if ("object" === typeof process && "function" === typeof process.emit) {
+            process.emit("uncaughtException", error);
+            return;
+          }
+          console.error(error);
+        }, didWarnAboutMessageChannel = false, enqueueTaskImpl = null, actScopeDepth = 0, didWarnNoAwaitAct = false, isFlushing = false, queueSeveralMicrotasks = "function" === typeof queueMicrotask ? function(callback) {
+          queueMicrotask(function() {
+            return queueMicrotask(callback);
+          });
+        } : enqueueTask;
+        deprecatedAPIs = Object.freeze({
+          __proto__: null,
+          c: function(size) {
+            return resolveDispatcher().useMemoCache(size);
+          }
+        });
+        exports.Children = {
+          map: mapChildren,
+          forEach: function(children, forEachFunc, forEachContext) {
+            mapChildren(
+              children,
+              function() {
+                forEachFunc.apply(this, arguments);
+              },
+              forEachContext
+            );
+          },
+          count: function(children) {
+            var n = 0;
+            mapChildren(children, function() {
+              n++;
+            });
+            return n;
+          },
+          toArray: function(children) {
+            return mapChildren(children, function(child) {
+              return child;
+            }) || [];
+          },
+          only: function(children) {
+            if (!isValidElement(children))
+              throw Error(
+                "React.Children.only expected to receive a single React element child."
+              );
+            return children;
+          }
+        };
+        exports.Component = Component;
+        exports.Fragment = REACT_FRAGMENT_TYPE;
+        exports.Profiler = REACT_PROFILER_TYPE;
+        exports.PureComponent = PureComponent;
+        exports.StrictMode = REACT_STRICT_MODE_TYPE;
+        exports.Suspense = REACT_SUSPENSE_TYPE;
+        exports.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE = ReactSharedInternals;
+        exports.__COMPILER_RUNTIME = deprecatedAPIs;
+        exports.act = function(callback) {
+          var prevActQueue = ReactSharedInternals.actQueue, prevActScopeDepth = actScopeDepth;
+          actScopeDepth++;
+          var queue = ReactSharedInternals.actQueue = null !== prevActQueue ? prevActQueue : [], didAwaitActCall = false;
+          try {
+            var result = callback();
+          } catch (error) {
+            ReactSharedInternals.thrownErrors.push(error);
+          }
+          if (0 < ReactSharedInternals.thrownErrors.length)
+            throw popActScope(prevActQueue, prevActScopeDepth), callback = aggregateErrors(ReactSharedInternals.thrownErrors), ReactSharedInternals.thrownErrors.length = 0, callback;
+          if (null !== result && "object" === typeof result && "function" === typeof result.then) {
+            var thenable = result;
+            queueSeveralMicrotasks(function() {
+              didAwaitActCall || didWarnNoAwaitAct || (didWarnNoAwaitAct = true, console.error(
+                "You called act(async () => ...) without await. This could lead to unexpected testing behaviour, interleaving multiple act calls and mixing their scopes. You should - await act(async () => ...);"
+              ));
+            });
+            return {
+              then: function(resolve, reject) {
+                didAwaitActCall = true;
+                thenable.then(
+                  function(returnValue) {
+                    popActScope(prevActQueue, prevActScopeDepth);
+                    if (0 === prevActScopeDepth) {
+                      try {
+                        flushActQueue(queue), enqueueTask(function() {
+                          return recursivelyFlushAsyncActWork(
+                            returnValue,
+                            resolve,
+                            reject
+                          );
+                        });
+                      } catch (error$0) {
+                        ReactSharedInternals.thrownErrors.push(error$0);
+                      }
+                      if (0 < ReactSharedInternals.thrownErrors.length) {
+                        var _thrownError = aggregateErrors(
+                          ReactSharedInternals.thrownErrors
+                        );
+                        ReactSharedInternals.thrownErrors.length = 0;
+                        reject(_thrownError);
+                      }
+                    } else
+                      resolve(returnValue);
+                  },
+                  function(error) {
+                    popActScope(prevActQueue, prevActScopeDepth);
+                    0 < ReactSharedInternals.thrownErrors.length ? (error = aggregateErrors(
+                      ReactSharedInternals.thrownErrors
+                    ), ReactSharedInternals.thrownErrors.length = 0, reject(error)) : reject(error);
+                  }
+                );
+              }
+            };
+          }
+          var returnValue$jscomp$0 = result;
+          popActScope(prevActQueue, prevActScopeDepth);
+          0 === prevActScopeDepth && (flushActQueue(queue), 0 !== queue.length && queueSeveralMicrotasks(function() {
+            didAwaitActCall || didWarnNoAwaitAct || (didWarnNoAwaitAct = true, console.error(
+              "A component suspended inside an `act` scope, but the `act` call was not awaited. When testing React components that depend on asynchronous data, you must await the result:\n\nawait act(() => ...)"
+            ));
+          }), ReactSharedInternals.actQueue = null);
+          if (0 < ReactSharedInternals.thrownErrors.length)
+            throw callback = aggregateErrors(ReactSharedInternals.thrownErrors), ReactSharedInternals.thrownErrors.length = 0, callback;
+          return {
+            then: function(resolve, reject) {
+              didAwaitActCall = true;
+              0 === prevActScopeDepth ? (ReactSharedInternals.actQueue = queue, enqueueTask(function() {
+                return recursivelyFlushAsyncActWork(
+                  returnValue$jscomp$0,
+                  resolve,
+                  reject
+                );
+              })) : resolve(returnValue$jscomp$0);
+            }
+          };
+        };
+        exports.cache = function(fn) {
+          return function() {
+            return fn.apply(null, arguments);
+          };
+        };
+        exports.captureOwnerStack = function() {
+          var getCurrentStack = ReactSharedInternals.getCurrentStack;
+          return null === getCurrentStack ? null : getCurrentStack();
+        };
+        exports.cloneElement = function(element, config, children) {
+          if (null === element || void 0 === element)
+            throw Error(
+              "The argument must be a React element, but you passed " + element + "."
+            );
+          var props = assign({}, element.props), key = element.key, owner = element._owner;
+          if (null != config) {
+            var JSCompiler_inline_result;
+            a: {
+              if (hasOwnProperty.call(config, "ref") && (JSCompiler_inline_result = Object.getOwnPropertyDescriptor(
+                config,
+                "ref"
+              ).get) && JSCompiler_inline_result.isReactWarning) {
+                JSCompiler_inline_result = false;
+                break a;
+              }
+              JSCompiler_inline_result = void 0 !== config.ref;
+            }
+            JSCompiler_inline_result && (owner = getOwner());
+            hasValidKey(config) && (checkKeyStringCoercion(config.key), key = "" + config.key);
+            for (propName in config)
+              !hasOwnProperty.call(config, propName) || "key" === propName || "__self" === propName || "__source" === propName || "ref" === propName && void 0 === config.ref || (props[propName] = config[propName]);
+          }
+          var propName = arguments.length - 2;
+          if (1 === propName)
+            props.children = children;
+          else if (1 < propName) {
+            JSCompiler_inline_result = Array(propName);
+            for (var i = 0; i < propName; i++)
+              JSCompiler_inline_result[i] = arguments[i + 2];
+            props.children = JSCompiler_inline_result;
+          }
+          props = ReactElement(
+            element.type,
+            key,
+            void 0,
+            void 0,
+            owner,
+            props,
+            element._debugStack,
+            element._debugTask
+          );
+          for (key = 2; key < arguments.length; key++)
+            owner = arguments[key], isValidElement(owner) && owner._store && (owner._store.validated = 1);
+          return props;
+        };
+        exports.createContext = function(defaultValue) {
+          defaultValue = {
+            $$typeof: REACT_CONTEXT_TYPE,
+            _currentValue: defaultValue,
+            _currentValue2: defaultValue,
+            _threadCount: 0,
+            Provider: null,
+            Consumer: null
+          };
+          defaultValue.Provider = defaultValue;
+          defaultValue.Consumer = {
+            $$typeof: REACT_CONSUMER_TYPE,
+            _context: defaultValue
+          };
+          defaultValue._currentRenderer = null;
+          defaultValue._currentRenderer2 = null;
+          return defaultValue;
+        };
+        exports.createElement = function(type, config, children) {
+          for (var i = 2; i < arguments.length; i++) {
+            var node = arguments[i];
+            isValidElement(node) && node._store && (node._store.validated = 1);
+          }
+          i = {};
+          node = null;
+          if (null != config)
+            for (propName in didWarnAboutOldJSXRuntime || !("__self" in config) || "key" in config || (didWarnAboutOldJSXRuntime = true, console.warn(
+              "Your app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform"
+            )), hasValidKey(config) && (checkKeyStringCoercion(config.key), node = "" + config.key), config)
+              hasOwnProperty.call(config, propName) && "key" !== propName && "__self" !== propName && "__source" !== propName && (i[propName] = config[propName]);
+          var childrenLength = arguments.length - 2;
+          if (1 === childrenLength)
+            i.children = children;
+          else if (1 < childrenLength) {
+            for (var childArray = Array(childrenLength), _i = 0; _i < childrenLength; _i++)
+              childArray[_i] = arguments[_i + 2];
+            Object.freeze && Object.freeze(childArray);
+            i.children = childArray;
+          }
+          if (type && type.defaultProps)
+            for (propName in childrenLength = type.defaultProps, childrenLength)
+              void 0 === i[propName] && (i[propName] = childrenLength[propName]);
+          node && defineKeyPropWarningGetter(
+            i,
+            "function" === typeof type ? type.displayName || type.name || "Unknown" : type
+          );
+          var propName = 1e4 > ReactSharedInternals.recentlyCreatedOwnerStacks++;
+          return ReactElement(
+            type,
+            node,
+            void 0,
+            void 0,
+            getOwner(),
+            i,
+            propName ? Error("react-stack-top-frame") : unknownOwnerDebugStack,
+            propName ? createTask(getTaskName(type)) : unknownOwnerDebugTask
+          );
+        };
+        exports.createRef = function() {
+          var refObject = { current: null };
+          Object.seal(refObject);
+          return refObject;
+        };
+        exports.forwardRef = function(render) {
+          null != render && render.$$typeof === REACT_MEMO_TYPE ? console.error(
+            "forwardRef requires a render function but received a `memo` component. Instead of forwardRef(memo(...)), use memo(forwardRef(...))."
+          ) : "function" !== typeof render ? console.error(
+            "forwardRef requires a render function but was given %s.",
+            null === render ? "null" : typeof render
+          ) : 0 !== render.length && 2 !== render.length && console.error(
+            "forwardRef render functions accept exactly two parameters: props and ref. %s",
+            1 === render.length ? "Did you forget to use the ref parameter?" : "Any additional parameter will be undefined."
+          );
+          null != render && null != render.defaultProps && console.error(
+            "forwardRef render functions do not support defaultProps. Did you accidentally pass a React component?"
+          );
+          var elementType = { $$typeof: REACT_FORWARD_REF_TYPE, render }, ownName;
+          Object.defineProperty(elementType, "displayName", {
+            enumerable: false,
+            configurable: true,
+            get: function() {
+              return ownName;
+            },
+            set: function(name) {
+              ownName = name;
+              render.name || render.displayName || (Object.defineProperty(render, "name", { value: name }), render.displayName = name);
+            }
+          });
+          return elementType;
+        };
+        exports.isValidElement = isValidElement;
+        exports.lazy = function(ctor) {
+          return {
+            $$typeof: REACT_LAZY_TYPE,
+            _payload: { _status: -1, _result: ctor },
+            _init: lazyInitializer
+          };
+        };
+        exports.memo = function(type, compare) {
+          null == type && console.error(
+            "memo: The first argument must be a component. Instead received: %s",
+            null === type ? "null" : typeof type
+          );
+          compare = {
+            $$typeof: REACT_MEMO_TYPE,
+            type,
+            compare: void 0 === compare ? null : compare
+          };
+          var ownName;
+          Object.defineProperty(compare, "displayName", {
+            enumerable: false,
+            configurable: true,
+            get: function() {
+              return ownName;
+            },
+            set: function(name) {
+              ownName = name;
+              type.name || type.displayName || (Object.defineProperty(type, "name", { value: name }), type.displayName = name);
+            }
+          });
+          return compare;
+        };
+        exports.startTransition = function(scope) {
+          var prevTransition = ReactSharedInternals.T, currentTransition = {};
+          ReactSharedInternals.T = currentTransition;
+          currentTransition._updatedFibers = /* @__PURE__ */ new Set();
+          try {
+            var returnValue = scope(), onStartTransitionFinish = ReactSharedInternals.S;
+            null !== onStartTransitionFinish && onStartTransitionFinish(currentTransition, returnValue);
+            "object" === typeof returnValue && null !== returnValue && "function" === typeof returnValue.then && returnValue.then(noop, reportGlobalError);
+          } catch (error) {
+            reportGlobalError(error);
+          } finally {
+            null === prevTransition && currentTransition._updatedFibers && (scope = currentTransition._updatedFibers.size, currentTransition._updatedFibers.clear(), 10 < scope && console.warn(
+              "Detected a large number of updates inside startTransition. If this is due to a subscription please re-write it to use React provided hooks. Otherwise concurrent mode guarantees are off the table."
+            )), ReactSharedInternals.T = prevTransition;
+          }
+        };
+        exports.unstable_useCacheRefresh = function() {
+          return resolveDispatcher().useCacheRefresh();
+        };
+        exports.use = function(usable) {
+          return resolveDispatcher().use(usable);
+        };
+        exports.useActionState = function(action, initialState, permalink) {
+          return resolveDispatcher().useActionState(
+            action,
+            initialState,
+            permalink
+          );
+        };
+        exports.useCallback = function(callback, deps) {
+          return resolveDispatcher().useCallback(callback, deps);
+        };
+        exports.useContext = function(Context) {
+          var dispatcher = resolveDispatcher();
+          Context.$$typeof === REACT_CONSUMER_TYPE && console.error(
+            "Calling useContext(Context.Consumer) is not supported and will cause bugs. Did you mean to call useContext(Context) instead?"
+          );
+          return dispatcher.useContext(Context);
+        };
+        exports.useDebugValue = function(value, formatterFn) {
+          return resolveDispatcher().useDebugValue(value, formatterFn);
+        };
+        exports.useDeferredValue = function(value, initialValue) {
+          return resolveDispatcher().useDeferredValue(value, initialValue);
+        };
+        exports.useEffect = function(create, createDeps, update) {
+          null == create && console.warn(
+            "React Hook useEffect requires an effect callback. Did you forget to pass a callback to the hook?"
+          );
+          var dispatcher = resolveDispatcher();
+          if ("function" === typeof update)
+            throw Error(
+              "useEffect CRUD overload is not enabled in this build of React."
+            );
+          return dispatcher.useEffect(create, createDeps);
+        };
+        exports.useId = function() {
+          return resolveDispatcher().useId();
+        };
+        exports.useImperativeHandle = function(ref, create, deps) {
+          return resolveDispatcher().useImperativeHandle(ref, create, deps);
+        };
+        exports.useInsertionEffect = function(create, deps) {
+          null == create && console.warn(
+            "React Hook useInsertionEffect requires an effect callback. Did you forget to pass a callback to the hook?"
+          );
+          return resolveDispatcher().useInsertionEffect(create, deps);
+        };
+        exports.useLayoutEffect = function(create, deps) {
+          null == create && console.warn(
+            "React Hook useLayoutEffect requires an effect callback. Did you forget to pass a callback to the hook?"
+          );
+          return resolveDispatcher().useLayoutEffect(create, deps);
+        };
+        exports.useMemo = function(create, deps) {
+          return resolveDispatcher().useMemo(create, deps);
+        };
+        exports.useOptimistic = function(passthrough, reducer) {
+          return resolveDispatcher().useOptimistic(passthrough, reducer);
+        };
+        exports.useReducer = function(reducer, initialArg, init) {
+          return resolveDispatcher().useReducer(reducer, initialArg, init);
+        };
+        exports.useRef = function(initialValue) {
+          return resolveDispatcher().useRef(initialValue);
+        };
+        exports.useState = function(initialState) {
+          return resolveDispatcher().useState(initialState);
+        };
+        exports.useSyncExternalStore = function(subscribe, getSnapshot, getServerSnapshot) {
+          return resolveDispatcher().useSyncExternalStore(
+            subscribe,
+            getSnapshot,
+            getServerSnapshot
+          );
+        };
+        exports.useTransition = function() {
+          return resolveDispatcher().useTransition();
+        };
+        exports.version = "19.1.0";
+        "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(Error());
+      })();
+    }
+  });
+
+  // node_modules/react/index.js
+  var require_react = __commonJS({
+    "node_modules/react/index.js"(exports, module) {
+      "use strict";
+      if (false) {
+        module.exports = null;
+      } else {
+        module.exports = require_react_development();
+      }
+    }
+  });
+
+  // <stdin>
+  var require_stdin = __commonJS({
+    "<stdin>"(exports, module) {
+      var React = require_react();
+      function createErrorBoundary() {
+        return class ErrorBoundary extends React.Component {
+          constructor(props) {
+            super(props);
+            this.state = {
+              hasError: false,
+              error: null,
+              errorInfo: null,
+              isCopied: false,
+              isMinimized: false,
+              isFullWidth: true,
+              copyButtonState: "default"
+            };
+            this.copyErrorToClipboard = this.copyErrorToClipboard.bind(this);
+            this.toggleMinimize = this.toggleMinimize.bind(this);
+            this.toggleFullWidth = this.toggleFullWidth.bind(this);
+          }
+          static getDerivedStateFromError(error) {
+            return {
+              hasError: true,
+              error,
+              errorInfo: null,
+              isCopied: false,
+              isMinimized: false,
+              // Start expanded when error occurs
+              isFullWidth: false,
+              copyButtonState: "default"
+            };
+          }
+          componentDidCatch(error, errorInfo) {
+            this.setState({
+              error,
+              errorInfo
+            });
+            console.error("Error caught by ErrorBoundary:", error, errorInfo);
+          }
+          copyErrorToClipboard() {
+            if (this.state.error) {
+              const errorText = `Error: ${this.state.error.toString()}
+
+Component Stack:
+${this.state.errorInfo ? this.state.errorInfo.componentStack : "Not available"}`;
+              const fallbackCopyTextToClipboard = (text) => {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.top = "0";
+                textArea.style.left = "0";
+                textArea.style.position = "fixed";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                  const successful = document.execCommand("copy");
+                  const msg = successful ? "Text copied to clipboard" : "Failed to copy text";
+                  console.log(msg);
+                  this.setState({
+                    isCopied: successful,
+                    copyButtonState: successful ? "copied" : "default"
+                  });
+                  if (successful) {
+                    setTimeout(() => {
+                      this.setState({
+                        isCopied: false,
+                        copyButtonState: "default"
+                      });
+                    }, 2e3);
+                  }
+                } catch (err) {
+                  console.error("Fallback: Failed to copy text: ", err);
+                } finally {
+                  document.body.removeChild(textArea);
+                }
+              };
+              if (!navigator.clipboard) {
+                fallbackCopyTextToClipboard(errorText);
+                return;
+              }
+              navigator.clipboard.writeText(errorText).then(() => {
+                this.setState({
+                  isCopied: true,
+                  copyButtonState: "copied"
+                });
+                setTimeout(() => {
+                  this.setState({
+                    isCopied: false,
+                    copyButtonState: "default"
+                  });
+                }, 2e3);
+              }).catch((err) => {
+                console.error("Failed to copy error details:", err);
+                fallbackCopyTextToClipboard(errorText);
+              });
+            }
+          }
+          toggleMinimize() {
+            this.setState((prevState) => ({
+              isMinimized: !prevState.isMinimized,
+              // If minimizing, ensure it's not full width
+              isFullWidth: prevState.isMinimized ? prevState.isFullWidth : false
+            }));
+          }
+          toggleFullWidth() {
+            if (!this.state.isMinimized) {
+              this.setState((prevState) => ({
+                isFullWidth: !prevState.isFullWidth
+              }));
+            }
+          }
+          render() {
+            if (this.state.hasError) {
+              const { isMinimized, isFullWidth, isCopied, error, errorInfo } = this.state;
+              const AlertTriangleIcon = (_a) => {
+                var _b = _a, { className } = _b, otherProps = __objRest(_b, ["className"]);
+                return /* @__PURE__ */ React.createElement(
+                  "svg",
+                  __spreadValues({
+                    xmlns: "http://www.w3.org/2000/svg",
+                    width: isMinimized ? "16" : "20",
+                    height: isMinimized ? "16" : "20",
+                    viewBox: "0 0 24 24",
+                    fill: "none",
+                    stroke: "currentColor",
+                    strokeWidth: "2",
+                    strokeLinecap: "round",
+                    strokeLinejoin: "round",
+                    className: className || "text-red-500 dark:text-red-400"
+                  }, otherProps),
+                  /* @__PURE__ */ React.createElement("path", { d: "M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" }),
+                  /* @__PURE__ */ React.createElement("line", { x1: "12", y1: "9", x2: "12", y2: "13" }),
+                  /* @__PURE__ */ React.createElement("line", { x1: "12", y1: "17", x2: "12.01", y2: "17" })
+                );
+              };
+              const CopyIcon = () => /* @__PURE__ */ React.createElement(
+                "svg",
+                {
+                  xmlns: "http://www.w3.org/2000/svg",
+                  width: "16",
+                  height: "16",
+                  viewBox: "0 0 24 24",
+                  fill: "none",
+                  stroke: "currentColor",
+                  strokeWidth: "2",
+                  strokeLinecap: "round",
+                  strokeLinejoin: "round"
+                },
+                /* @__PURE__ */ React.createElement("rect", { x: "9", y: "9", width: "13", height: "13", rx: "2", ry: "2" }),
+                /* @__PURE__ */ React.createElement("path", { d: "M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" })
+              );
+              const MinimizeIcon = () => /* @__PURE__ */ React.createElement(
+                "svg",
+                {
+                  xmlns: "http://www.w3.org/2000/svg",
+                  width: "16",
+                  height: "16",
+                  viewBox: "0 0 24 24",
+                  fill: "none",
+                  stroke: "currentColor",
+                  strokeWidth: "2",
+                  strokeLinecap: "round",
+                  strokeLinejoin: "round"
+                },
+                /* @__PURE__ */ React.createElement("line", { x1: "5", y1: "12", x2: "19", y2: "12" })
+              );
+              const ExpandIcon = () => /* @__PURE__ */ React.createElement(
+                "svg",
+                {
+                  xmlns: "http://www.w3.org/2000/svg",
+                  width: "16",
+                  height: "16",
+                  viewBox: "0 0 24 24",
+                  fill: "none",
+                  stroke: "currentColor",
+                  strokeWidth: "2",
+                  strokeLinecap: "round",
+                  strokeLinejoin: "round"
+                },
+                /* @__PURE__ */ React.createElement("polyline", { points: "15 3 21 3 21 9" }),
+                /* @__PURE__ */ React.createElement("polyline", { points: "9 21 3 21 3 15" }),
+                /* @__PURE__ */ React.createElement("line", { x1: "21", y1: "3", x2: "14", y2: "10" }),
+                /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "21", x2: "10", y2: "14" })
+              );
+              const CompressIcon = () => /* @__PURE__ */ React.createElement(
+                "svg",
+                {
+                  xmlns: "http://www.w3.org/2000/svg",
+                  width: "16",
+                  height: "16",
+                  viewBox: "0 0 24 24",
+                  fill: "none",
+                  stroke: "currentColor",
+                  strokeWidth: "2",
+                  strokeLinecap: "round",
+                  strokeLinejoin: "round"
+                },
+                /* @__PURE__ */ React.createElement("polyline", { points: "4 14 10 14 10 20" }),
+                /* @__PURE__ */ React.createElement("polyline", { points: "20 10 14 10 14 4" }),
+                /* @__PURE__ */ React.createElement("line", { x1: "14", y1: "10", x2: "21", y2: "3" }),
+                /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "21", x2: "10", y2: "14" })
+              );
+              const RefreshIcon = () => /* @__PURE__ */ React.createElement(
+                "svg",
+                {
+                  xmlns: "http://www.w3.org/2000/svg",
+                  width: "16",
+                  height: "16",
+                  viewBox: "0 0 24 24",
+                  fill: "none",
+                  stroke: "currentColor",
+                  strokeWidth: "2",
+                  strokeLinecap: "round",
+                  strokeLinejoin: "round"
+                },
+                /* @__PURE__ */ React.createElement("path", { d: "M23 4v6h-6" }),
+                /* @__PURE__ */ React.createElement("path", { d: "M1 20v-6h6" }),
+                /* @__PURE__ */ React.createElement("path", { d: "M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" })
+              );
+              const CheckIcon = () => /* @__PURE__ */ React.createElement(
+                "svg",
+                {
+                  xmlns: "http://www.w3.org/2000/svg",
+                  width: "14",
+                  height: "14",
+                  viewBox: "0 0 24 24",
+                  fill: "none",
+                  stroke: "currentColor",
+                  strokeWidth: "2",
+                  strokeLinecap: "round",
+                  strokeLinejoin: "round"
+                },
+                /* @__PURE__ */ React.createElement("path", { d: "M20 6L9 17l-5-5" })
+              );
+              if (isMinimized) {
+                return /* @__PURE__ */ React.createElement(React.Fragment, null, this.props.children, /* @__PURE__ */ React.createElement(
+                  "div",
+                  {
+                    className: "fixed bottom-4 right-4 z-[9999]",
+                    onClick: this.toggleMinimize
+                  },
+                  /* @__PURE__ */ React.createElement("div", { className: "group flex items-center justify-center w-10 h-10 rounded-full bg-red-500 shadow-lg cursor-pointer hover:bg-red-600 transition-colors dark:bg-red-700 dark:hover:bg-red-600" }, /* @__PURE__ */ React.createElement(AlertTriangleIcon, { className: "text-white dark:text-gray-100" }), /* @__PURE__ */ React.createElement("div", { className: "absolute right-12 bottom-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap dark:bg-gray-900 shadow-md" }, "Error - Click to expand"))
+                ));
+              }
+              const baseContainerClasses = "fixed bottom-0 z-[9999] transition-all duration-300 ease-in-out mb-8";
+              const innerBoxBaseClasses = "relative overflow-hidden rounded-lg border border-red-300 bg-white shadow-xl dark:border-red-700 dark:bg-gray-950";
+              const positionAndWidthClass = isFullWidth ? "inset-x-0 w-full" : "right-4 w-[32rem] max-w-[90vw]";
+              const paddingClass = isFullWidth ? "p-4" : "";
+              return /* @__PURE__ */ React.createElement(React.Fragment, null, this.props.children, /* @__PURE__ */ React.createElement("div", { className: `${baseContainerClasses} ${positionAndWidthClass} ${paddingClass}` }, /* @__PURE__ */ React.createElement(
+                "div",
+                {
+                  className: `${innerBoxBaseClasses} ${isFullWidth ? "mx-auto" : ""}`,
+                  style: isFullWidth ? { maxWidth: "100%" } : {}
+                },
+                /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between bg-gradient-to-r from-red-100 to-red-200 px-3 py-2 dark:from-red-950/50 dark:to-red-900/50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(AlertTriangleIcon, { className: "text-red-500 dark:text-red-400" }), /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-red-800 dark:text-red-300" }, "Sorry, something went wrong")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
+                  "button",
+                  {
+                    onClick: () => window.location.reload(),
+                    className: "rounded p-1 text-gray-600 hover:bg-red-200/50 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-red-800/50 dark:hover:text-gray-200 transition-colors",
+                    title: "Refresh page"
+                  },
+                  /* @__PURE__ */ React.createElement(RefreshIcon, null)
+                ), /* @__PURE__ */ React.createElement(
+                  "button",
+                  {
+                    onClick: this.toggleFullWidth,
+                    className: "rounded p-1 text-gray-600 hover:bg-red-200/50 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-red-800/50 dark:hover:text-gray-200 transition-colors",
+                    title: isFullWidth ? "Reduce width" : "Expand to full width"
+                  },
+                  isFullWidth ? /* @__PURE__ */ React.createElement(CompressIcon, null) : /* @__PURE__ */ React.createElement(ExpandIcon, null)
+                ), /* @__PURE__ */ React.createElement(
+                  "button",
+                  {
+                    onClick: this.toggleMinimize,
+                    className: "rounded p-1 text-gray-600 hover:bg-red-200/50 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-red-800/50 dark:hover:text-gray-200 transition-colors",
+                    title: "Minimize"
+                  },
+                  /* @__PURE__ */ React.createElement(MinimizeIcon, null)
+                ))),
+                /* @__PURE__ */ React.createElement("div", { className: "p-4" }, /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-gray-700 dark:text-gray-300" }, "You can copy the error details and ask Gemini to fix the error.")), /* @__PURE__ */ React.createElement(
+                  "div",
+                  {
+                    className: `overflow-auto rounded bg-gray-50 p-3 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 scrollbar-none ${isFullWidth ? "max-h-[40vh]" : "max-h-60"}`
+                  },
+                  /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs uppercase font-semibold text-gray-500 dark:text-gray-400" }, "Error Message:"), /* @__PURE__ */ React.createElement("p", { className: "font-mono text-xs text-red-700 dark:text-red-400 break-words px-2 py-1.5 bg-red-50 dark:bg-red-900/30 rounded border border-red-100 dark:border-red-900/50" }, error ? error.toString() : "No error message available.")), errorInfo && /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs uppercase font-semibold text-gray-500 dark:text-gray-400" }, "Component Stack:"), /* @__PURE__ */ React.createElement("pre", { className: "whitespace-pre-wrap font-mono text-xs text-gray-700 dark:text-gray-300 px-2 py-1.5 bg-gray-100 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700" }, errorInfo.componentStack)))
+                ), /* @__PURE__ */ React.createElement("div", { className: "mt-4" }, /* @__PURE__ */ React.createElement(
+                  "button",
+                  {
+                    onClick: this.copyErrorToClipboard,
+                    className: `flex items-center justify-center gap-2 px-4 py-2 text-white rounded-md transition-colors w-full ${this.state.copyButtonState === "copied" ? "bg-blue-600 hover:bg-blue-700" : "bg-indigo-600 hover:bg-indigo-700"}`
+                  },
+                  this.state.copyButtonState === "copied" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(CheckIcon, null), "Copied to Clipboard!") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(CopyIcon, null), "Copy Error Details")
+                )))
+              )));
+            }
+            return this.props.children;
+          }
+        };
+      }
+      module.exports = { createErrorBoundary };
+    }
+  });
+  return require_stdin();
+})();
+/*! Bundled license information:
+
+react/cjs/react.development.js:
+  (**
+   * @license React
+   * react.development.js
+   *
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE file in the root directory of this source tree.
+   *)
+*/
+
+
+                // Use the exported createErrorBoundary function
+                const ErrorBoundary = ErrorBoundaryModule.createErrorBoundary();
+
+                const AppComponent = React.createElement(
+                    ErrorBoundary,
+                    null,
+                    React.createElement(App.default, null)
+                );
+                root.render(AppComponent);
+            });
+        </script>
+    </body>
+</html>
